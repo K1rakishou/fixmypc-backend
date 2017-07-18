@@ -38,6 +38,7 @@ class SignupServiceTest {
         MockitoAnnotations.initMocks(this)
 
         Mockito.`when`(userRepo.findByLogin(ALREADY_EXISTING_LOGIN)).thenReturn(Optional.of(TEST_USER))
+        Mockito.`when`(userRepo.findByLogin(GOOD_LOGIN)).thenReturn(Optional.empty())
     }
 
     @Test

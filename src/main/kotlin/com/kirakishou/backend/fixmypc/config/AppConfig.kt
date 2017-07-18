@@ -3,12 +3,14 @@ package com.kirakishou.backend.fixmypc.config
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.kirakishou.backend.fixmypc.model.Constants
 import com.kirakishou.backend.fixmypc.model.User
+import com.zaxxer.hikari.HikariDataSource
 import org.springframework.cache.CacheManager
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.data.redis.cache.RedisCacheManager
 import org.springframework.data.redis.connection.RedisConnectionFactory
 import org.springframework.data.redis.core.RedisTemplate
+import javax.sql.DataSource
 
 /**
  * Created by kirakishou on 7/9/2017.
@@ -35,8 +37,8 @@ open class AppConfig {
         return cacheManager
     }
 
-    /*@Bean
-    open fun hikariCP(): DataSource {
+    @Bean
+    open fun dataSource(): DataSource {
         val dataSource = HikariDataSource()
         dataSource.driverClassName = "org.postgresql.Driver"
         dataSource.jdbcUrl = "jdbc:postgresql://192.168.99.100:9499/postgres"
@@ -47,5 +49,5 @@ open class AppConfig {
         //dataSource.connectionTimeout = 15000
 
         return dataSource
-    }*/
+    }
 }

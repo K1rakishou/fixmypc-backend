@@ -25,15 +25,12 @@ class LoginServiceImpl: LoginService {
         val userFromCache = userCache.get(login)
 
         if (userFromCache.isPresent) {
-            System.err.println("Found in cache")
             if (userFromCache.get().password != password) {
                 return LoginService.Result.WrongLoginOrPassword(login)
             }
 
             return LoginService.Result.Ok(userFromCache.get().sessionId!!)
         }
-
-        System.err.println("Not found in cache")
 
         val newUserOpt = userRepo.findByLogin(login)
         if (!newUserOpt.isPresent) {

@@ -2,7 +2,6 @@ package com.kirakishou.backend.fixmypc.model
 
 import java.io.Serializable
 import java.sql.Timestamp
-import javax.persistence.Transient
 
 /**
  * Created by kirakishou on 7/9/2017.
@@ -23,14 +22,14 @@ enum class AccountType(val value: Int) {
     Client(2);
 
     companion object {
-        fun from(id: Int): AccountType? {
+        fun from(id: Int): AccountType {
             for (type in AccountType.values()) {
                 if (type.value == id) {
                     return type
                 }
             }
 
-            return null
+            throw RuntimeException("unknown accountType: $id")
         }
     }
 

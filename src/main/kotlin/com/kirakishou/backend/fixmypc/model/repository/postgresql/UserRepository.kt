@@ -8,8 +8,7 @@ import java.util.*
  */
 
 interface UserRepository {
-    fun findOne(id: Long): Optional<User>
     fun findByLogin(login: String): Optional<User>
-    fun findAll(): List<User>
-    fun save(user: User)
+    fun createNew(user: User)
+    fun deleteByLogin(login: String)
 }

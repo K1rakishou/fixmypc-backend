@@ -1,10 +1,13 @@
 package com.kirakishou.backend.fixmypc.model.repository.postgresql
 
+import com.kirakishou.backend.fixmypc.extension.prepareStatementScrollable
+import com.kirakishou.backend.fixmypc.extension.transactional
+import com.kirakishou.backend.fixmypc.model.AccountType
 import com.kirakishou.backend.fixmypc.model.User
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.stereotype.Repository
 import java.util.*
+import javax.sql.DataSource
 
 /**
  * Created by kirakishou on 7/17/2017.
@@ -14,26 +17,47 @@ import java.util.*
 class UserRepositoryImpl : UserRepository {
 
     @Autowired
-    lateinit var template: JdbcTemplate
+    lateinit var hikariCP: DataSource
 
-    override fun findOne(id: Long): Optional<User> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-    }
+    override fun findByLogin(login: String): Optional<User> {
+        var user: Optional<User> = Optional.empty()
 
-    override fun findByLogin(login: String):  Optional<User> {
-        val user = template.queryForList("SELECT * FROM public.users WHERE login = ? AND deleted_on IS NULL LIMIT 1", arrayOf(login), User::class.java)
-        if (user.isEmpty()) {
-            return Optional.empty()
+        hikariCP.connection.use { connection ->
+            connection.prepareStatementScrollable("SELECT * FROM public.users WHERE login = ? AND deleted_on IS NULL LIMIT 1").use { ps ->
+                ps.setString(1, login)
+                ps.executeQuery().use { rs ->
+                    if (rs.first()) {
+                        user = Optional.of(User(rs.getString("login"),
+                                rs.getString("password"),
+                                AccountType.from(rs.getInt("account_type"))))
+                    }
+                }
+            }
         }
 
-        return Optional.of(user[0])
+        return user
     }
 
-    override fun findAll(): List<User> {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    override fun createNew(user: User) {
+        hikariCP.connection.transactional { connection ->
+            connection.prepareStatement("INSERT INTO public.users (login, password, account_type, created_on, " +
+                    "deleted_on) VALUES (?, ?, ?, NOW(), NULL)").use { ps ->
+
+                ps.setString(1, user.login)
+                ps.setString(2, user.password)
+                ps.setInt(3, user.accountType.value)
+                ps.executeUpdate()
+            }
+        }
     }
 
-    override fun save(user: User) {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    //for tests only!!!
+    override fun deleteByLogin(login: String) {
+        hikariCP.connection.use { connection ->
+            connection.prepareStatement("DELETE FROM public.users WHERE login = ?").use { ps ->
+                ps.setString(1, login)
+                ps.execute()
+            }
+        }
     }
 }

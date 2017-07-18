@@ -33,12 +33,12 @@ class SignupServiceImpl : SignupService {
         }
 
         val user = userRepo.findByLogin(login)
-        if (user != null) {
+        if (user.isPresent) {
             return SignupService.Result.LoginAlreadyExists()
         }
 
         val newUser = User(login, password, accountType, Timestamp(Date().time))
-        userRepo.save(newUser)
+        userRepo.createNew(newUser)
 
         return SignupService.Result.Ok()
     }
