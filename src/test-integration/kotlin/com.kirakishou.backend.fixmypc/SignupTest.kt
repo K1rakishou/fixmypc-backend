@@ -1,7 +1,9 @@
 package com.kirakishou.backend.fixmypc
 
-import com.kirakishou.backend.fixmypc.controller.SignupController
 import com.kirakishou.backend.fixmypc.model.AccountType
+import com.kirakishou.backend.fixmypc.model.Constants
+import com.kirakishou.backend.fixmypc.model.net.request.SignupRequest
+import com.kirakishou.backend.fixmypc.model.net.response.SignupResponse
 import com.kirakishou.backend.fixmypc.model.repository.postgresql.UserRepository
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -47,11 +49,11 @@ class SignupTest {
     * */
     @Test
     fun signup() {
-        val responseEntity = restTemplate.postForEntity("/signup",
-                SignupController.SignupRequest(GOOD_LOGIN, PASSWORD, AccountType.Client),
-                SignupController.SignupResponse::class.java)
+        val responseEntity = restTemplate.postForEntity(Constants.SIGNUP_CONTROLLER_PATH,
+                SignupRequest(GOOD_LOGIN, PASSWORD, AccountType.Client),
+                SignupResponse::class.java)
 
-        val response = responseEntity.body as SignupController.SignupResponse
+        val response = responseEntity.body as SignupResponse
         assertEquals(HttpStatus.CREATED, responseEntity.statusCode)
 
         val userInDb = userRepo.findByLogin(GOOD_LOGIN)

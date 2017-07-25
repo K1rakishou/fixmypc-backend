@@ -1,8 +1,10 @@
 package com.kirakishou.backend.fixmypc
 
-import com.kirakishou.backend.fixmypc.controller.LoginController
 import com.kirakishou.backend.fixmypc.model.AccountType
+import com.kirakishou.backend.fixmypc.model.Constants
 import com.kirakishou.backend.fixmypc.model.User
+import com.kirakishou.backend.fixmypc.model.net.request.LoginRequest
+import com.kirakishou.backend.fixmypc.model.net.response.LoginResponse
 import com.kirakishou.backend.fixmypc.model.repository.postgresql.UserRepository
 import com.kirakishou.backend.fixmypc.model.repository.redis.UserCache
 import org.junit.After
@@ -52,11 +54,11 @@ class LoginTest {
     fun login() {
         userRepo.createNew(TEST_USER)
 
-        val responseEntity = restTemplate.postForEntity("/login",
-                LoginController.LoginRequest(GOOD_LOGIN, PASSWORD),
-                LoginController.LoginResponse::class.java)
+        val responseEntity = restTemplate.postForEntity(Constants.LOGIN_CONTROLLER_PATH,
+                LoginRequest(GOOD_LOGIN, PASSWORD),
+                LoginResponse::class.java)
 
-        val response = responseEntity.body as LoginController.LoginResponse
+        val response = responseEntity.body as LoginResponse
         assertEquals(HttpStatus.OK, responseEntity.statusCode)
         assertEquals(response.sessionId.isEmpty(), false)
 

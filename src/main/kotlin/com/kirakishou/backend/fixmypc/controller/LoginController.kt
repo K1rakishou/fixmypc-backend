@@ -1,6 +1,8 @@
 package com.kirakishou.backend.fixmypc.controller
 
-import com.fasterxml.jackson.annotation.JsonProperty
+import com.kirakishou.backend.fixmypc.model.Constants
+import com.kirakishou.backend.fixmypc.model.net.request.LoginRequest
+import com.kirakishou.backend.fixmypc.model.net.response.LoginResponse
 import com.kirakishou.backend.fixmypc.service.LoginService
 import io.reactivex.Single
 import org.springframework.beans.factory.annotation.Autowired
@@ -22,13 +24,11 @@ class LoginController {
     @Autowired
     lateinit var loginService: LoginService
 
-    @RequestMapping(path = arrayOf("/login"), method = arrayOf(RequestMethod.POST))
+    @RequestMapping(path = arrayOf(Constants.LOGIN_CONTROLLER_PATH), method = arrayOf(RequestMethod.POST))
     fun login(@RequestBody request: LoginRequest): Single<ResponseEntity<LoginResponse>> {
 
         return Single.just(request).map { (login, password) ->
-            val result = measureTime {
-                return@measureTime loginService.doLogin(login, password)
-            }
+            val result = loginService.doLogin(login, password)
 
             when (result) {
                 is LoginService.Result.Ok -> {
@@ -45,18 +45,4 @@ class LoginController {
             }
         }
     }
-
-    fun <T> measureTime(block: () -> T): T {
-        val start = System.nanoTime()
-        val retVal = block()
-        val diff = (System.nanoTime() - start) / 1000
-        System.err.println("Block execution took: ${diff}us")
-
-        return retVal
-    }
-
-    data class LoginRequest(@JsonProperty("login") val login: String,
-                            @JsonProperty("password") val password: String)
-
-    data class LoginResponse(val sessionId: String)
 }

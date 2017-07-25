@@ -1,7 +1,8 @@
 package com.kirakishou.backend.fixmypc.controller
 
-import com.fasterxml.jackson.annotation.JsonProperty
-import com.kirakishou.backend.fixmypc.model.AccountType
+import com.kirakishou.backend.fixmypc.model.Constants
+import com.kirakishou.backend.fixmypc.model.net.request.SignupRequest
+import com.kirakishou.backend.fixmypc.model.net.response.SignupResponse
 import com.kirakishou.backend.fixmypc.service.SignupService
 import io.reactivex.Single
 import org.springframework.beans.factory.annotation.Autowired
@@ -24,7 +25,7 @@ class SignupController {
     @Autowired
     lateinit var signupService: SignupService
 
-    @RequestMapping(path = arrayOf("/signup"), method = arrayOf(RequestMethod.POST), consumes = arrayOf(MediaType.APPLICATION_JSON_VALUE))
+    @RequestMapping(path = arrayOf(Constants.SIGNUP_CONTROLLER_PATH), method = arrayOf(RequestMethod.POST), consumes = arrayOf(MediaType.APPLICATION_JSON_VALUE))
     fun signup(@RequestBody request: SignupRequest): Single<ResponseEntity<SignupResponse>> {
 
         return Single.just(request).map {
@@ -57,10 +58,4 @@ class SignupController {
             }
         }
     }
-
-    data class SignupRequest(@JsonProperty("login") val login: String,
-                             @JsonProperty("password") val password: String,
-                             @JsonProperty("account_type") val accountType: AccountType)
-
-    class SignupResponse
 }
