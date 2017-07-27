@@ -3,7 +3,7 @@ package com.kirakishou.backend.fixmypc.model
 /**
  * Created by kirakishou on 7/16/2017.
  */
-object Constants {
+object Constant {
     const val LOGIN_CONTROLLER_PATH = "/v1/api/login"
     const val SIGNUP_CONTROLLER_PATH = "/v1/api/signup"
 

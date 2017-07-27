@@ -1,7 +1,7 @@
 package com.kirakishou.backend.fixmypc
 
 import com.kirakishou.backend.fixmypc.model.AccountType
-import com.kirakishou.backend.fixmypc.model.Constants
+import com.kirakishou.backend.fixmypc.model.Constant
 import com.kirakishou.backend.fixmypc.model.net.request.SignupRequest
 import com.kirakishou.backend.fixmypc.model.net.response.SignupResponse
 import com.kirakishou.backend.fixmypc.model.repository.postgresql.UserRepository
@@ -49,7 +49,7 @@ class SignupTest {
     * */
     @Test
     fun signup() {
-        val responseEntity = restTemplate.postForEntity(Constants.SIGNUP_CONTROLLER_PATH,
+        val responseEntity = restTemplate.postForEntity(Constant.SIGNUP_CONTROLLER_PATH,
                 SignupRequest(GOOD_LOGIN, PASSWORD, AccountType.Client),
                 SignupResponse::class.java)
 

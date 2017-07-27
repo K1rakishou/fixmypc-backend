@@ -1,7 +1,7 @@
 package com.kirakishou.backend.fixmypc
 
 import com.kirakishou.backend.fixmypc.model.AccountType
-import com.kirakishou.backend.fixmypc.model.Constants
+import com.kirakishou.backend.fixmypc.model.Constant
 import com.kirakishou.backend.fixmypc.model.User
 import com.kirakishou.backend.fixmypc.model.net.request.LoginRequest
 import com.kirakishou.backend.fixmypc.model.net.response.LoginResponse
@@ -54,7 +54,7 @@ class LoginTest {
     fun login() {
         userRepo.createNew(TEST_USER)
 
-        val responseEntity = restTemplate.postForEntity(Constants.LOGIN_CONTROLLER_PATH,
+        val responseEntity = restTemplate.postForEntity(Constant.LOGIN_CONTROLLER_PATH,
                 LoginRequest(GOOD_LOGIN, PASSWORD),
                 LoginResponse::class.java)
 

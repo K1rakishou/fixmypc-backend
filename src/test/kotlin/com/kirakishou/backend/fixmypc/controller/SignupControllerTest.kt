@@ -3,7 +3,7 @@ package com.kirakishou.backend.fixmypc.controller
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.kirakishou.backend.fixmypc.FixmypcApplication
 import com.kirakishou.backend.fixmypc.model.AccountType
-import com.kirakishou.backend.fixmypc.model.Constants
+import com.kirakishou.backend.fixmypc.model.Constant
 import com.kirakishou.backend.fixmypc.model.User
 import com.kirakishou.backend.fixmypc.model.net.request.SignupRequest
 import com.kirakishou.backend.fixmypc.model.repository.postgresql.UserRepository
@@ -87,7 +87,7 @@ class SignupControllerTest {
     @Test
     fun shouldSuccessfullyRegisterAndReturn201() {
         val result = mockMvc.perform(
-                MockMvcRequestBuilders.post(Constants.SIGNUP_CONTROLLER_PATH)
+                MockMvcRequestBuilders.post(Constant.SIGNUP_CONTROLLER_PATH)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jacksonObjectMapper().writeValueAsString(SignupRequest(GOOD_LOGIN, GOOD_PASSWORD, GOOD_ACCOUNT_TYPE))))
                 .andExpect(MockMvcResultMatchers.request().asyncStarted())
@@ -105,7 +105,7 @@ class SignupControllerTest {
     @Test
     fun shouldNotRegisterAndReturn409() {
         val result = mockMvc.perform(
-                MockMvcRequestBuilders.post(Constants.SIGNUP_CONTROLLER_PATH)
+                MockMvcRequestBuilders.post(Constant.SIGNUP_CONTROLLER_PATH)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jacksonObjectMapper().writeValueAsString(SignupRequest(ALREADY_EXISTING_LOGIN, GOOD_PASSWORD, GOOD_ACCOUNT_TYPE))))
                 .andExpect(MockMvcResultMatchers.request().asyncStarted())
@@ -123,7 +123,7 @@ class SignupControllerTest {
     @Test
     fun shouldNotRegisterAndReturn422_loginIsIncorrect() {
         val result = mockMvc.perform(
-                MockMvcRequestBuilders.post(Constants.SIGNUP_CONTROLLER_PATH)
+                MockMvcRequestBuilders.post(Constant.SIGNUP_CONTROLLER_PATH)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jacksonObjectMapper().writeValueAsString(SignupRequest(INCORRECT_LOGIN, GOOD_PASSWORD, GOOD_ACCOUNT_TYPE))))
                 .andExpect(MockMvcResultMatchers.request().asyncStarted())
@@ -141,7 +141,7 @@ class SignupControllerTest {
     @Test
     fun shouldNotRegisterAndReturn422_passwordIsTooShort() {
         val result = mockMvc.perform(
-                MockMvcRequestBuilders.post(Constants.SIGNUP_CONTROLLER_PATH)
+                MockMvcRequestBuilders.post(Constant.SIGNUP_CONTROLLER_PATH)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jacksonObjectMapper().writeValueAsString(SignupRequest(GOOD_LOGIN, INCORRECT_PASSWORD_SHORT, GOOD_ACCOUNT_TYPE))))
                 .andExpect(MockMvcResultMatchers.request().asyncStarted())
@@ -159,7 +159,7 @@ class SignupControllerTest {
     @Test
     fun shouldNotRegisterAndReturn422_passwordIsTooLong() {
         val result = mockMvc.perform(
-                MockMvcRequestBuilders.post(Constants.SIGNUP_CONTROLLER_PATH)
+                MockMvcRequestBuilders.post(Constant.SIGNUP_CONTROLLER_PATH)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jacksonObjectMapper().writeValueAsString(SignupRequest(GOOD_LOGIN, INCORRECT_PASSWORD_LONG, GOOD_ACCOUNT_TYPE))))
                 .andExpect(MockMvcResultMatchers.request().asyncStarted())

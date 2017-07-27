@@ -3,7 +3,7 @@ package com.kirakishou.backend.fixmypc.controller
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.kirakishou.backend.fixmypc.FixmypcApplication
 import com.kirakishou.backend.fixmypc.model.AccountType
-import com.kirakishou.backend.fixmypc.model.Constants
+import com.kirakishou.backend.fixmypc.model.Constant
 import com.kirakishou.backend.fixmypc.model.User
 import com.kirakishou.backend.fixmypc.model.net.request.LoginRequest
 import com.kirakishou.backend.fixmypc.model.repository.postgresql.UserRepository
@@ -93,7 +93,7 @@ class LoginControllerTest {
     @Test
     fun controllerMustReturn200IfGoodLoginOrPassword() {
         val result = mockMvc.perform(
-                MockMvcRequestBuilders.post(Constants.LOGIN_CONTROLLER_PATH)
+                MockMvcRequestBuilders.post(Constant.LOGIN_CONTROLLER_PATH)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jacksonObjectMapper().writeValueAsString(LoginRequest(GOOD_LOGIN, GOOD_PASSWORD))))
                 .andExpect(MockMvcResultMatchers.request().asyncStarted())
@@ -112,7 +112,7 @@ class LoginControllerTest {
     @Test
     fun controllerMustReturn422IfBadLoginOrPassword() {
         val result = mockMvc.perform(
-                MockMvcRequestBuilders.post(Constants.LOGIN_CONTROLLER_PATH)
+                MockMvcRequestBuilders.post(Constant.LOGIN_CONTROLLER_PATH)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jacksonObjectMapper().writeValueAsString(LoginRequest(BAD_LOGIN, BAD_PASSWORD))))
                 .andExpect(MockMvcResultMatchers.request().asyncStarted())

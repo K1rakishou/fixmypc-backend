@@ -1,7 +1,7 @@
 package com.kirakishou.backend.fixmypc.config
 
 import com.fasterxml.jackson.module.kotlin.KotlinModule
-import com.kirakishou.backend.fixmypc.model.Constants
+import com.kirakishou.backend.fixmypc.model.Constant
 import com.kirakishou.backend.fixmypc.model.User
 import com.zaxxer.hikari.HikariDataSource
 import org.springframework.cache.CacheManager
@@ -32,7 +32,7 @@ open class AppConfig {
     @Bean
     open fun cacheManager(redisTemplate: RedisTemplate<*, *>): CacheManager {
         val cacheManager = RedisCacheManager(redisTemplate)
-        cacheManager.setDefaultExpiration(Constants.USER_CACHE_LIFE_TIME_SECONDS)
+        cacheManager.setDefaultExpiration(Constant.USER_CACHE_LIFE_TIME_SECONDS)
         cacheManager.setUsePrefix(true)
         return cacheManager
     }

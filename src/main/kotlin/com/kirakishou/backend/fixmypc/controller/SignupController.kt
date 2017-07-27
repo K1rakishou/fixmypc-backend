@@ -1,6 +1,7 @@
 package com.kirakishou.backend.fixmypc.controller
 
-import com.kirakishou.backend.fixmypc.model.Constants
+import com.kirakishou.backend.fixmypc.model.Constant
+import com.kirakishou.backend.fixmypc.model.net.StatusCode
 import com.kirakishou.backend.fixmypc.model.net.request.SignupRequest
 import com.kirakishou.backend.fixmypc.model.net.response.SignupResponse
 import com.kirakishou.backend.fixmypc.service.SignupService
@@ -25,37 +26,46 @@ class SignupController {
     @Autowired
     lateinit var signupService: SignupService
 
-    @RequestMapping(path = arrayOf(Constants.SIGNUP_CONTROLLER_PATH), method = arrayOf(RequestMethod.POST), consumes = arrayOf(MediaType.APPLICATION_JSON_VALUE))
+    @RequestMapping(path = arrayOf(Constant.SIGNUP_CONTROLLER_PATH),
+            method = arrayOf(RequestMethod.POST),
+            consumes = arrayOf(MediaType.APPLICATION_JSON_VALUE))
     fun signup(@RequestBody request: SignupRequest): Single<ResponseEntity<SignupResponse>> {
 
-        return Single.just(request).map {
-            val result = signupService.doSignup(request.login, request.password, request.accountType)
+        return Single.just(request)
+                .map {
+                    val result = signupService.doSignup(request.login, request.password, request.accountType)
 
-            when (result) {
-                is SignupService.Result.Ok -> {
-                    return@map ResponseEntity(SignupResponse(), HttpStatus.CREATED)
-                }
+                    when (result) {
+                        is SignupService.Result.Ok -> {
+                            return@map ResponseEntity(SignupResponse(StatusCode.STATUS_OK),
+                                    HttpStatus.CREATED)
+                        }
 
-                is SignupService.Result.LoginAlreadyExists -> {
-                    return@map ResponseEntity(SignupResponse(), HttpStatus.CONFLICT)
-                }
+                        is SignupService.Result.LoginAlreadyExists -> {
+                            return@map ResponseEntity(SignupResponse(StatusCode.STATUS_LOGIN_ALREADY_EXISTS),
+                                    HttpStatus.CONFLICT)
+                        }
 
-                is SignupService.Result.LoginIsIncorrect -> {
-                    return@map ResponseEntity(SignupResponse(), HttpStatus.UNPROCESSABLE_ENTITY)
-                }
+                        is SignupService.Result.LoginIsIncorrect -> {
+                            return@map ResponseEntity(SignupResponse(StatusCode.STATUS_LOGIN_IS_INCORRECT),
+                                    HttpStatus.UNPROCESSABLE_ENTITY)
+                        }
 
-                is SignupService.Result.PasswordIsIncorrect -> {
-                    return@map ResponseEntity(SignupResponse(), HttpStatus.UNPROCESSABLE_ENTITY)
-                }
+                        is SignupService.Result.PasswordIsIncorrect -> {
+                            return@map ResponseEntity(SignupResponse(StatusCode.STATUS_PASSWORD_IS_INCORRECT),
+                                    HttpStatus.UNPROCESSABLE_ENTITY)
+                        }
 
-                is SignupService.Result.AccountTypeIsIncorrect -> {
-                    return@map ResponseEntity(SignupResponse(), HttpStatus.UNPROCESSABLE_ENTITY)
-                }
+                        is SignupService.Result.AccountTypeIsIncorrect -> {
+                            return@map ResponseEntity(SignupResponse(StatusCode.STATUS_ACCOUNT_TYPE_IS_INCORRECT),
+                                    HttpStatus.UNPROCESSABLE_ENTITY)
+                        }
 
-                else -> {
-                    return@map ResponseEntity(SignupResponse(), HttpStatus.INTERNAL_SERVER_ERROR)
+                        else -> {
+                            return@map ResponseEntity(SignupResponse(StatusCode.STATUS_UNKNOWN_SERVER_ERROR),
+                                    HttpStatus.INTERNAL_SERVER_ERROR)
+                        }
+                    }
                 }
-            }
-        }
     }
 }
