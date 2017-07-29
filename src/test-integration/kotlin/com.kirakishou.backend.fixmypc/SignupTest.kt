@@ -49,7 +49,7 @@ class SignupTest {
     * */
     @Test
     fun signup() {
-        val responseEntity = restTemplate.postForEntity(Constant.SIGNUP_CONTROLLER_PATH,
+        val responseEntity = restTemplate.postForEntity(Constant.Paths.SIGNUP_CONTROLLER_PATH,
                 SignupRequest(GOOD_LOGIN, PASSWORD, AccountType.Client),
                 SignupResponse::class.java)
 

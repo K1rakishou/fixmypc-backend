@@ -54,7 +54,7 @@ class LoginTest {
     fun login() {
         userRepo.createNew(TEST_USER)
 
-        val responseEntity = restTemplate.postForEntity(Constant.LOGIN_CONTROLLER_PATH,
+        val responseEntity = restTemplate.postForEntity(Constant.Paths.LOGIN_CONTROLLER_PATH,
                 LoginRequest(GOOD_LOGIN, PASSWORD),
                 LoginResponse::class.java)
 

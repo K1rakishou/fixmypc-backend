@@ -26,7 +26,7 @@ class SignupController {
     @Autowired
     lateinit var signupService: SignupService
 
-    @RequestMapping(path = arrayOf(Constant.SIGNUP_CONTROLLER_PATH),
+    @RequestMapping(path = arrayOf(Constant.Paths.SIGNUP_CONTROLLER_PATH),
             method = arrayOf(RequestMethod.POST),
             consumes = arrayOf(MediaType.APPLICATION_JSON_VALUE))
     fun signup(@RequestBody request: SignupRequest): Single<ResponseEntity<SignupResponse>> {

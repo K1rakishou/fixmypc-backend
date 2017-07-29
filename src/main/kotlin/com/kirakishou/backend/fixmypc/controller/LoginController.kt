@@ -26,7 +26,7 @@ class LoginController {
     @Autowired
     lateinit var loginService: LoginService
 
-    @RequestMapping(path = arrayOf(Constant.LOGIN_CONTROLLER_PATH), method = arrayOf(RequestMethod.POST))
+    @RequestMapping(path = arrayOf(Constant.Paths.LOGIN_CONTROLLER_PATH), method = arrayOf(RequestMethod.POST))
     fun login(@RequestBody request: LoginRequest): Single<ResponseEntity<LoginResponse>> {
 
         return Single.just(request)
