@@ -2,7 +2,7 @@ package com.kirakishou.backend.fixmypc.controller
 
 import com.kirakishou.backend.fixmypc.model.AccountType
 import com.kirakishou.backend.fixmypc.model.Constant
-import com.kirakishou.backend.fixmypc.model.net.StatusCode
+import com.kirakishou.backend.fixmypc.model.net.ServerErrorCode
 import com.kirakishou.backend.fixmypc.model.net.request.LoginRequest
 import com.kirakishou.backend.fixmypc.model.net.response.LoginResponse
 import com.kirakishou.backend.fixmypc.service.LoginService
@@ -36,17 +36,17 @@ class LoginController {
                     when (result) {
                         is LoginService.Result.Ok -> {
                             return@map ResponseEntity(LoginResponse(result.sessionId, AccountType.Client.ordinal,
-                                    StatusCode.STATUS_OK.ordinal), HttpStatus.OK)
+                                    ServerErrorCode.SEC_OK.value), HttpStatus.OK)
                         }
 
                         is LoginService.Result.WrongLoginOrPassword -> {
                             return@map ResponseEntity(LoginResponse("", AccountType.Client.ordinal,
-                                    StatusCode.STATUS_WRONG_LOGIN_OR_PASSWORD.ordinal), HttpStatus.UNPROCESSABLE_ENTITY)
+                                    ServerErrorCode.SEC_WRONG_LOGIN_OR_PASSWORD.value), HttpStatus.UNPROCESSABLE_ENTITY)
                         }
 
                         else -> {
                             return@map ResponseEntity(LoginResponse("", AccountType.Client.ordinal,
-                                    StatusCode.STATUS_UNKNOWN_SERVER_ERROR.ordinal), HttpStatus.INTERNAL_SERVER_ERROR)
+                                    ServerErrorCode.SEC_UNKNOWN_SERVER_ERROR.value), HttpStatus.INTERNAL_SERVER_ERROR)
                         }
                     }
                 }

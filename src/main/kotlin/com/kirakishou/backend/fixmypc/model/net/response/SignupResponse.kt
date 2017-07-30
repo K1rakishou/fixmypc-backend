@@ -1,5 +1,5 @@
 package com.kirakishou.backend.fixmypc.model.net.response
 
-import com.kirakishou.backend.fixmypc.model.net.StatusCode
+import com.kirakishou.backend.fixmypc.model.net.ServerErrorCode
 
-class SignupResponse(statusCode: StatusCode) : StatusResponse(statusCode.ordinal)
+class SignupResponse(serverErrorCode: ServerErrorCode) : StatusResponse(serverErrorCode.ordinal)

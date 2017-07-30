@@ -18,8 +18,8 @@ data class User(var login: String = "",
 
 enum class AccountType(val value: Int) {
     Guest(0),
-    Master(1),
-    Client(2);
+    Client(1),
+    Specialist(2);
 
     companion object {
         fun from(id: Int): AccountType {

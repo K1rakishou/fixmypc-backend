@@ -1,7 +1,7 @@
 package com.kirakishou.backend.fixmypc.controller
 
 import com.kirakishou.backend.fixmypc.model.Constant
-import com.kirakishou.backend.fixmypc.model.net.StatusCode
+import com.kirakishou.backend.fixmypc.model.net.ServerErrorCode
 import com.kirakishou.backend.fixmypc.model.net.request.SignupRequest
 import com.kirakishou.backend.fixmypc.model.net.response.SignupResponse
 import com.kirakishou.backend.fixmypc.service.SignupService
@@ -37,32 +37,32 @@ class SignupController {
 
                     when (result) {
                         is SignupService.Result.Ok -> {
-                            return@map ResponseEntity(SignupResponse(StatusCode.STATUS_OK),
+                            return@map ResponseEntity(SignupResponse(ServerErrorCode.SEC_OK),
                                     HttpStatus.CREATED)
                         }
 
                         is SignupService.Result.LoginAlreadyExists -> {
-                            return@map ResponseEntity(SignupResponse(StatusCode.STATUS_LOGIN_ALREADY_EXISTS),
+                            return@map ResponseEntity(SignupResponse(ServerErrorCode.SEC_LOGIN_ALREADY_EXISTS),
                                     HttpStatus.CONFLICT)
                         }
 
                         is SignupService.Result.LoginIsIncorrect -> {
-                            return@map ResponseEntity(SignupResponse(StatusCode.STATUS_LOGIN_IS_INCORRECT),
+                            return@map ResponseEntity(SignupResponse(ServerErrorCode.SEC_LOGIN_IS_INCORRECT),
                                     HttpStatus.UNPROCESSABLE_ENTITY)
                         }
 
                         is SignupService.Result.PasswordIsIncorrect -> {
-                            return@map ResponseEntity(SignupResponse(StatusCode.STATUS_PASSWORD_IS_INCORRECT),
+                            return@map ResponseEntity(SignupResponse(ServerErrorCode.SEC_PASSWORD_IS_INCORRECT),
                                     HttpStatus.UNPROCESSABLE_ENTITY)
                         }
 
                         is SignupService.Result.AccountTypeIsIncorrect -> {
-                            return@map ResponseEntity(SignupResponse(StatusCode.STATUS_ACCOUNT_TYPE_IS_INCORRECT),
+                            return@map ResponseEntity(SignupResponse(ServerErrorCode.SEC_ACCOUNT_TYPE_IS_INCORRECT),
                                     HttpStatus.UNPROCESSABLE_ENTITY)
                         }
 
                         else -> {
-                            return@map ResponseEntity(SignupResponse(StatusCode.STATUS_UNKNOWN_SERVER_ERROR),
+                            return@map ResponseEntity(SignupResponse(ServerErrorCode.SEC_UNKNOWN_SERVER_ERROR),
                                     HttpStatus.INTERNAL_SERVER_ERROR)
                         }
                     }
