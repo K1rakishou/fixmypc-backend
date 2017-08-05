@@ -10,7 +10,11 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.data.redis.cache.RedisCacheManager
 import org.springframework.data.redis.connection.RedisConnectionFactory
 import org.springframework.data.redis.core.RedisTemplate
+import org.springframework.http.client.ClientHttpRequestFactory
+import org.springframework.http.client.SimpleClientHttpRequestFactory
+import org.springframework.web.client.RestTemplate
 import javax.sql.DataSource
+
 
 /**
  * Created by kirakishou on 7/9/2017.
@@ -49,5 +53,22 @@ open class AppConfig {
         //dataSource.connectionTimeout = 15000
 
         return dataSource
+    }
+
+    @Bean
+    fun clientHttpRequestFactory(): ClientHttpRequestFactory {
+        val clientHttpRequestFactory = SimpleClientHttpRequestFactory()
+        clientHttpRequestFactory.setConnectTimeout(10000)
+        clientHttpRequestFactory.setReadTimeout(10000)
+        clientHttpRequestFactory.setBufferRequestBody(false)
+        return clientHttpRequestFactory
+    }
+
+    @Bean
+    fun restTemplate(): RestTemplate {
+        val restTemplate = RestTemplate()
+        restTemplate.requestFactory = clientHttpRequestFactory()
+
+        return restTemplate
     }
 }

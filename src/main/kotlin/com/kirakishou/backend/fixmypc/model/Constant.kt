@@ -8,6 +8,7 @@ object Constant {
     object Paths {
         const val LOGIN_CONTROLLER_PATH = "/v1/api/login"
         const val SIGNUP_CONTROLLER_PATH = "/v1/api/signup"
+        const val MALFUNCTION_REQUEST_CONTROLLER_PATH = "/v1/api/m_request"
     }
 
     object SerializedNames {
@@ -16,6 +17,8 @@ object Constant {
         const val ACCOUNT_TYPE_SERIALIZED_NAME = "account_type"
         const val SESSION_ID_SERIALIZED_NAME = "session_id"
         const val SERVER_ERROR_CODE_SERIALIZED_NAME = "server_error_code"
+        const val MALFUNCTION_CATEGORY = "m_category"
+        const val MALFUNCTION_DESCRIPTION = "m_description"
     }
 
     val MIN_PASSWORD_LENGTH = 10
