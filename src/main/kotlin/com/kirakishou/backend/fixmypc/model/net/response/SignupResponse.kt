@@ -1,5 +1,7 @@
 package com.kirakishou.backend.fixmypc.model.net.response
 
-import com.kirakishou.backend.fixmypc.model.net.ServerErrorCode
+import com.fasterxml.jackson.annotation.JsonProperty
+import com.kirakishou.backend.fixmypc.model.Constant
 
-class SignupResponse(serverErrorCode: ServerErrorCode) : StatusResponse(serverErrorCode.ordinal)
+class SignupResponse(@JsonProperty(Constant.SerializedNames.SERVER_ERROR_CODE_SERIALIZED_NAME)
+                     val errorCode: Int)

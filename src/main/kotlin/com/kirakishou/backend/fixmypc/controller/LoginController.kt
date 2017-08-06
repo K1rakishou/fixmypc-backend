@@ -35,17 +35,17 @@ class LoginController {
 
                     when (result) {
                         is LoginService.Result.Ok -> {
-                            return@map ResponseEntity(LoginResponse(result.sessionId, AccountType.Client.ordinal,
+                            return@map ResponseEntity(LoginResponse(result.sessionId, AccountType.Client.value,
                                     ServerErrorCode.SEC_OK.value), HttpStatus.OK)
                         }
 
                         is LoginService.Result.WrongLoginOrPassword -> {
-                            return@map ResponseEntity(LoginResponse("", AccountType.Client.ordinal,
+                            return@map ResponseEntity(LoginResponse("", AccountType.Client.value,
                                     ServerErrorCode.SEC_WRONG_LOGIN_OR_PASSWORD.value), HttpStatus.UNPROCESSABLE_ENTITY)
                         }
 
                         else -> {
-                            return@map ResponseEntity(LoginResponse("", AccountType.Client.ordinal,
+                            return@map ResponseEntity(LoginResponse("", AccountType.Client.value,
                                     ServerErrorCode.SEC_UNKNOWN_SERVER_ERROR.value), HttpStatus.INTERNAL_SERVER_ERROR)
                         }
                     }

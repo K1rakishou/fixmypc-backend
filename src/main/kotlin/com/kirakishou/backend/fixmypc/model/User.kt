@@ -32,5 +32,4 @@ enum class AccountType(val value: Int) {
             throw RuntimeException("unknown accountType: $id")
         }
     }
-
 }

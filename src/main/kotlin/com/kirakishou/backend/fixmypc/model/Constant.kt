@@ -21,6 +21,10 @@ object Constant {
         const val MALFUNCTION_DESCRIPTION = "m_description"
     }
 
+    object FileServers {
+        val SERVERS_IPS = arrayListOf("127.0.0.1:9119")
+    }
+
     val MIN_PASSWORD_LENGTH = 10
     val MAX_PASSWORD_LENGTH = 32
     val USER_CACHE_LIFE_TIME_SECONDS = 60L

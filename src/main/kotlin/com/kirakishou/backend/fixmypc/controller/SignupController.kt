@@ -37,32 +37,32 @@ class SignupController {
 
                     when (result) {
                         is SignupService.Result.Ok -> {
-                            return@map ResponseEntity(SignupResponse(ServerErrorCode.SEC_OK),
+                            return@map ResponseEntity(SignupResponse(ServerErrorCode.SEC_OK.value),
                                     HttpStatus.CREATED)
                         }
 
                         is SignupService.Result.LoginAlreadyExists -> {
-                            return@map ResponseEntity(SignupResponse(ServerErrorCode.SEC_LOGIN_ALREADY_EXISTS),
+                            return@map ResponseEntity(SignupResponse(ServerErrorCode.SEC_LOGIN_ALREADY_EXISTS.value),
                                     HttpStatus.CONFLICT)
                         }
 
                         is SignupService.Result.LoginIsIncorrect -> {
-                            return@map ResponseEntity(SignupResponse(ServerErrorCode.SEC_LOGIN_IS_INCORRECT),
+                            return@map ResponseEntity(SignupResponse(ServerErrorCode.SEC_LOGIN_IS_INCORRECT.value),
                                     HttpStatus.UNPROCESSABLE_ENTITY)
                         }
 
                         is SignupService.Result.PasswordIsIncorrect -> {
-                            return@map ResponseEntity(SignupResponse(ServerErrorCode.SEC_PASSWORD_IS_INCORRECT),
+                            return@map ResponseEntity(SignupResponse(ServerErrorCode.SEC_PASSWORD_IS_INCORRECT.value),
                                     HttpStatus.UNPROCESSABLE_ENTITY)
                         }
 
                         is SignupService.Result.AccountTypeIsIncorrect -> {
-                            return@map ResponseEntity(SignupResponse(ServerErrorCode.SEC_ACCOUNT_TYPE_IS_INCORRECT),
+                            return@map ResponseEntity(SignupResponse(ServerErrorCode.SEC_ACCOUNT_TYPE_IS_INCORRECT.value),
                                     HttpStatus.UNPROCESSABLE_ENTITY)
                         }
 
                         else -> {
-                            return@map ResponseEntity(SignupResponse(ServerErrorCode.SEC_UNKNOWN_SERVER_ERROR),
+                            return@map ResponseEntity(SignupResponse(ServerErrorCode.SEC_UNKNOWN_SERVER_ERROR.value),
                                     HttpStatus.INTERNAL_SERVER_ERROR)
                         }
                     }
