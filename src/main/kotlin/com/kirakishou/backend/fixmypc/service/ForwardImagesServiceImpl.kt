@@ -27,7 +27,7 @@ class ForwardImagesServiceImpl : ForwardImagesService {
         for ((key, imageInfos) in images) {
             System.out.println("key: $key")
 
-            val map = LinkedMultiValueMap<String, Any>()
+            val mvmap = LinkedMultiValueMap<String, Any>()
             val files = ArrayList<ByteArrayResource>()
 
             for (imageInfo in imageInfos) {
@@ -37,8 +37,8 @@ class ForwardImagesServiceImpl : ForwardImagesService {
             val headers = HttpHeaders()
             headers.contentType = MediaType.MULTIPART_FORM_DATA
 
-            map.put("images", files as List<ByteArrayResource>)
-            val httpEntity = HttpEntity<MultiValueMap<String, Any>>(map, headers)
+            mvmap.put("images", files as List<ByteArrayResource>)
+            val httpEntity = HttpEntity<MultiValueMap<String, Any>>(mvmap, headers)
 
             try {
                 val response = restTemplate.exchange("http://" + fileServers[key] + "/v1/api/upload_image", HttpMethod.POST, httpEntity, String::class.java)

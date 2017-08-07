@@ -2,12 +2,11 @@ package com.kirakishou.backend.fixmypc.service
 
 import com.kirakishou.backend.fixmypc.model.ImageInfo
 import com.kirakishou.backend.fixmypc.model.net.request.MalfunctionRequest
-import com.kirakishou.backend.fixmypc.util.Util
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import org.springframework.web.multipart.MultipartFile
-import java.math.BigInteger
+import java.util.concurrent.atomic.AtomicInteger
 
 @Component
 class MalfunctionRequestServiceImpl : MalfunctionRequestService {
@@ -21,8 +20,7 @@ class MalfunctionRequestServiceImpl : MalfunctionRequestService {
     @Value("\${fixmypc.backend.fileservers}")
     var fileServers: Array<String> = arrayOf()
 
-    @Autowired
-    lateinit var imageService: ImageService
+    val serverId = AtomicInteger(0)
 
     @Autowired
     lateinit var forwardImagesServer: ForwardImagesService
@@ -39,13 +37,11 @@ class MalfunctionRequestServiceImpl : MalfunctionRequestService {
             totalSize += filePart.size
             System.out.println("fileSize: ${filePart.size}")
 
-            val imageMd5 = imageService.getImageMd5(filePart.bytes)
-            val bigInteger = BigInteger(imageMd5)
-            val serverId = Math.abs((bigInteger % BigInteger.valueOf(fileServers.size.toLong())).toInt())
-            System.out.println("serverId: $serverId")
+            val id = serverId.getAndIncrement() % fileServers.size
+            System.out.println("id: $id, serverId: ${serverId.get()}")
 
-            imageInfoList.putIfAbsent(serverId, ArrayList())
-            imageInfoList[serverId]!!.add(ImageInfo(Util.toHexString(imageMd5), serverId, filePart))
+            imageInfoList.putIfAbsent(id, ArrayList())
+            imageInfoList[id]!!.add(ImageInfo(id, filePart))
         }
 
         System.out.println("totalSize: $totalSize")
