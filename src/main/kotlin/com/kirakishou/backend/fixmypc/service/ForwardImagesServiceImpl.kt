@@ -1,6 +1,7 @@
 package com.kirakishou.backend.fixmypc.service
 
-import com.fasterxml.jackson.annotation.JsonProperty
+import com.kirakishou.backend.fixmypc.model.ForwardedImageInfo
+import com.kirakishou.backend.fixmypc.model.ImageInfo
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.core.io.FileSystemResource
@@ -35,7 +36,7 @@ class ForwardImagesServiceImpl : ForwardImagesService {
         restTemplate.messageConverters.add(FormHttpMessageConverter())
     }
 
-    override fun forwardImages(image: Map<Int, ArrayList<com.kirakishou.backend.fixmypc.model.ImageInfo>>, imagesType: Int): Boolean {
+    override fun forwardImages(image: Map<Int, ArrayList<ImageInfo>>, imagesType: Int): Boolean {
         val tempFileNames = ArrayList<String>()
 
         try {
@@ -91,11 +92,5 @@ class ForwardImagesServiceImpl : ForwardImagesService {
         }
 
         return true
-    }
-
-    class ForwardedImageInfo {
-        @JsonProperty("image_orig_name") val imageOrigName = arrayListOf<String>()
-        @JsonProperty("image_type") val imageType = arrayListOf<Int>()
-        @JsonProperty("image_name") val imageNewName = arrayListOf<String>()
     }
 }
