@@ -27,7 +27,7 @@ class LoginServiceTest {
     lateinit var userRepo: UserRepository
 
     @Mock
-    lateinit var sessionIdGenerator: SessionIdGenerator
+    lateinit var generator: Generator
 
     @Mock
     lateinit var usersCache: UserCache
@@ -43,7 +43,7 @@ class LoginServiceTest {
 
         Mockito.`when`(userRepo.findByLogin(GOOD_LOGIN)).thenReturn(Optional.of(TEST_USER))
         Mockito.`when`(userRepo.findByLogin(BAD_LOGIN)).thenReturn(Optional.empty())
-        Mockito.`when`(sessionIdGenerator.generateSessionId()).thenReturn(GOOD_SESSION_ID)
+        Mockito.`when`(generator.generateSessionId()).thenReturn(GOOD_SESSION_ID)
         Mockito.`when`(usersCache.get(Mockito.anyString())).thenReturn(Optional.ofNullable(null))
     }
 

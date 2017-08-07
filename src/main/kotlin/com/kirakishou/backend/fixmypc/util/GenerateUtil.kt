@@ -1,15 +1,16 @@
 package com.kirakishou.backend.fixmypc.util
 
-import java.util.*
+import java.security.SecureRandom
 
 /**
  * Created by kirakishou on 7/11/2017.
  */
 object GenerateUtil {
-    val alphabet = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_!@#$%^&*()"
-    val random = Random(Date().time)
+    val alphabetWithSpecialSymbols = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_!@#$%^&*()"
+    val alphabetWithoutSpecialSymbols = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    val random = SecureRandom()
 
-    fun generateRandomString(len: Int): String {
+    fun generateRandomString(len: Int, alphabet: String): String {
         val bytes = ByteArray(len)
         random.nextBytes(bytes)
 
@@ -24,6 +25,10 @@ object GenerateUtil {
     }
 
     fun generateSessionId(): String {
-        return generateRandomString(16)
+        return generateRandomString(16, alphabetWithSpecialSymbols)
+    }
+
+    fun generateImageName(): String {
+        return generateRandomString(64, alphabetWithoutSpecialSymbols)
     }
 }

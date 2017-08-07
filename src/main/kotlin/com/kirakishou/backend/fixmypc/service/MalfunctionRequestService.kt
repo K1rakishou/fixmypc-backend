@@ -11,5 +11,5 @@ interface MalfunctionRequestService {
         class RequestSizeExceeded: Result
     }
 
-    fun handleNewMalfunctionRequest(uploadingFiles: Array<MultipartFile>, request: MalfunctionRequest): Result
+    fun handleNewMalfunctionRequest(uploadingFiles: Array<MultipartFile>, imagesType: Int, request: MalfunctionRequest): Result
 }

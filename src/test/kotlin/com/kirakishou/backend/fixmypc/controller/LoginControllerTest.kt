@@ -9,7 +9,7 @@ import com.kirakishou.backend.fixmypc.model.net.request.LoginRequest
 import com.kirakishou.backend.fixmypc.model.repository.postgresql.UserRepository
 import com.kirakishou.backend.fixmypc.model.repository.redis.UserCache
 import com.kirakishou.backend.fixmypc.service.LoginService
-import com.kirakishou.backend.fixmypc.service.SessionIdGenerator
+import com.kirakishou.backend.fixmypc.service.Generator
 import org.hamcrest.Matchers
 import org.junit.Before
 import org.junit.Test
@@ -55,7 +55,7 @@ class LoginControllerTest {
     lateinit var usersCache: UserCache
 
     @Mock
-    lateinit var sessionGenerator: SessionIdGenerator
+    lateinit var generator: Generator
 
     @Mock
     lateinit var userRepo: UserRepository
@@ -81,7 +81,7 @@ class LoginControllerTest {
         Mockito.`when`(service.doLogin(GOOD_LOGIN, GOOD_PASSWORD)).thenReturn(LoginService.Result.Ok(SESSION_ID))
         Mockito.`when`(service.doLogin(BAD_LOGIN, BAD_PASSWORD)).thenReturn(LoginService.Result.WrongLoginOrPassword(BAD_LOGIN))
         Mockito.`when`(usersCache.get(Mockito.anyString())).thenReturn(Optional.ofNullable(null))
-        Mockito.`when`(sessionGenerator.generateSessionId()).thenReturn(SESSION_ID)
+        Mockito.`when`(generator.generateSessionId()).thenReturn(SESSION_ID)
         Mockito.`when`(userRepo.findByLogin(GOOD_LOGIN)).thenReturn(Optional.of(TEST_USER))
     }
 

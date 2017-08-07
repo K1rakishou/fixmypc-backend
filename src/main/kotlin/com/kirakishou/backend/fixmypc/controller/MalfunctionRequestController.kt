@@ -25,11 +25,12 @@ class MalfunctionRequestController {
             path = arrayOf(Constant.Paths.MALFUNCTION_REQUEST_CONTROLLER_PATH),
             method = arrayOf(RequestMethod.POST))
     fun malfunctionRequest(@RequestPart("photos") uploadingFiles: Array<MultipartFile>,
-                           @RequestPart("request") request: MalfunctionRequest): Single<ResponseEntity<MalfunctionResponse>> {
+                           @RequestPart("request") request: MalfunctionRequest,
+                           @RequestPart("images_type") imagesType: Int): Single<ResponseEntity<MalfunctionResponse>> {
 
         return Single.just(uploadingFiles)
                 .map { files ->
-                    val result = malfunctionRequestService.handleNewMalfunctionRequest(files, request)
+                    val result = malfunctionRequestService.handleNewMalfunctionRequest(files, imagesType, request)
 
                     when (result) {
                         is MalfunctionRequestService.Result.Ok -> {

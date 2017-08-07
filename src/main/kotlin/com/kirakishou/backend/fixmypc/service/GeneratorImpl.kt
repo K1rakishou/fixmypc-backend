@@ -8,8 +8,13 @@ import org.springframework.stereotype.Component
  */
 
 @Component
-class SessionIdGeneratorImpl : SessionIdGenerator {
+class GeneratorImpl : Generator {
+
     override fun generateSessionId(): String {
         return GenerateUtil.generateSessionId()
+    }
+
+    override fun generateImageName(): String {
+        return GenerateUtil.generateImageName()
     }
 }

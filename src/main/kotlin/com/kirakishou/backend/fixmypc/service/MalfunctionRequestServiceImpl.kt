@@ -25,7 +25,8 @@ class MalfunctionRequestServiceImpl : MalfunctionRequestService {
     @Autowired
     lateinit var forwardImagesServer: ForwardImagesService
 
-    override fun handleNewMalfunctionRequest(uploadingFiles: Array<MultipartFile>, request: MalfunctionRequest): MalfunctionRequestService.Result {
+    override fun handleNewMalfunctionRequest(uploadingFiles: Array<MultipartFile>, imagesType: Int,
+                                             request: MalfunctionRequest): MalfunctionRequestService.Result {
         var totalSize = 0L
         val imageInfoList = hashMapOf<Int, ArrayList<ImageInfo>>()
 
@@ -50,7 +51,7 @@ class MalfunctionRequestServiceImpl : MalfunctionRequestService {
             return MalfunctionRequestService.Result.RequestSizeExceeded()
         }
 
-        forwardImagesServer.forwardImages(imageInfoList)
+        forwardImagesServer.forwardImages(imageInfoList, imagesType)
         return MalfunctionRequestService.Result.Ok()
     }
 }

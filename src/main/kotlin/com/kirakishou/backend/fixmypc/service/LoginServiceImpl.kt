@@ -16,7 +16,7 @@ class LoginServiceImpl: LoginService {
     lateinit var userRepo: UserRepository
 
     @Autowired
-    lateinit var sessionIdGenerator: SessionIdGenerator
+    lateinit var generator: Generator
 
     @Autowired
     lateinit var userCache: UserCache
@@ -43,7 +43,7 @@ class LoginServiceImpl: LoginService {
             return LoginService.Result.WrongLoginOrPassword(login)
         }
 
-        val sessionId = sessionIdGenerator.generateSessionId()
+        val sessionId = generator.generateSessionId()
 
         newUser.sessionId = sessionId
         userCache.save(login, newUser)
