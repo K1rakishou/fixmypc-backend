@@ -1,6 +1,7 @@
 package com.kirakishou.backend.fixmypc.config
 
 import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.Constant
 import com.kirakishou.backend.fixmypc.model.User
 import com.zaxxer.hikari.HikariDataSource
@@ -10,9 +11,7 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.data.redis.cache.RedisCacheManager
 import org.springframework.data.redis.connection.RedisConnectionFactory
 import org.springframework.data.redis.core.RedisTemplate
-import org.springframework.http.client.ClientHttpRequestFactory
-import org.springframework.http.client.SimpleClientHttpRequestFactory
-import org.springframework.web.client.RestTemplate
+import org.springframework.web.client.AsyncRestTemplate
 import javax.sql.DataSource
 
 
@@ -55,20 +54,15 @@ open class AppConfig {
         return dataSource
     }
 
+
     @Bean
-    fun clientHttpRequestFactory(): ClientHttpRequestFactory {
-        val clientHttpRequestFactory = SimpleClientHttpRequestFactory()
-        clientHttpRequestFactory.setConnectTimeout(10000)
-        clientHttpRequestFactory.setReadTimeout(10000)
-        clientHttpRequestFactory.setBufferRequestBody(false)
-        return clientHttpRequestFactory
+    fun restTemplate(): AsyncRestTemplate {
+        val restTemplate = AsyncRestTemplate()
+        return restTemplate
     }
 
     @Bean
-    fun restTemplate(): RestTemplate {
-        val restTemplate = RestTemplate()
-        restTemplate.requestFactory = clientHttpRequestFactory()
-
-        return restTemplate
+    fun provideFileLog(): FileLog {
+        return FileLog()
     }
 }

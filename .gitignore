@@ -47,3 +47,4 @@ nbdist/
 hs_err_pid*
 
 .mvn/
+logs

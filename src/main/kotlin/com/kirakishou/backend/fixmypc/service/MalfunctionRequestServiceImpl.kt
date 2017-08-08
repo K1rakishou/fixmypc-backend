@@ -23,7 +23,7 @@ class MalfunctionRequestServiceImpl : MalfunctionRequestService {
     val serverId = AtomicInteger(0)
 
     @Autowired
-    lateinit var forwardImagesServer: ForwardImagesService
+    lateinit var forwardImagesService: ForwardImagesService
 
     override fun handleNewMalfunctionRequest(uploadingFiles: Array<MultipartFile>, imagesType: Int,
                                              request: MalfunctionRequest): MalfunctionRequestService.Result {
@@ -36,22 +36,16 @@ class MalfunctionRequestServiceImpl : MalfunctionRequestService {
             }
 
             totalSize += filePart.size
-            System.out.println("fileSize: ${filePart.size}")
-
             val id = serverId.getAndIncrement() % fileServers.size
-            System.out.println("id: $id, serverId: ${serverId.get()}")
 
             imageInfoList.putIfAbsent(id, ArrayList())
             imageInfoList[id]!!.add(ImageInfo(id, filePart))
         }
 
-        System.out.println("totalSize: $totalSize")
-
         if (totalSize > maxRequestSize) {
             return MalfunctionRequestService.Result.RequestSizeExceeded()
         }
 
-        forwardImagesServer.forwardImages(imageInfoList, imagesType)
-        return MalfunctionRequestService.Result.Ok()
+        return forwardImagesService.forwardImages(imageInfoList, imagesType)
     }
 }

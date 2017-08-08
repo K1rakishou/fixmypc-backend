@@ -9,6 +9,8 @@ interface MalfunctionRequestService {
         class Ok: Result
         class FileSizeExceeded: Result
         class RequestSizeExceeded: Result
+        class CouldNotStoreOneOreMoreImages: Result
+        class UnknownError: Result
     }
 
     fun handleNewMalfunctionRequest(uploadingFiles: Array<MultipartFile>, imagesType: Int, request: MalfunctionRequest): Result
