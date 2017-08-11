@@ -66,9 +66,4 @@ open class AppConfig {
     fun provideFileLog(): FileLog {
         return FileLog()
     }
-
-    @Bean
-    fun provideFileServersManager(): FileServersManager {
-        return FileServersManagerImpl()
-    }
 }

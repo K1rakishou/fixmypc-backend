@@ -3,7 +3,7 @@ package com.kirakishou.backend.fixmypc.util
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
 
-object Util {
+object ServerUtil {
     private val MD5 = "MD5"
 
     fun md5(data: ByteArray): ByteArray {

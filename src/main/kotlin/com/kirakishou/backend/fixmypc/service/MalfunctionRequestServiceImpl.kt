@@ -6,7 +6,7 @@ import com.kirakishou.backend.fixmypc.model.FileServerAnswer
 import com.kirakishou.backend.fixmypc.model.FileServerErrorCode
 import com.kirakishou.backend.fixmypc.model.FileServerInfo
 import com.kirakishou.backend.fixmypc.model.net.request.MalfunctionRequest
-import com.kirakishou.backend.fixmypc.util.Util
+import com.kirakishou.backend.fixmypc.util.ServerUtil
 import io.reactivex.Flowable
 import io.reactivex.Single
 import org.springframework.beans.factory.annotation.Autowired
@@ -15,7 +15,6 @@ import org.springframework.stereotype.Component
 import org.springframework.web.multipart.MultipartFile
 import java.io.File
 import java.io.FileOutputStream
-import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.annotation.PostConstruct
 
@@ -46,6 +45,8 @@ class MalfunctionRequestServiceImpl : MalfunctionRequestService {
     @Autowired
     lateinit var sendRequestService: SendRequestService
 
+    private val FILE_SERVER_REQUEST_TIMEOUT: Long = 7L
+
     @PostConstruct
     fun init() {
         val fileServerInfoList = arrayListOf<FileServerInfo>()
@@ -60,11 +61,17 @@ class MalfunctionRequestServiceImpl : MalfunctionRequestService {
     override fun handleNewMalfunctionRequest(uploadingFiles: Array<MultipartFile>, imagesType: Int,
                                              request: MalfunctionRequest): Single<MalfunctionRequestService.Result> {
 
-        val result = checkFilesSizes(uploadingFiles)
-        if (result !is MalfunctionRequestService.Result.Ok) {
-            return Single.just(result)
+        val requestCheckResult = checkRequestCorrectness(request)
+        if (requestCheckResult !is MalfunctionRequestService.Result.Ok) {
+            return Single.just(requestCheckResult)
         }
 
+        val fileSizesCheckResult = checkFilesSizes(uploadingFiles)
+        if (fileSizesCheckResult !is MalfunctionRequestService.Result.Ok) {
+            return Single.just(fileSizesCheckResult)
+        }
+
+        //if we have no alive file servers we can't store photos
         if (!fileServerManager.isAtLeastOneServerAlive()) {
             return Single.just(MalfunctionRequestService.Result.AllFileServersAreNotWorking())
         }
@@ -72,7 +79,10 @@ class MalfunctionRequestServiceImpl : MalfunctionRequestService {
         val tempFiles = ArrayList<String>()
         val responseList = arrayListOf<Flowable<FileServerAnswer>>()
 
+        //for every multipartfile
         for (uploadingFile in uploadingFiles) {
+
+            //copy it into the temp folder and remember it, so we can delete all of them later
             val tempFile = "${tempImgsPath}${uploadingFile.originalFilename}"
             tempFiles.add(tempFile)
 
@@ -82,27 +92,44 @@ class MalfunctionRequestServiceImpl : MalfunctionRequestService {
                 it.write(uploadingFile.bytes)
             }
 
-            val server = fileServerManager.getWorkingServerOrNothing()
-            if (!server.isPresent()) {
+            //get file server (round robin)
+            val serverFickle = fileServerManager.getWorkingServerOrNothing()
+            if (!serverFickle.isPresent()) {
                 return Single.just(MalfunctionRequestService.Result.AllFileServersAreNotWorking())
             }
 
-            responseList += sendRequestService.sendImageRequest(server.get().serverId, server.get().host, tempFile,
-                    uploadingFile.originalFilename, 0, 0L, FileServerAnswer::class.java)
-                    //max request waiting time 5 seconds
-                    .timeout(5, TimeUnit.SECONDS)
-                    .doOnError({ error ->
-                        log.e(error)
-                        deleteTempFiles(tempFiles)
+            val server = serverFickle.get()
 
-                        //no response after five seconds means that server is probably dead
-                        server.ifPresent {
-                            it.isWorking = false
-                            it.timeOfDeath = Util.getTimeFast()
+            //forward photo to the server
+            responseList += sendRequestService.sendImageRequest(server.serverId, server.host, tempFile,
+                    uploadingFile.originalFilename, 0, 0L, FileServerAnswer::class.java)
+                    //max request waiting time
+                    .timeout(FILE_SERVER_REQUEST_TIMEOUT, TimeUnit.SECONDS)
+                    //if timeout has happened that means server is dead.
+                    //delete temp file and mark the server as dead
+                    .onErrorResumeNext({ error: Throwable ->
+                        log.e(error)
+
+                        deleteTempFile(tempFile)
+                        fileServerManager.at(server.serverId).isWorking = false
+                        fileServerManager.at(server.serverId).timeOfDeath = ServerUtil.getTimeFast()
+
+                        return@onErrorResumeNext Flowable.just(FileServerAnswer(FileServerErrorCode.REQUEST_TIMEOUT.value, emptyList()))
+                    })
+                    //check errCode to see if server returned NOT_ENOUGH_DISK_SPACE
+                    //if so - mark server as run out of disk space
+                    .doOnNext({ next ->
+                        val errCode = FileServerErrorCode.from(next.errorCode)
+                        if (errCode != FileServerErrorCode.OK) {
+                            if (errCode == FileServerErrorCode.NOT_ENOUGH_DISK_SPACE) {
+                                fileServerManager.at(server.serverId).isDiskSpaceOk = false
+                            }
                         }
                     })
+
         }
 
+        //merge all of the responses into a list
         return Flowable.merge(responseList)
                 .toList()
                 .map { fileServerResponses ->
@@ -113,8 +140,9 @@ class MalfunctionRequestServiceImpl : MalfunctionRequestService {
 
                         when (FileServerErrorCode.from(errorCode)) {
                             FileServerErrorCode.COULD_NOT_STORE_ONE_OR_MORE_IMAGE -> TODO()
+                            FileServerErrorCode.REQUEST_TIMEOUT -> TODO()
                             FileServerErrorCode.UNKNOWN_ERROR -> MalfunctionRequestService.Result.UnknownError()
-                            FileServerErrorCode.NOT_ENOUGH_DISK_SPACE -> TODO()
+                            else -> log.e("Bad errorCode: $errorCode")
                         }
                     }
 
@@ -125,6 +153,17 @@ class MalfunctionRequestServiceImpl : MalfunctionRequestService {
     private fun deleteTempFiles(tempFileNames: ArrayList<String>) {
         for (fileName in tempFileNames) {
             val f = File(fileName)
+
+            if (f.exists()) {
+                f.delete()
+            }
+        }
+    }
+
+    private fun deleteTempFile(tempFile: String) {
+        val f = File(tempFile)
+
+        if (f.exists()) {
             f.delete()
         }
     }
@@ -144,6 +183,10 @@ class MalfunctionRequestServiceImpl : MalfunctionRequestService {
             return MalfunctionRequestService.Result.RequestSizeExceeded()
         }
 
+        return MalfunctionRequestService.Result.Ok()
+    }
+
+    private fun checkRequestCorrectness(request: MalfunctionRequest): MalfunctionRequestService.Result {
         return MalfunctionRequestService.Result.Ok()
     }
 }
