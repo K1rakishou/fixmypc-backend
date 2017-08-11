@@ -1,9 +1,8 @@
 package com.kirakishou.backend.fixmypc.service
 
-import io.reactivex.Observable
-import org.springframework.http.HttpEntity
+import io.reactivex.Flowable
 
-interface SendRequestService<T> {
-    fun sendPostRequest(url: T, request: HttpEntity<*>, responseType: Class<T>)
-    fun getObservable(): Observable<T>
+interface SendRequestService {
+    fun <T> sendImageRequest(serverId: Int, host: String, tempFile: String, originalFileName: String,
+                             imageType: Int, ownerId: Long, responseType: Class<T>): Flowable<T>
 }

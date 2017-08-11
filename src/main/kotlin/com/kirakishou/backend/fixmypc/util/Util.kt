@@ -36,4 +36,8 @@ object Util {
 
         return hexString.toString()
     }
+
+    fun getTimeFast(): Long {
+        return System.currentTimeMillis()
+    }
 }

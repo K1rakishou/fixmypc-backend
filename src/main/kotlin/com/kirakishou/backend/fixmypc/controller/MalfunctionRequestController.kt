@@ -1,5 +1,6 @@
 package com.kirakishou.backend.fixmypc.controller
 
+import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.Constant
 import com.kirakishou.backend.fixmypc.model.net.ServerErrorCode
 import com.kirakishou.backend.fixmypc.model.net.request.MalfunctionRequest
@@ -21,6 +22,9 @@ class MalfunctionRequestController {
     @Autowired
     lateinit var malfunctionRequestService: MalfunctionRequestService
 
+    @Autowired
+    lateinit var log: FileLog
+
     @RequestMapping(
             path = arrayOf(Constant.Paths.MALFUNCTION_REQUEST_CONTROLLER_PATH),
             method = arrayOf(RequestMethod.POST))
@@ -28,21 +32,31 @@ class MalfunctionRequestController {
                            @RequestPart("request") request: MalfunctionRequest,
                            @RequestPart("images_type") imagesType: Int): Single<ResponseEntity<MalfunctionResponse>> {
 
-        return Single.just(uploadingFiles)
-                .map { files ->
-                    val result = malfunctionRequestService.handleNewMalfunctionRequest(files, imagesType, request)
-
+        return malfunctionRequestService.handleNewMalfunctionRequest(uploadingFiles, imagesType, request)
+                .map { result ->
                     when (result) {
                         is MalfunctionRequestService.Result.Ok -> {
-
+                            return@map ResponseEntity.ok(MalfunctionResponse(ServerErrorCode.SEC_OK.value))
                         }
 
-                        else -> {
-
+                        is MalfunctionRequestService.Result.FileSizeExceeded -> {
+                            return@map ResponseEntity.ok(MalfunctionResponse(ServerErrorCode.SEC_OK.value))
                         }
+
+                        is MalfunctionRequestService.Result.RequestSizeExceeded -> {
+                            return@map ResponseEntity.ok(MalfunctionResponse(ServerErrorCode.SEC_OK.value))
+                        }
+
+                        is MalfunctionRequestService.Result.CouldNotStoreOneOreMoreImages -> {
+                            return@map ResponseEntity.ok(MalfunctionResponse(ServerErrorCode.SEC_OK.value))
+                        }
+
+                        is MalfunctionRequestService.Result.UnknownError -> {
+                            return@map ResponseEntity.ok(MalfunctionResponse(ServerErrorCode.SEC_OK.value))
+                        }
+
+                        else -> throw IllegalArgumentException("Unknown result type")
                     }
-
-                    return@map ResponseEntity.ok(MalfunctionResponse(ServerErrorCode.SEC_OK.value))
                 }
     }
 }

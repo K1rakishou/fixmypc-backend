@@ -4,6 +4,8 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.Constant
 import com.kirakishou.backend.fixmypc.model.User
+import com.kirakishou.backend.fixmypc.manager.FileServersManager
+import com.kirakishou.backend.fixmypc.manager.FileServersManagerImpl
 import com.zaxxer.hikari.HikariDataSource
 import org.springframework.cache.CacheManager
 import org.springframework.context.annotation.Bean
@@ -54,7 +56,6 @@ open class AppConfig {
         return dataSource
     }
 
-
     @Bean
     fun restTemplate(): AsyncRestTemplate {
         val restTemplate = AsyncRestTemplate()
@@ -64,5 +65,10 @@ open class AppConfig {
     @Bean
     fun provideFileLog(): FileLog {
         return FileLog()
+    }
+
+    @Bean
+    fun provideFileServersManager(): FileServersManager {
+        return FileServersManagerImpl()
     }
 }

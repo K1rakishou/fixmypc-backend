@@ -3,7 +3,8 @@ package com.kirakishou.backend.fixmypc.model
 enum class FileServerErrorCode(val value: Int) {
     OK(0),
     COULD_NOT_STORE_ONE_OR_MORE_IMAGE(1),
-    UNKNOWN_ERROR(2);
+    UNKNOWN_ERROR(2),
+    NOT_ENOUGH_DISK_SPACE(3);
 
     companion object {
         fun from(value: Int): FileServerErrorCode {

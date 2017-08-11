@@ -25,10 +25,10 @@ object GenerateUtil {
     }
 
     fun generateSessionId(): String {
-        return generateRandomString(16, alphabetWithSpecialSymbols)
+        return generateRandomString(32, alphabetWithSpecialSymbols)
     }
 
     fun generateImageName(): String {
-        return generateRandomString(64, alphabetWithoutSpecialSymbols)
+        return generateRandomString(128, alphabetWithoutSpecialSymbols)
     }
 }
