@@ -13,8 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import org.springframework.web.multipart.MultipartFile
-import java.io.File
-import java.io.FileOutputStream
 import java.util.concurrent.TimeUnit
 import javax.annotation.PostConstruct
 
@@ -33,9 +31,6 @@ class MalfunctionRequestServiceImpl : MalfunctionRequestService {
     @Value("\${fixmypc.backend.fileserver-ping-interval}")
     val pingInterval: Long = 5
 
-    @Value("\${fixmypc.backend.images.temp-path}")
-    lateinit var tempImgsPath: String
-
     @Autowired
     lateinit var log: FileLog
 
@@ -43,7 +38,10 @@ class MalfunctionRequestServiceImpl : MalfunctionRequestService {
     lateinit var fileServerManager: FileServersManager
 
     @Autowired
-    lateinit var sendRequestService: SendRequestService
+    lateinit var distributedImageServerService: DistributedImageServerService
+
+    @Autowired
+    lateinit var tempFileService: TempFilesService
 
     private val FILE_SERVER_REQUEST_TIMEOUT: Long = 7L
 
@@ -76,23 +74,14 @@ class MalfunctionRequestServiceImpl : MalfunctionRequestService {
             return Single.just(MalfunctionRequestService.Result.AllFileServersAreNotWorking())
         }
 
-        val tempFiles = ArrayList<String>()
         val responseList = arrayListOf<Flowable<FileServerAnswer>>()
 
         //for every multipartfile
         for (uploadingFile in uploadingFiles) {
+            //copy it into the temp folder
+            val tempFile = tempFileService.fromMultipartFile(uploadingFile)
 
-            //copy it into the temp folder and remember it, so we can delete all of them later
-            val tempFile = "${tempImgsPath}${uploadingFile.originalFilename}"
-            tempFiles.add(tempFile)
-
-            val fo = FileOutputStream(tempFile)
-
-            fo.use {
-                it.write(uploadingFile.bytes)
-            }
-
-            //get file server (round robin)
+            //get a file server where the file will be stored (round robin)
             val serverFickle = fileServerManager.getWorkingServerOrNothing()
             if (!serverFickle.isPresent()) {
                 return Single.just(MalfunctionRequestService.Result.AllFileServersAreNotWorking())
@@ -100,8 +89,8 @@ class MalfunctionRequestServiceImpl : MalfunctionRequestService {
 
             val server = serverFickle.get()
 
-            //forward photo to the server
-            responseList += sendRequestService.sendImageRequest(server.serverId, server.host, tempFile,
+            //store photo on the server
+            responseList += distributedImageServerService.storeImage(server.serverId, server.host, tempFile,
                     uploadingFile.originalFilename, 0, 0L, FileServerAnswer::class.java)
                     //max request waiting time
                     .timeout(FILE_SERVER_REQUEST_TIMEOUT, TimeUnit.SECONDS)
@@ -110,7 +99,7 @@ class MalfunctionRequestServiceImpl : MalfunctionRequestService {
                     .onErrorResumeNext({ error: Throwable ->
                         log.e(error)
 
-                        deleteTempFile(tempFile)
+                        ServerUtil.deleteFile(tempFile)
                         fileServerManager.at(server.serverId).isWorking = false
                         fileServerManager.at(server.serverId).timeOfDeath = ServerUtil.getTimeFast()
 
@@ -148,24 +137,6 @@ class MalfunctionRequestServiceImpl : MalfunctionRequestService {
 
                     return@map MalfunctionRequestService.Result.Ok()
                 }
-    }
-
-    private fun deleteTempFiles(tempFileNames: ArrayList<String>) {
-        for (fileName in tempFileNames) {
-            val f = File(fileName)
-
-            if (f.exists()) {
-                f.delete()
-            }
-        }
-    }
-
-    private fun deleteTempFile(tempFile: String) {
-        val f = File(tempFile)
-
-        if (f.exists()) {
-            f.delete()
-        }
     }
 
     private fun checkFilesSizes(uploadingFiles: Array<MultipartFile>): MalfunctionRequestService.Result {

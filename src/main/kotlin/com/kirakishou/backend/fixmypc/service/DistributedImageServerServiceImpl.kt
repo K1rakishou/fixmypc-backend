@@ -1,6 +1,6 @@
 package com.kirakishou.backend.fixmypc.service
 
-import com.kirakishou.backend.fixmypc.model.ForwardedImageInfo
+import com.kirakishou.backend.fixmypc.model.DistributedImage
 import io.reactivex.Flowable
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.io.FileSystemResource
@@ -15,7 +15,7 @@ import org.springframework.web.client.AsyncRestTemplate
 import javax.annotation.PostConstruct
 
 @Component
-class SendRequestServiceImpl : SendRequestService {
+class DistributedImageServerServiceImpl : DistributedImageServerService {
 
     @Autowired
     lateinit var restTemplate: AsyncRestTemplate
@@ -28,8 +28,8 @@ class SendRequestServiceImpl : SendRequestService {
         restTemplate.messageConverters.add(FormHttpMessageConverter())
     }
 
-    override fun <T> sendImageRequest(serverId: Int, host: String, tempFile: String, originalFileName: String, imageType: Int,
-                                      ownerId: Long, responseType: Class<T>): Flowable<T> {
+    override fun <T> storeImage(serverId: Int, host: String, tempFile: String, originalFileName: String, imageType: Int,
+                                ownerId: Long, responseType: Class<T>): Flowable<T> {
 
         val mvmap = LinkedMultiValueMap<String, Any>()
         mvmap.add("images", FileSystemResource(tempFile))
@@ -37,12 +37,12 @@ class SendRequestServiceImpl : SendRequestService {
         val generatedImageName = generator.generateImageName()
         val newImageName = "n${serverId}_i${generatedImageName}"
 
-        val fimageInfo = ForwardedImageInfo()
-        fimageInfo.imageOrigName.add(originalFileName)
-        fimageInfo.imageType.add(imageType)
-        fimageInfo.imageNewName.add(newImageName)
-        fimageInfo.ownerId.add(ownerId)
-        mvmap.add("images_info", fimageInfo)
+        val distImage = DistributedImage()
+        distImage.imageOrigName.add(originalFileName)
+        distImage.imageType.add(imageType)
+        distImage.imageNewName.add(newImageName)
+        distImage.ownerId.add(ownerId)
+        mvmap.add("images_info", distImage)
 
         val headers = HttpHeaders()
         headers.contentType = MediaType.MULTIPART_FORM_DATA

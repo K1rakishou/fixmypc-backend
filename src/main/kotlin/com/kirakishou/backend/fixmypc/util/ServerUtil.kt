@@ -1,5 +1,6 @@
 package com.kirakishou.backend.fixmypc.util
 
+import java.io.File
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
 
@@ -39,5 +40,23 @@ object ServerUtil {
 
     fun getTimeFast(): Long {
         return System.currentTimeMillis()
+    }
+
+    fun deleteFiles(files: ArrayList<String>) {
+        for (fileName in files) {
+            val f = File(fileName)
+
+            if (f.exists()) {
+                f.delete()
+            }
+        }
+    }
+
+    fun deleteFile(file: String) {
+        val f = File(file)
+
+        if (f.exists()) {
+            f.delete()
+        }
     }
 }
