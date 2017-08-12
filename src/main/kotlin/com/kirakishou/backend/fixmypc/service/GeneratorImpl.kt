@@ -1,6 +1,6 @@
 package com.kirakishou.backend.fixmypc.service
 
-import com.kirakishou.backend.fixmypc.util.GenerateUtil
+import com.kirakishou.backend.fixmypc.util.GenerateUtils
 import org.springframework.stereotype.Component
 
 /**
@@ -11,10 +11,10 @@ import org.springframework.stereotype.Component
 class GeneratorImpl : Generator {
 
     override fun generateSessionId(): String {
-        return GenerateUtil.generateSessionId()
+        return GenerateUtils.generateSessionId()
     }
 
     override fun generateImageName(): String {
-        return GenerateUtil.generateImageName()
+        return GenerateUtils.generateImageName()
     }
 }

@@ -4,4 +4,5 @@ import org.springframework.web.multipart.MultipartFile
 
 interface TempFilesService {
     fun fromMultipartFile(file: MultipartFile): String
+    fun deleteAllTempFiles()
 }

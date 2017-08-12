@@ -5,7 +5,7 @@ import java.security.SecureRandom
 /**
  * Created by kirakishou on 7/11/2017.
  */
-object GenerateUtil {
+object GenerateUtils {
     val alphabetWithSpecialSymbols = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_!@#$%^&*()"
     val alphabetWithoutSpecialSymbols = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
     val random = SecureRandom()

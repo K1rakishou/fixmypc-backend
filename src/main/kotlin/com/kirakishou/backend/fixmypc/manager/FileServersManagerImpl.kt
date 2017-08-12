@@ -1,9 +1,11 @@
 package com.kirakishou.backend.fixmypc.manager
 
 import com.kirakishou.backend.fixmypc.extension.lockAndRead
+import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.Fickle
 import com.kirakishou.backend.fixmypc.model.FileServerInfo
-import com.kirakishou.backend.fixmypc.util.ServerUtil
+import com.kirakishou.backend.fixmypc.util.ServerUtils
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
@@ -12,6 +14,10 @@ import java.util.concurrent.locks.ReentrantReadWriteLock
 
 @Component
 class FileServersManagerImpl : FileServersManager {
+
+    @Autowired
+    lateinit var log: FileLog
+
     private val lock = ReentrantReadWriteLock()
     private var fileServerInfoList = emptyList<FileServerInfo>()
     private var serverPingInterval = AtomicLong(0)
@@ -27,19 +33,37 @@ class FileServersManagerImpl : FileServersManager {
             fileServerInfoList[id]
         }
 
-        if (!fileServerInfo.isDiskSpaceOk) {
-            return false
+        //every N minutes mark the fileServerInfo as working again to see if it's got back
+        if (fileServerInfo.timeOfDeath - ServerUtils.getTimeFast() > serverPingInterval.get()) {
+            log.d("Restoring fileServer isWorking status to true")
+            fileServerInfo.isWorking = true
         }
 
-        //every N minutes mark the server as working again to see if it's got back
-        if (fileServerInfo.timeOfDeath - ServerUtil.getTimeFast() > serverPingInterval.get()) {
-            fileServerInfo.isWorking = true
+        if (!fileServerInfo.isDiskSpaceOk) {
+            log.d("The fileserver has no disk space")
+            return false
         }
 
         return true
     }
 
-    override fun getWorkingServerOrNothing(): Fickle<FileServerInfo> {
+    override fun getServers(count: Int): List<ServerWithId> {
+        val serversCount = lock.lockAndRead {
+            fileServerInfoList.size
+        }
+
+        val servers = arrayListOf<ServerWithId>()
+        val goodServers = fileServerInfoList.filter { it.isWorking && it.isDiskSpaceOk }
+
+        for (i in 0 until count) {
+            val id = serverId.getAndIncrement() % goodServers.size
+            servers.add(ServerWithId(id, goodServers[id]))
+        }
+
+        return servers
+    }
+
+    override fun getServer(): Fickle<ServerWithId> {
         val serversCount = lock.lockAndRead {
             fileServerInfoList.size
         }
@@ -49,15 +73,14 @@ class FileServersManagerImpl : FileServersManager {
 
             if (isServerOk(id)) {
                 val serverInfo = lock.lockAndRead {
-                    fileServerInfoList[i]
+                    fileServerInfoList[id]
                 }
 
-                serverInfo.serverId = id
-
-                return Fickle.of(serverInfo)
+                return Fickle.of(ServerWithId(id, serverInfo))
             }
         }
 
+        log.d("No working fileservers were found")
         return Fickle.empty()
     }
 
@@ -90,9 +113,20 @@ class FileServersManagerImpl : FileServersManager {
         return false
     }
 
-    override fun at(i: Int): FileServerInfo {
-        return lock.lockAndRead {
-            fileServerInfoList[i]
+    override fun notWorking(i: Int) {
+        lock.lockAndRead {
+            fileServerInfoList[i].isWorking = false
+            fileServerInfoList[i].timeOfDeath = ServerUtils.getTimeFast()
         }
     }
+
+    override fun noDiskSpace(i: Int) {
+        lock.lockAndRead {
+            fileServerInfoList[i].isDiskSpaceOk = false
+            fileServerInfoList[i].timeOfDeath = ServerUtils.getTimeFast()
+        }
+    }
+
+    data class ServerWithId(val id: Int,
+                            var fileServerInfo: FileServerInfo)
 }

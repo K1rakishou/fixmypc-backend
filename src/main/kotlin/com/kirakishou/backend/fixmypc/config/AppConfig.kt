@@ -4,9 +4,8 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.Constant
 import com.kirakishou.backend.fixmypc.model.User
-import com.kirakishou.backend.fixmypc.manager.FileServersManager
-import com.kirakishou.backend.fixmypc.manager.FileServersManagerImpl
 import com.zaxxer.hikari.HikariDataSource
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.cache.CacheManager
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -65,5 +64,11 @@ open class AppConfig {
     @Bean
     fun provideFileLog(): FileLog {
         return FileLog()
+    }
+
+    @Bean
+    @Qualifier("processors_count")
+    fun provideProcessorsCount(): Int {
+        return Runtime.getRuntime().availableProcessors()
     }
 }

@@ -6,8 +6,10 @@ import com.kirakishou.backend.fixmypc.model.FileServerInfo
 interface FileServersManager {
     fun init(servers: List<FileServerInfo>, serverPingInterval: Long)
     fun isServerOk(id: Int): Boolean
-    fun getWorkingServerOrNothing(): Fickle<FileServerInfo>
+    fun getServers(count: Int): List<FileServersManagerImpl.ServerWithId>
+    fun getServer(): Fickle<FileServersManagerImpl.ServerWithId>
     fun getAliveServersCount(): Int
     fun isAtLeastOneServerAlive(): Boolean
-    fun at(i: Int): FileServerInfo
+    fun notWorking(i: Int)
+    fun noDiskSpace(i: Int)
 }

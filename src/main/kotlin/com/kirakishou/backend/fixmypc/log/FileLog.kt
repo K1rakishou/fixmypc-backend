@@ -44,7 +44,7 @@ class FileLog {
         return Date().time
     }
 
-    fun longToFormatedTime(time: Long, format: String): String {
+    fun longToFormattedTime(time: Long, format: String): String {
         val dateFormat = SimpleDateFormat(format)
         val date = Date()
         date.time = time
@@ -52,7 +52,7 @@ class FileLog {
     }
 
     fun getFormattedTime(): String {
-        return longToFormatedTime(now(), defaultFormat)
+        return longToFormattedTime(now(), defaultFormat)
     }
 
     private fun dumpLogToFile() {

@@ -5,7 +5,7 @@ import com.kirakishou.backend.fixmypc.model.Constant
 /**
  * Created by kirakishou on 7/16/2017.
  */
-object TextUtil {
+object TextUtils {
 
     fun checkLoginCorrect(login: String): Boolean {
         if (!login.contains('@')) {

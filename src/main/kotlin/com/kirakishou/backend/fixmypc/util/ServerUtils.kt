@@ -4,7 +4,7 @@ import java.io.File
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
 
-object ServerUtil {
+object ServerUtils {
     private val MD5 = "MD5"
 
     fun md5(data: ByteArray): ByteArray {
@@ -42,7 +42,7 @@ object ServerUtil {
         return System.currentTimeMillis()
     }
 
-    fun deleteFiles(files: ArrayList<String>) {
+    /*fun deleteFiles(files: ArrayList<String>) {
         for (fileName in files) {
             val f = File(fileName)
 
@@ -57,6 +57,16 @@ object ServerUtil {
 
         if (f.exists()) {
             f.delete()
+        }
+    }*/
+
+    fun purgeDirectory(dir: File) {
+        for (file in dir.listFiles()!!) {
+            if (file.isDirectory) {
+                purgeDirectory(file)
+            }
+
+            file.delete()
         }
     }
 }
