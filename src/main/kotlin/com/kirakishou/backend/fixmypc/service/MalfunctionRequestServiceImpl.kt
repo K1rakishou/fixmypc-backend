@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import org.springframework.web.multipart.MultipartFile
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.TimeoutException
 import javax.annotation.PostConstruct
 
 @Component
@@ -97,13 +98,17 @@ class MalfunctionRequestServiceImpl : MalfunctionRequestService {
                     //if timeout has happened that means server is dead.
                     //delete temp file and mark the server as dead
                     .onErrorResumeNext({ error: Throwable ->
-                        log.e(error)
+                        if (error is TimeoutException) {
+                            log.e(error)
 
-                        ServerUtil.deleteFile(tempFile)
-                        fileServerManager.at(server.serverId).isWorking = false
-                        fileServerManager.at(server.serverId).timeOfDeath = ServerUtil.getTimeFast()
+                            ServerUtil.deleteFile(tempFile)
+                            fileServerManager.at(server.serverId).isWorking = false
+                            fileServerManager.at(server.serverId).timeOfDeath = ServerUtil.getTimeFast()
 
-                        return@onErrorResumeNext Flowable.just(FileServerAnswer(FileServerErrorCode.REQUEST_TIMEOUT.value, emptyList()))
+                            return@onErrorResumeNext Flowable.just(FileServerAnswer(FileServerErrorCode.REQUEST_TIMEOUT.value, emptyList()))
+                        } else {
+                            return@onErrorResumeNext Flowable.just(FileServerAnswer(FileServerErrorCode.UNKNOWN_ERROR.value, emptyList()))
+                        }
                     })
                     //check errCode to see if server returned NOT_ENOUGH_DISK_SPACE
                     //if so - mark server as run out of disk space
@@ -115,7 +120,6 @@ class MalfunctionRequestServiceImpl : MalfunctionRequestService {
                             }
                         }
                     })
-
         }
 
         //merge all of the responses into a list

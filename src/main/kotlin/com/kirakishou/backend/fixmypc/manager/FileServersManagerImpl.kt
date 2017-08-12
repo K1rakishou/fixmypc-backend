@@ -19,7 +19,7 @@ class FileServersManagerImpl : FileServersManager {
 
     override fun init(servers: List<FileServerInfo>, serverPingInterval: Long) {
         this.fileServerInfoList = servers
-        this.serverPingInterval.set(TimeUnit.SECONDS.toMillis(serverPingInterval))
+        this.serverPingInterval.set(TimeUnit.MINUTES.toMillis(serverPingInterval))
     }
 
     override fun isServerOk(id: Int): Boolean {
