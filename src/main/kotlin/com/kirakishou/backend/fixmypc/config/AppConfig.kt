@@ -1,7 +1,7 @@
 package com.kirakishou.backend.fixmypc.config
 
 import com.fasterxml.jackson.module.kotlin.KotlinModule
-import com.kirakishou.backend.fixmypc.log.FileLog
+import com.kirakishou.backend.fixmypc.log.FileLogImpl
 import com.kirakishou.backend.fixmypc.model.Constant
 import com.kirakishou.backend.fixmypc.model.User
 import com.zaxxer.hikari.HikariDataSource
@@ -62,8 +62,8 @@ open class AppConfig {
     }
 
     @Bean
-    fun provideFileLog(): FileLog {
-        return FileLog()
+    fun provideFileLog(): FileLogImpl {
+        return FileLogImpl()
     }
 
     @Bean

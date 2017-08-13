@@ -1,13 +1,13 @@
 package com.kirakishou.backend.fixmypc.manager
 
-import com.kirakishou.backend.fixmypc.extension.lockAndRead
+import com.kirakishou.backend.fixmypc.extension.lockRead
+import com.kirakishou.backend.fixmypc.extension.lockReadReturn
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.Fickle
 import com.kirakishou.backend.fixmypc.model.FileServerInfo
 import com.kirakishou.backend.fixmypc.util.ServerUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
-import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.locks.ReentrantReadWriteLock
@@ -16,27 +16,33 @@ import java.util.concurrent.locks.ReentrantReadWriteLock
 class FileServersManagerImpl : FileServersManager {
 
     @Autowired
-    lateinit var log: FileLog
+    private lateinit var log: FileLog
 
     private val lock = ReentrantReadWriteLock()
     private var fileServerInfoList = emptyList<FileServerInfo>()
     private var serverPingInterval = AtomicLong(0)
     private val serverId = AtomicInteger(0)
 
-    override fun init(servers: List<FileServerInfo>, serverPingInterval: Long) {
+    override fun init(servers: List<FileServerInfo>, serverPingIntervalMsecs: Long) {
         this.fileServerInfoList = servers
-        this.serverPingInterval.set(TimeUnit.MINUTES.toMillis(serverPingInterval))
+        this.serverPingInterval.set(serverPingIntervalMsecs)
     }
 
-    override fun isServerOk(id: Int): Boolean {
-        val fileServerInfo = lock.lockAndRead {
+    private fun isServerOk(id: Int): Boolean {
+        val fileServerInfo = lock.lockReadReturn {
             fileServerInfoList[id]
         }
 
         //every N minutes mark the fileServerInfo as working again to see if it's got back
-        if (fileServerInfo.timeOfDeath - ServerUtils.getTimeFast() > serverPingInterval.get()) {
+        val timeInterval = serverPingInterval.get()
+
+        if (timeInterval != -1L && (ServerUtils.getTimeFast() - fileServerInfo.timeOfDeath > timeInterval)) {
             log.d("Restoring fileServer isWorking status to true")
             fileServerInfo.isWorking = true
+        } else {
+            if (!fileServerInfo.isWorking) {
+                return false
+            }
         }
 
         if (!fileServerInfo.isDiskSpaceOk) {
@@ -48,23 +54,39 @@ class FileServersManagerImpl : FileServersManager {
     }
 
     override fun getServers(count: Int): List<ServerWithId> {
-        val serversCount = lock.lockAndRead {
+        val servers = arrayListOf<ServerWithId>()
+        val goodServers = arrayListOf<Int>()
+
+        val serversCount = lock.lockReadReturn {
             fileServerInfoList.size
         }
 
-        val servers = arrayListOf<ServerWithId>()
-        val goodServers = fileServerInfoList.filter { it.isWorking && it.isDiskSpaceOk }
+        for (i in 0 until serversCount) {
+            if (isServerOk(i)) {
+                goodServers.add(i)
+            }
+        }
+
+        if (goodServers.isEmpty()) {
+            return emptyList()
+        }
 
         for (i in 0 until count) {
-            val id = serverId.getAndIncrement() % goodServers.size
-            servers.add(ServerWithId(id, goodServers[id]))
+            val goodServerIndex = serverId.getAndIncrement() % goodServers.size
+            val id = goodServers[goodServerIndex]
+
+            val serverInfo = lock.lockReadReturn {
+                fileServerInfoList[id]
+            }
+
+            servers.add(ServerWithId(id, serverInfo))
         }
 
         return servers
     }
 
     override fun getServer(): Fickle<ServerWithId> {
-        val serversCount = lock.lockAndRead {
+        val serversCount = lock.lockReadReturn {
             fileServerInfoList.size
         }
 
@@ -72,7 +94,7 @@ class FileServersManagerImpl : FileServersManager {
             val id = serverId.getAndIncrement() % serversCount
 
             if (isServerOk(id)) {
-                val serverInfo = lock.lockAndRead {
+                val serverInfo = lock.lockReadReturn {
                     fileServerInfoList[id]
                 }
 
@@ -86,7 +108,7 @@ class FileServersManagerImpl : FileServersManager {
 
     override fun getAliveServersCount(): Int {
         var count = 0
-        val serversCount = lock.lockAndRead {
+        val serversCount = lock.lockReadReturn {
             fileServerInfoList.size
         }
 
@@ -100,7 +122,7 @@ class FileServersManagerImpl : FileServersManager {
     }
 
     override fun isAtLeastOneServerAlive(): Boolean {
-        val serversCount = lock.lockAndRead {
+        val serversCount = lock.lockReadReturn {
             fileServerInfoList.size
         }
 
@@ -114,14 +136,14 @@ class FileServersManagerImpl : FileServersManager {
     }
 
     override fun notWorking(i: Int) {
-        lock.lockAndRead {
+        lock.lockRead {
             fileServerInfoList[i].isWorking = false
             fileServerInfoList[i].timeOfDeath = ServerUtils.getTimeFast()
         }
     }
 
     override fun noDiskSpace(i: Int) {
-        lock.lockAndRead {
+        lock.lockRead {
             fileServerInfoList[i].isDiskSpaceOk = false
             fileServerInfoList[i].timeOfDeath = ServerUtils.getTimeFast()
         }

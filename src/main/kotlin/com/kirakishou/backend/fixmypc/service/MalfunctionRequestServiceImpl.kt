@@ -64,7 +64,7 @@ class MalfunctionRequestServiceImpl : MalfunctionRequestService {
             fileServerInfoList.add(FileServerInfo(host, true, true))
         }
 
-        fileServerManager.init(fileServerInfoList, pingInterval)
+        fileServerManager.init(fileServerInfoList, TimeUnit.MINUTES.toMillis(pingInterval))
     }
 
     override fun handleNewMalfunctionRequest(uploadingFiles: Array<MultipartFile>, imagesType: Int,
@@ -80,7 +80,7 @@ class MalfunctionRequestServiceImpl : MalfunctionRequestService {
             return Single.just(fileSizesCheckResult)
         }
 
-        //if we have no alive file servers we can't store photos
+        //return error status is there are no working file servers
         if (!fileServerManager.isAtLeastOneServerAlive()) {
             return Single.just(MalfunctionRequestService.Result.AllFileServersAreNotWorking())
         }
@@ -94,14 +94,14 @@ class MalfunctionRequestServiceImpl : MalfunctionRequestService {
                 .flatMap { filesAndServers ->
                     val responses = arrayListOf<Flowable<FileServerAnswer>>()
 
-                    //Concurrently sending the images and storing the responses
+                    //send all images and get responds
                     for ((multipartFile, fileServerInfo) in filesAndServers) {
                         val tempFile = tempFileService.fromMultipartFile(multipartFile)
                         responses += storeImage(fileServerInfo, tempFile, multipartFile)
                     }
 
                     //TODO: Would be nice to get rid of the blockingGet() but dunno how to do that atm
-                    //filtering all good responses. We need only error responses
+                    //we need only bad responses, so we need to filter them
                     val badResponses = Flowable.merge(responses)
                             .filter({
                                 val errorCode = FileServerErrorCode.from(it.errorCode)
@@ -112,18 +112,10 @@ class MalfunctionRequestServiceImpl : MalfunctionRequestService {
                             .toList()
                             .blockingGet()
 
-                    //if we have no bad responses - all of the images was successfully stored
+                    //return good status if all images were successfully stored
                     if (badResponses.isEmpty()) {
                         log.d("No bad responses. Every image was successfully stored")
                         return@flatMap Flowable.just(MalfunctionRequestService.Result.Ok())
-                    }
-
-                    //if one or more images could not be stored for some reason
-                    //(file server is down or it's hard drive does not have space)
-                    //then return error
-                    if (!fileServerManager.isAtLeastOneServerAlive()) {
-                        log.d("All file servers are not working")
-                        return@flatMap Flowable.just(MalfunctionRequestService.Result.AllFileServersAreNotWorking())
                     }
 
                     val badFiles = arrayListOf<String>()
@@ -137,16 +129,16 @@ class MalfunctionRequestServiceImpl : MalfunctionRequestService {
 
                     //trying to resend images
                     while (index < badFiles.size) {
-                        //searching for a working server
+                        //try to get working server
                         val fileServerFickle = fileServerManager.getServer()
 
-                        //if we do not have one - nothing can be done. Just return a error
+                        //if there are none - return error status
                         if (!fileServerFickle.isPresent()) {
                             log.e("Could not find a working file server")
                             return@flatMap Flowable.just(MalfunctionRequestService.Result.AllFileServersAreNotWorking())
                         }
 
-                        //else resend the image
+                        //if there are try to store remaining images on them
                         val badFile = badFiles[index]
                         val fileServer = fileServerFickle.get()
                         val multipartFile = getFileByOriginalName(uploadingFiles, badFile)
@@ -165,6 +157,7 @@ class MalfunctionRequestServiceImpl : MalfunctionRequestService {
 
                         log.d("Could not store a file. errorCode = ${errorCode}")
 
+                        //of for some reason one more server went down - mark it as not working and repeat this loop
                         if (errorCode == FileServerErrorCode.REQUEST_TIMEOUT ||
                                 errorCode == FileServerErrorCode.COULD_NOT_STORE_ONE_OR_MORE_IMAGES) {
                             fileServerManager.notWorking(fileServer.id)
@@ -177,12 +170,12 @@ class MalfunctionRequestServiceImpl : MalfunctionRequestService {
                 }
                 .toList()
                 .map { results ->
-                    //do not forget to delete all temp files
+                    //whatever the results - do not forget to delete temp files
                     tempFileService.deleteAllTempFiles()
 
                     for (result in results) {
                         if (result !is MalfunctionRequestService.Result.Ok) {
-                            log.d("Error. Something went wrong")
+                            log.e("Error. Something went wrong")
                             return@map result
                         }
                     }

@@ -1,6 +1,6 @@
 package com.kirakishou.backend.fixmypc.controller
 
-import com.kirakishou.backend.fixmypc.log.FileLog
+import com.kirakishou.backend.fixmypc.log.FileLogImpl
 import com.kirakishou.backend.fixmypc.model.Constant
 import com.kirakishou.backend.fixmypc.model.net.ServerErrorCode
 import com.kirakishou.backend.fixmypc.model.net.request.MalfunctionRequest
@@ -23,7 +23,7 @@ class MalfunctionRequestController {
     lateinit var malfunctionRequestService: MalfunctionRequestService
 
     @Autowired
-    lateinit var log: FileLog
+    lateinit var logImpl: FileLogImpl
 
     @RequestMapping(
             path = arrayOf(Constant.Paths.MALFUNCTION_REQUEST_CONTROLLER_PATH),

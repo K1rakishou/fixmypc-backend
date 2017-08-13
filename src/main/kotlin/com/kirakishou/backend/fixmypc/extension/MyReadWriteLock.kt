@@ -2,7 +2,27 @@ package com.kirakishou.backend.fixmypc.extension
 
 import java.util.concurrent.locks.ReadWriteLock
 
-fun <T> ReadWriteLock.lockAndRead(func: () -> T): T {
+inline fun ReadWriteLock.lockRead(func: () -> Unit) {
+    this.readLock().lock()
+
+    try {
+        func()
+    } finally {
+        this.readLock().unlock()
+    }
+}
+
+inline fun ReadWriteLock.lockWrite(func: () -> Unit) {
+    this.writeLock().lock()
+
+    try {
+        func()
+    } finally {
+        this.writeLock().unlock()
+    }
+}
+
+inline fun <T> ReadWriteLock.lockReadReturn(func: () -> T): T {
     this.readLock().lock()
 
     try {
@@ -12,7 +32,7 @@ fun <T> ReadWriteLock.lockAndRead(func: () -> T): T {
     }
 }
 
-fun <T> ReadWriteLock.lockAndWrite(func: () -> T): T {
+inline fun <T> ReadWriteLock.lockWriteReturn(func: () -> T): T {
     this.writeLock().lock()
 
     try {
