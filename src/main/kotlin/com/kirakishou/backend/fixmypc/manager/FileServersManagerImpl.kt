@@ -28,7 +28,8 @@ class FileServersManagerImpl : FileServersManager {
         this.serverPingInterval.set(serverPingIntervalMsecs)
     }
 
-    private fun isServerOk(id: Int): Boolean {
+    //TL Note: daijoubu means all right
+    private fun daijoubu(id: Int): Boolean {
         val fileServerInfo = lock.lockReadReturn {
             fileServerInfoList[id]
         }
@@ -62,7 +63,7 @@ class FileServersManagerImpl : FileServersManager {
         }
 
         for (i in 0 until serversCount) {
-            if (isServerOk(i)) {
+            if (daijoubu(i)) {
                 goodServers.add(i)
             }
         }
@@ -93,7 +94,7 @@ class FileServersManagerImpl : FileServersManager {
         for (i in 0 until serversCount) {
             val id = serverId.getAndIncrement() % serversCount
 
-            if (isServerOk(id)) {
+            if (daijoubu(id)) {
                 val serverInfo = lock.lockReadReturn {
                     fileServerInfoList[id]
                 }
@@ -113,7 +114,7 @@ class FileServersManagerImpl : FileServersManager {
         }
 
         for (i in 0 until serversCount) {
-            if (isServerOk(i)) {
+            if (daijoubu(i)) {
                 ++count
             }
         }
@@ -127,7 +128,7 @@ class FileServersManagerImpl : FileServersManager {
         }
 
         for (i in 0 until serversCount) {
-            if (isServerOk(i)) {
+            if (daijoubu(i)) {
                 return true
             }
         }

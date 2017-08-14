@@ -7,7 +7,6 @@ import org.junit.Before
 import org.junit.Test
 import org.mockito.InjectMocks
 import org.mockito.Mock
-import org.mockito.Mockito
 import org.mockito.MockitoAnnotations
 
 class FileServersManagerTest {
@@ -21,8 +20,6 @@ class FileServersManagerTest {
     @Before
     fun init() {
         MockitoAnnotations.initMocks(this)
-
-        Mockito.doNothing().`when`(log).d(Mockito.anyString())
     }
 
     @Test

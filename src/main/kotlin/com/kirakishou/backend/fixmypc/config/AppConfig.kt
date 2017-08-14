@@ -13,6 +13,8 @@ import org.springframework.data.redis.cache.RedisCacheManager
 import org.springframework.data.redis.connection.RedisConnectionFactory
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.web.client.AsyncRestTemplate
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 import javax.sql.DataSource
 
 
@@ -67,8 +69,8 @@ open class AppConfig {
     }
 
     @Bean
-    @Qualifier("processors_count")
-    fun provideProcessorsCount(): Int {
-        return Runtime.getRuntime().availableProcessors()
+    @Qualifier("file_server_executor")
+    fun proovideFileServerExecutor(): ExecutorService {
+        return Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors())
     }
 }
