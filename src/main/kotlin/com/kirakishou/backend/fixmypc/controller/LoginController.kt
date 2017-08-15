@@ -44,10 +44,7 @@ class LoginController {
                                     ServerErrorCode.SEC_WRONG_LOGIN_OR_PASSWORD.value), HttpStatus.UNPROCESSABLE_ENTITY)
                         }
 
-                        else -> {
-                            return@map ResponseEntity(LoginResponse("", AccountType.Client.value,
-                                    ServerErrorCode.SEC_UNKNOWN_SERVER_ERROR.value), HttpStatus.INTERNAL_SERVER_ERROR)
-                        }
+                        else -> throw IllegalArgumentException("Unknown result")
                     }
                 }
     }

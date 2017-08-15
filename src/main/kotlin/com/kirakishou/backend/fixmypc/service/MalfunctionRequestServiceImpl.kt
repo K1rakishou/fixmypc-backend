@@ -55,7 +55,7 @@ class MalfunctionRequestServiceImpl : MalfunctionRequestService {
         val fileServerInfoList = arrayListOf<FileServerInfo>()
 
         for (host in fileServerHosts) {
-            fileServerInfoList.add(FileServerInfo(host, true, true))
+            fileServerInfoList.add(FileServerInfo(host, true))
         }
 
         fileServerManager.init(fileServerInfoList, TimeUnit.MINUTES.toMillis(pingInterval))
@@ -199,8 +199,6 @@ class MalfunctionRequestServiceImpl : MalfunctionRequestService {
             if (errorCode == FileServerErrorCode.REQUEST_TIMEOUT ||
                     errorCode == FileServerErrorCode.COULD_NOT_STORE_ONE_OR_MORE_IMAGES) {
                 fileServerManager.notWorking(fileServer.id)
-            } else if (errorCode == FileServerErrorCode.NOT_ENOUGH_DISK_SPACE) {
-                fileServerManager.noDiskSpace(fileServer.id)
             }
         }
 
@@ -230,8 +228,8 @@ class MalfunctionRequestServiceImpl : MalfunctionRequestService {
                 .doOnNext({ response ->
                     val errCode = FileServerErrorCode.from(response.errorCode)
 
-                    if (errCode == FileServerErrorCode.NOT_ENOUGH_DISK_SPACE || errCode == FileServerErrorCode.COULD_NOT_STORE_ONE_OR_MORE_IMAGES) {
-                        fileServerManager.noDiskSpace(server.id)
+                    if (errCode == FileServerErrorCode.COULD_NOT_STORE_ONE_OR_MORE_IMAGES) {
+                        fileServerManager.notWorking(server.id)
                     }
                 })
     }

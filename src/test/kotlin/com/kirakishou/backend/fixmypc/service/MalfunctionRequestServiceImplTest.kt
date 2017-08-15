@@ -64,10 +64,10 @@ class MalfunctionRequestServiceTest {
         normalImage = generateImage(1000, 1000)
 
         val fileServerInfoList = arrayListOf<FileServerInfo>()
-        fileServerInfoList.add(FileServerInfo("127.0.0.1", true, true))
-        fileServerInfoList.add(FileServerInfo("127.0.0.2", true, true))
-        fileServerInfoList.add(FileServerInfo("127.0.0.3", true, true))
-        fileServerInfoList.add(FileServerInfo("127.0.0.4", true, true))
+        fileServerInfoList.add(FileServerInfo("127.0.0.1", true))
+        fileServerInfoList.add(FileServerInfo("127.0.0.2", true))
+        fileServerInfoList.add(FileServerInfo("127.0.0.3", true))
+        fileServerInfoList.add(FileServerInfo("127.0.0.4", true))
         fileServerManager.init(fileServerInfoList, -1)
     }
 
@@ -320,9 +320,9 @@ class MalfunctionRequestServiceTest {
 
         val fourServers = listOf(
                 FileServersManagerImpl.ServerWithId(0, FileServerInfo(host)),
-                FileServersManagerImpl.ServerWithId(1, FileServerInfo(host, false, false)),
-                FileServersManagerImpl.ServerWithId(2, FileServerInfo(host, false, false)),
-                FileServersManagerImpl.ServerWithId(3, FileServerInfo(host, false, false)))
+                FileServersManagerImpl.ServerWithId(1, FileServerInfo(host, false)),
+                FileServersManagerImpl.ServerWithId(2, FileServerInfo(host, false)),
+                FileServersManagerImpl.ServerWithId(3, FileServerInfo(host, false)))
 
         Mockito.`when`(tempFileService.fromMultipartFile(file)).thenReturn(tempFile)
 

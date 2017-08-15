@@ -25,10 +25,10 @@ class FileServersManagerTest {
     @Test
     fun shouldReturnFourServers() {
         val fileServerInfoList = arrayListOf<FileServerInfo>()
-        fileServerInfoList.add(FileServerInfo("127.0.0.1", true, true))
-        fileServerInfoList.add(FileServerInfo("127.0.0.2", true, true))
-        fileServerInfoList.add(FileServerInfo("127.0.0.3", true, true))
-        fileServerInfoList.add(FileServerInfo("127.0.0.4", true, true))
+        fileServerInfoList.add(FileServerInfo("127.0.0.1", true))
+        fileServerInfoList.add(FileServerInfo("127.0.0.2", true))
+        fileServerInfoList.add(FileServerInfo("127.0.0.3", true))
+        fileServerInfoList.add(FileServerInfo("127.0.0.4", true))
         manager.init(fileServerInfoList, -1L)
 
         val servers = manager.getServers(4)
@@ -38,23 +38,10 @@ class FileServersManagerTest {
     @Test
     fun shouldReturnNoServersIfThereAreNoWorking() {
         val fileServerInfoList = arrayListOf<FileServerInfo>()
-        fileServerInfoList.add(FileServerInfo("127.0.0.1", false, true))
-        fileServerInfoList.add(FileServerInfo("127.0.0.2", false, true))
-        fileServerInfoList.add(FileServerInfo("127.0.0.3", false, true))
-        fileServerInfoList.add(FileServerInfo("127.0.0.4", false, true))
-        manager.init(fileServerInfoList, -1L)
-
-        val servers = manager.getServers(4)
-        assertEquals(0, servers.size)
-    }
-
-    @Test
-    fun shouldReturnNoServersIfTheyAllRunOutOfDiskSpace() {
-        val fileServerInfoList = arrayListOf<FileServerInfo>()
-        fileServerInfoList.add(FileServerInfo("127.0.0.1", true, false))
-        fileServerInfoList.add(FileServerInfo("127.0.0.2", true, false))
-        fileServerInfoList.add(FileServerInfo("127.0.0.3", true, false))
-        fileServerInfoList.add(FileServerInfo("127.0.0.4", true, false))
+        fileServerInfoList.add(FileServerInfo("127.0.0.1", false))
+        fileServerInfoList.add(FileServerInfo("127.0.0.2", false))
+        fileServerInfoList.add(FileServerInfo("127.0.0.3", false))
+        fileServerInfoList.add(FileServerInfo("127.0.0.4", false))
         manager.init(fileServerInfoList, -1L)
 
         val servers = manager.getServers(4)
@@ -64,10 +51,10 @@ class FileServersManagerTest {
     @Test
     fun shouldReturnServerWithHost127001() {
         val fileServerInfoList = arrayListOf<FileServerInfo>()
-        fileServerInfoList.add(FileServerInfo("127.0.0.1", true, true))
-        fileServerInfoList.add(FileServerInfo("127.0.0.2", true, true))
-        fileServerInfoList.add(FileServerInfo("127.0.0.3", true, true))
-        fileServerInfoList.add(FileServerInfo("127.0.0.4", true, true))
+        fileServerInfoList.add(FileServerInfo("127.0.0.1", true))
+        fileServerInfoList.add(FileServerInfo("127.0.0.2", true))
+        fileServerInfoList.add(FileServerInfo("127.0.0.3", true))
+        fileServerInfoList.add(FileServerInfo("127.0.0.4", true))
         manager.init(fileServerInfoList, -1L)
 
         val server = manager.getServer()
@@ -78,10 +65,10 @@ class FileServersManagerTest {
     @Test
     fun shouldReturnServerWithHost127004() {
         val fileServerInfoList = arrayListOf<FileServerInfo>()
-        fileServerInfoList.add(FileServerInfo("127.0.0.1", false, true))
-        fileServerInfoList.add(FileServerInfo("127.0.0.2", true, false))
-        fileServerInfoList.add(FileServerInfo("127.0.0.3", false, true))
-        fileServerInfoList.add(FileServerInfo("127.0.0.4", true, true))
+        fileServerInfoList.add(FileServerInfo("127.0.0.1", false))
+        fileServerInfoList.add(FileServerInfo("127.0.0.2", false))
+        fileServerInfoList.add(FileServerInfo("127.0.0.3", false))
+        fileServerInfoList.add(FileServerInfo("127.0.0.4", true))
         manager.init(fileServerInfoList, -1L)
 
         val server = manager.getServer()
@@ -92,10 +79,10 @@ class FileServersManagerTest {
     @Test
     fun shouldReturnNoServer() {
         val fileServerInfoList = arrayListOf<FileServerInfo>()
-        fileServerInfoList.add(FileServerInfo("127.0.0.1", false, true))
-        fileServerInfoList.add(FileServerInfo("127.0.0.2", true, false))
-        fileServerInfoList.add(FileServerInfo("127.0.0.3", false, true))
-        fileServerInfoList.add(FileServerInfo("127.0.0.4", true, false))
+        fileServerInfoList.add(FileServerInfo("127.0.0.1", false))
+        fileServerInfoList.add(FileServerInfo("127.0.0.2", false))
+        fileServerInfoList.add(FileServerInfo("127.0.0.3", false))
+        fileServerInfoList.add(FileServerInfo("127.0.0.4", false))
         manager.init(fileServerInfoList, -1L)
 
         val server = manager.getServer()
@@ -105,10 +92,10 @@ class FileServersManagerTest {
     @Test
     fun shouldReturnFourActiveServersCount() {
         val fileServerInfoList = arrayListOf<FileServerInfo>()
-        fileServerInfoList.add(FileServerInfo("127.0.0.1", true, true))
-        fileServerInfoList.add(FileServerInfo("127.0.0.2", true, true))
-        fileServerInfoList.add(FileServerInfo("127.0.0.3", true, true))
-        fileServerInfoList.add(FileServerInfo("127.0.0.4", true, true))
+        fileServerInfoList.add(FileServerInfo("127.0.0.1", true))
+        fileServerInfoList.add(FileServerInfo("127.0.0.2", true))
+        fileServerInfoList.add(FileServerInfo("127.0.0.3", true))
+        fileServerInfoList.add(FileServerInfo("127.0.0.4", true))
         manager.init(fileServerInfoList, -1L)
 
         val count = manager.getAliveServersCount()
@@ -118,10 +105,10 @@ class FileServersManagerTest {
     @Test
     fun shouldReturnZeroActiveServersCount() {
         val fileServerInfoList = arrayListOf<FileServerInfo>()
-        fileServerInfoList.add(FileServerInfo("127.0.0.1", false, true))
-        fileServerInfoList.add(FileServerInfo("127.0.0.2", true, false))
-        fileServerInfoList.add(FileServerInfo("127.0.0.3", false, true))
-        fileServerInfoList.add(FileServerInfo("127.0.0.4", true, false))
+        fileServerInfoList.add(FileServerInfo("127.0.0.1", false))
+        fileServerInfoList.add(FileServerInfo("127.0.0.2", false))
+        fileServerInfoList.add(FileServerInfo("127.0.0.3", false))
+        fileServerInfoList.add(FileServerInfo("127.0.0.4", false))
         manager.init(fileServerInfoList, -1L)
 
         val count = manager.getAliveServersCount()
@@ -129,12 +116,12 @@ class FileServersManagerTest {
     }
 
     @Test
-    fun shouldReturnTrueIfOneServerIsAliveOrHasDiskSpace() {
+    fun shouldReturnTrueIfOneServerIsAlive() {
         val fileServerInfoList = arrayListOf<FileServerInfo>()
-        fileServerInfoList.add(FileServerInfo("127.0.0.1", true, true))
-        fileServerInfoList.add(FileServerInfo("127.0.0.2", true, true))
-        fileServerInfoList.add(FileServerInfo("127.0.0.3", true, true))
-        fileServerInfoList.add(FileServerInfo("127.0.0.4", true, true))
+        fileServerInfoList.add(FileServerInfo("127.0.0.1", true))
+        fileServerInfoList.add(FileServerInfo("127.0.0.2", true))
+        fileServerInfoList.add(FileServerInfo("127.0.0.3", true))
+        fileServerInfoList.add(FileServerInfo("127.0.0.4", true))
         manager.init(fileServerInfoList, -1L)
 
         val isOneAlive = manager.isAtLeastOneServerAlive()
@@ -142,12 +129,12 @@ class FileServersManagerTest {
     }
 
     @Test
-    fun shouldReturnFalseIfNoServersAreAliveOrHaveDiskSpace() {
+    fun shouldReturnFalseIfNoServersAreAlive() {
         val fileServerInfoList = arrayListOf<FileServerInfo>()
-        fileServerInfoList.add(FileServerInfo("127.0.0.1", true, false))
-        fileServerInfoList.add(FileServerInfo("127.0.0.2", false, true))
-        fileServerInfoList.add(FileServerInfo("127.0.0.3", true, false))
-        fileServerInfoList.add(FileServerInfo("127.0.0.4", false, true))
+        fileServerInfoList.add(FileServerInfo("127.0.0.1", false))
+        fileServerInfoList.add(FileServerInfo("127.0.0.2", false))
+        fileServerInfoList.add(FileServerInfo("127.0.0.3", false))
+        fileServerInfoList.add(FileServerInfo("127.0.0.4", false))
         manager.init(fileServerInfoList, -1L)
 
         val isOneAlive = manager.isAtLeastOneServerAlive()
@@ -157,10 +144,10 @@ class FileServersManagerTest {
     @Test
     fun shouldMarkServerAsNotWorking() {
         val fileServerInfoList = arrayListOf<FileServerInfo>()
-        fileServerInfoList.add(FileServerInfo("127.0.0.1", true, true))
-        fileServerInfoList.add(FileServerInfo("127.0.0.2", true, true))
-        fileServerInfoList.add(FileServerInfo("127.0.0.3", true, true))
-        fileServerInfoList.add(FileServerInfo("127.0.0.4", true, true))
+        fileServerInfoList.add(FileServerInfo("127.0.0.1", true))
+        fileServerInfoList.add(FileServerInfo("127.0.0.2", true))
+        fileServerInfoList.add(FileServerInfo("127.0.0.3", true))
+        fileServerInfoList.add(FileServerInfo("127.0.0.4", true))
         manager.init(fileServerInfoList, -1L)
 
         manager.notWorking(0)
@@ -173,30 +160,12 @@ class FileServersManagerTest {
     }
 
     @Test
-    fun shouldMarkServerAsNotRunOutOfDiskSpace() {
-        val fileServerInfoList = arrayListOf<FileServerInfo>()
-        fileServerInfoList.add(FileServerInfo("127.0.0.1", true, true))
-        fileServerInfoList.add(FileServerInfo("127.0.0.2", true, true))
-        fileServerInfoList.add(FileServerInfo("127.0.0.3", true, true))
-        fileServerInfoList.add(FileServerInfo("127.0.0.4", true, true))
-        manager.init(fileServerInfoList, -1L)
-
-        manager.noDiskSpace(0)
-
-        val servers = manager.getServers(3)
-        assertEquals(servers.size, 3)
-        assertEquals("127.0.0.2", servers[0].fileServerInfo.host)
-        assertEquals("127.0.0.3", servers[1].fileServerInfo.host)
-        assertEquals("127.0.0.4", servers[2].fileServerInfo.host)
-    }
-
-    @Test
     fun shouldReturnSixServersDistributedRoundRobinWayWhenTwoAreDown() {
         val fileServerInfoList = arrayListOf<FileServerInfo>()
-        fileServerInfoList.add(FileServerInfo("127.0.0.1", false, true))
-        fileServerInfoList.add(FileServerInfo("127.0.0.2", true, false))
-        fileServerInfoList.add(FileServerInfo("127.0.0.3", true, true))
-        fileServerInfoList.add(FileServerInfo("127.0.0.4", true, true))
+        fileServerInfoList.add(FileServerInfo("127.0.0.1", false))
+        fileServerInfoList.add(FileServerInfo("127.0.0.2", false))
+        fileServerInfoList.add(FileServerInfo("127.0.0.3", true))
+        fileServerInfoList.add(FileServerInfo("127.0.0.4", true))
         manager.init(fileServerInfoList, -1L)
 
         val servers = manager.getServers(6)
@@ -213,10 +182,10 @@ class FileServersManagerTest {
     @Test
     fun shouldReturnFiveEntriesOfTheSameServer() {
         val fileServerInfoList = arrayListOf<FileServerInfo>()
-        fileServerInfoList.add(FileServerInfo("127.0.0.1", false, true))
-        fileServerInfoList.add(FileServerInfo("127.0.0.2", true, false))
-        fileServerInfoList.add(FileServerInfo("127.0.0.3", false, true))
-        fileServerInfoList.add(FileServerInfo("127.0.0.4", true, true))
+        fileServerInfoList.add(FileServerInfo("127.0.0.1", false))
+        fileServerInfoList.add(FileServerInfo("127.0.0.2", false))
+        fileServerInfoList.add(FileServerInfo("127.0.0.3", false))
+        fileServerInfoList.add(FileServerInfo("127.0.0.4", true))
         manager.init(fileServerInfoList, -1L)
 
         val servers = manager.getServers(5)
@@ -232,10 +201,10 @@ class FileServersManagerTest {
     @Test
     fun shouldMarkServerAsWorkingAfter200Milliseconds() {
         val fileServerInfoList = arrayListOf<FileServerInfo>()
-        fileServerInfoList.add(FileServerInfo("127.0.0.1", true, true))
-        fileServerInfoList.add(FileServerInfo("127.0.0.2", true, true))
-        fileServerInfoList.add(FileServerInfo("127.0.0.3", true, true))
-        fileServerInfoList.add(FileServerInfo("127.0.0.4", true, true))
+        fileServerInfoList.add(FileServerInfo("127.0.0.1", true))
+        fileServerInfoList.add(FileServerInfo("127.0.0.2", true))
+        fileServerInfoList.add(FileServerInfo("127.0.0.3", true))
+        fileServerInfoList.add(FileServerInfo("127.0.0.4", true))
         manager.init(fileServerInfoList, 100)
         manager.notWorking(0)
 

@@ -4,9 +4,8 @@ enum class FileServerErrorCode(val value: Int) {
     OK(0),
     COULD_NOT_STORE_ONE_OR_MORE_IMAGES(1),
     UNKNOWN_ERROR(2),
-    NOT_ENOUGH_DISK_SPACE(3),
-    REQUEST_TIMEOUT(4),
-    NO_WORKING_FILESERVERS(5);
+    REQUEST_TIMEOUT(3),
+    NO_WORKING_FILESERVERS(4);
 
     companion object {
         fun from(value: Int): FileServerErrorCode {

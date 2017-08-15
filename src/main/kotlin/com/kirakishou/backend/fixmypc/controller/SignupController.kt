@@ -61,10 +61,7 @@ class SignupController {
                                     HttpStatus.UNPROCESSABLE_ENTITY)
                         }
 
-                        else -> {
-                            return@map ResponseEntity(SignupResponse(ServerErrorCode.SEC_UNKNOWN_SERVER_ERROR.value),
-                                    HttpStatus.INTERNAL_SERVER_ERROR)
-                        }
+                        else -> throw IllegalArgumentException("Unknown result")
                     }
                 }
     }

@@ -46,11 +46,6 @@ class FileServersManagerImpl : FileServersManager {
             }
         }
 
-        if (!fileServerInfo.isDiskSpaceOk) {
-            log.d("The fileserver has no disk space")
-            return false
-        }
-
         return true
     }
 
@@ -139,13 +134,6 @@ class FileServersManagerImpl : FileServersManager {
     override fun notWorking(i: Int) {
         lock.lockRead {
             fileServerInfoList[i].isWorking = false
-            fileServerInfoList[i].timeOfDeath = ServerUtils.getTimeFast()
-        }
-    }
-
-    override fun noDiskSpace(i: Int) {
-        lock.lockRead {
-            fileServerInfoList[i].isDiskSpaceOk = false
             fileServerInfoList[i].timeOfDeath = ServerUtils.getTimeFast()
         }
     }

@@ -39,6 +39,14 @@ class MalfunctionRequestController {
                             return@map ResponseEntity.ok(MalfunctionResponse(ServerErrorCode.SEC_OK.value))
                         }
 
+                        is MalfunctionRequestService.Result.NoFilesToUpload -> {
+                            return@map ResponseEntity.ok(MalfunctionResponse(ServerErrorCode.SEC_OK.value))
+                        }
+
+                        is MalfunctionRequestService.Result.ImagesCountExceeded -> {
+                            return@map ResponseEntity.ok(MalfunctionResponse(ServerErrorCode.SEC_OK.value))
+                        }
+
                         is MalfunctionRequestService.Result.FileSizeExceeded -> {
                             return@map ResponseEntity.ok(MalfunctionResponse(ServerErrorCode.SEC_OK.value))
                         }
@@ -51,11 +59,15 @@ class MalfunctionRequestController {
                             return@map ResponseEntity.ok(MalfunctionResponse(ServerErrorCode.SEC_OK.value))
                         }
 
+                        is MalfunctionRequestService.Result.AllFileServersAreNotWorking -> {
+                            return@map ResponseEntity.ok(MalfunctionResponse(ServerErrorCode.SEC_OK.value))
+                        }
+
                         is MalfunctionRequestService.Result.UnknownError -> {
                             return@map ResponseEntity.ok(MalfunctionResponse(ServerErrorCode.SEC_OK.value))
                         }
 
-                        else -> throw IllegalArgumentException("Unknown result type")
+                        else -> throw IllegalArgumentException("Unknown result")
                     }
                 }
     }
