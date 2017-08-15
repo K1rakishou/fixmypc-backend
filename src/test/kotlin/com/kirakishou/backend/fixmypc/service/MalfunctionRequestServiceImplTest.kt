@@ -9,6 +9,9 @@ import com.kirakishou.backend.fixmypc.model.FileServerErrorCode
 import com.kirakishou.backend.fixmypc.model.FileServerInfo
 import com.kirakishou.backend.fixmypc.model.net.request.MalfunctionRequest
 import io.reactivex.Flowable
+import io.reactivex.plugins.RxJavaPlugins
+import io.reactivex.schedulers.Schedulers
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
@@ -42,15 +45,14 @@ class MalfunctionRequestServiceTest {
     @Mock
     lateinit var tempFileService: TempFilesService
 
-    /*@Mock
-    lateinit var fileServerRequestsExecutorService: ExecutorService*/
-
     lateinit var tooBigImage: BufferedImage
     lateinit var normalImage: BufferedImage
 
     @Before
     fun init() {
         MockitoAnnotations.initMocks(this)
+
+        RxJavaPlugins.setIoSchedulerHandler { Schedulers.trampoline() }
 
         ReflectionTestUtils.setField(service, "maxFileSize", 5242880)
         ReflectionTestUtils.setField(service, "maxRequestSize", 20971520)
@@ -67,6 +69,11 @@ class MalfunctionRequestServiceTest {
         fileServerInfoList.add(FileServerInfo("127.0.0.3", true, true))
         fileServerInfoList.add(FileServerInfo("127.0.0.4", true, true))
         fileServerManager.init(fileServerInfoList, -1)
+    }
+
+    @After
+    fun tearDown() {
+        RxJavaPlugins.reset()
     }
 
     fun generateImage(width: Int, height: Int): BufferedImage {
@@ -214,6 +221,9 @@ class MalfunctionRequestServiceTest {
     fun shouldNotUploadInThereAreNoWorkingFileServers() {
         val origFileName = "1234567890-234236-236-236-236.jpg"
         val uploadingFiles = arrayOf<MultipartFile>(MockMultipartFile("test", origFileName, MediaType.IMAGE_JPEG_VALUE, getBufferedImageBytes(normalImage)))
+
+        Mockito.`when`(fileServerManager.isAtLeastOneServerAlive()).thenReturn(false)
+
         val response = service.handleNewMalfunctionRequest(uploadingFiles, 0, MalfunctionRequest(0, "test"))
                 .blockingGet()
 
@@ -251,12 +261,12 @@ class MalfunctionRequestServiceTest {
 
         Mockito.`when`(fileServerManager.isAtLeastOneServerAlive()).thenReturn(true)
         Mockito.`when`(fileServerManager.getServers(4)).thenReturn(fourServers)
+        Mockito.`when`(fileServerManager.getServer()).thenReturn(Fickle.of(fifthServer))
+
         Mockito.`when`(tempFileService.fromMultipartFile(uploadingFiles[0])).thenReturn(tempFile)
         Mockito.`when`(tempFileService.fromMultipartFile(uploadingFiles[1])).thenReturn(tempFile)
         Mockito.`when`(tempFileService.fromMultipartFile(uploadingFiles[2])).thenReturn(tempFile)
         Mockito.`when`(tempFileService.fromMultipartFile(uploadingFiles[3])).thenReturn(tempFile)
-
-        Mockito.`when`(fileServerManager.getServer()).thenReturn(Fickle.of(fifthServer))
 
         Mockito.`when`(distributedImageServerService.storeImage(
                 fourServers[0].id,
@@ -299,6 +309,52 @@ class MalfunctionRequestServiceTest {
                 .blockingGet()
 
         assertEquals(true, response is MalfunctionRequestService.Result.Ok)
+    }
+
+    @Test
+    fun shouldReturnErrorCodeIfThereNoWorkingFileServersWhileTryingToReuploadSomeImages() {
+        val origFileName = "1234567890-234236-236-236-236.jpg"
+        val host = "127.0.0.1"
+        val tempFile = "tempfile"
+        val file = MockMultipartFile("test", origFileName, MediaType.IMAGE_JPEG_VALUE, getBufferedImageBytes(normalImage))
+
+        val fourServers = listOf(
+                FileServersManagerImpl.ServerWithId(0, FileServerInfo(host)),
+                FileServersManagerImpl.ServerWithId(1, FileServerInfo(host, false, false)),
+                FileServersManagerImpl.ServerWithId(2, FileServerInfo(host, false, false)),
+                FileServersManagerImpl.ServerWithId(3, FileServerInfo(host, false, false)))
+
+        Mockito.`when`(tempFileService.fromMultipartFile(file)).thenReturn(tempFile)
+
+        Mockito.`when`(fileServerManager.isAtLeastOneServerAlive()).thenReturn(true)
+        Mockito.`when`(fileServerManager.getServers(1)).thenReturn(arrayListOf(fourServers[0]))
+
+        Mockito.`when`(fileServerManager.getServer())
+                .thenReturn(Fickle.of(fourServers[1]))
+                .thenReturn(Fickle.empty())
+
+        Mockito.`when`(distributedImageServerService.storeImage(
+                fourServers[0].id,
+                fourServers[0].fileServerInfo.host,
+                tempFile,
+                origFileName, 0, 0L, FileServerAnswer::class.java)
+        ).thenReturn(Flowable.just(FileServerAnswer(FileServerErrorCode.REQUEST_TIMEOUT.value, emptyList()))
+                .delay(1100, TimeUnit.MILLISECONDS)
+        )
+
+        Mockito.`when`(distributedImageServerService.storeImage(
+                fourServers[1].id,
+                fourServers[1].fileServerInfo.host,
+                tempFile,
+                origFileName, 0, 0L, FileServerAnswer::class.java)
+        ).thenReturn(Flowable.just(FileServerAnswer(FileServerErrorCode.REQUEST_TIMEOUT.value, emptyList()))
+                .delay(1100, TimeUnit.MILLISECONDS)
+        )
+
+        val response = service.handleNewMalfunctionRequest(arrayOf(file), 0, MalfunctionRequest(0, "test"))
+                .blockingGet()
+
+        assertEquals(true, response is MalfunctionRequestService.Result.AllFileServersAreNotWorking)
     }
 }
 
