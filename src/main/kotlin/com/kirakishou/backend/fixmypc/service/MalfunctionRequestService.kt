@@ -12,7 +12,6 @@ interface MalfunctionRequestService {
         class ImagesCountExceeded: Result
         class FileSizeExceeded: Result
         class RequestSizeExceeded: Result
-        class CouldNotStoreOneOreMoreImages: Result
         class AllFileServersAreNotWorking: Result
         class UnknownError: Result
     }
