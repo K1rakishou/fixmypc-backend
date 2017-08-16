@@ -37,7 +37,11 @@ class FileServersManagerImpl : FileServersManager {
         //every N minutes mark the fileServerInfo as working again to see if it's got back
         val timeInterval = serverPingInterval.get()
 
-        if (timeInterval != -1L && (ServerUtils.getTimeFast() - fileServerInfo.timeOfDeath > timeInterval)) {
+        //if timeInterval == -1L -> check is disabled, we don't need to check further
+        //if timeOfDeath == 0L -> server has never been marked as dead, we don't need to check further
+        //else -> check how much time passed since the server was marked as dead.
+        //If it's more that timeInterval - mark server as alive so we can try to find out if it's been restarted
+        if (timeInterval != -1L && (fileServerInfo.timeOfDeath != 0L && ServerUtils.getTimeFast() - fileServerInfo.timeOfDeath > timeInterval)) {
             log.d("Restoring fileServer isWorking status to true")
             fileServerInfo.isWorking = true
         } else {

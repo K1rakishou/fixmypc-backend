@@ -66,27 +66,32 @@ class MalfunctionRequestServiceImpl : MalfunctionRequestService {
 
         //return error code if user somehow sent a request without any images
         if (uploadingFiles.isEmpty()) {
+            log.e("No files to upload")
             return Single.just(MalfunctionRequestService.Result.NoFilesToUpload())
         }
 
         //return error code if user somehow sent more that "maxImagesPerRequest" images
         if (uploadingFiles.size > maxImagesPerRequest) {
+            log.e("Too many files to upload (uploadingFiles.size > maxImagesPerRequest)")
             return Single.just(MalfunctionRequestService.Result.ImagesCountExceeded())
         }
 
         val requestCheckResult = checkRequestCorrectness(request)
         if (requestCheckResult !is MalfunctionRequestService.Result.Ok) {
+            log.e("Bad malfunction request")
             return Single.just(requestCheckResult)
         }
 
         //return error code if either one of the images size is bigger than "maxFileSize" or sum of images sizes bigger than "maxRequestSize"
         val fileSizesCheckResult = checkFilesSizes(uploadingFiles)
         if (fileSizesCheckResult !is MalfunctionRequestService.Result.Ok) {
+            log.e("Bad size of photos")
             return Single.just(fileSizesCheckResult)
         }
 
         //return error code if there are no working file servers
         if (!fileServerManager.isAtLeastOneServerAlive()) {
+            log.e("Could not get at least one file server")
             return Single.just(MalfunctionRequestService.Result.AllFileServersAreNotWorking())
         }
 
