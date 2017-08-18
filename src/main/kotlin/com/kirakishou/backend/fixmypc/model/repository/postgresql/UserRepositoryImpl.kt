@@ -3,10 +3,10 @@ package com.kirakishou.backend.fixmypc.model.repository.postgresql
 import com.kirakishou.backend.fixmypc.extension.prepareStatementScrollable
 import com.kirakishou.backend.fixmypc.extension.transactional
 import com.kirakishou.backend.fixmypc.model.AccountType
+import com.kirakishou.backend.fixmypc.model.Fickle
 import com.kirakishou.backend.fixmypc.model.User
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Repository
-import java.util.*
 import javax.sql.DataSource
 
 /**
@@ -19,15 +19,15 @@ class UserRepositoryImpl : UserRepository {
     @Autowired
     lateinit var hikariCP: DataSource
 
-    override fun findByLogin(login: String): Optional<User> {
-        var user: Optional<User> = Optional.empty()
+    override fun findByLogin(login: String): Fickle<User> {
+        var user: Fickle<User> = Fickle.empty()
 
         hikariCP.connection.use { connection ->
             connection.prepareStatementScrollable("SELECT * FROM public.users WHERE login = ? AND deleted_on IS NULL LIMIT 1").use { ps ->
                 ps.setString(1, login)
                 ps.executeQuery().use { rs ->
                     if (rs.first()) {
-                        user = Optional.of(User(rs.getString("login"),
+                        user = Fickle.of(User(rs.getString("login"),
                                 rs.getString("password"),
                                 AccountType.from(rs.getInt("account_type"))))
                     }

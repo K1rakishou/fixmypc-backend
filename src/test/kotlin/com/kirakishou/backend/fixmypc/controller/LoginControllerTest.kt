@@ -4,12 +4,13 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.kirakishou.backend.fixmypc.FixmypcApplication
 import com.kirakishou.backend.fixmypc.model.AccountType
 import com.kirakishou.backend.fixmypc.model.Constant
+import com.kirakishou.backend.fixmypc.model.Fickle
 import com.kirakishou.backend.fixmypc.model.User
 import com.kirakishou.backend.fixmypc.model.net.request.LoginRequest
 import com.kirakishou.backend.fixmypc.model.repository.postgresql.UserRepository
 import com.kirakishou.backend.fixmypc.model.repository.redis.UserCache
-import com.kirakishou.backend.fixmypc.service.LoginService
 import com.kirakishou.backend.fixmypc.service.Generator
+import com.kirakishou.backend.fixmypc.service.LoginService
 import org.hamcrest.Matchers
 import org.junit.Before
 import org.junit.Test
@@ -80,9 +81,9 @@ class LoginControllerTest {
 
         Mockito.`when`(service.doLogin(GOOD_LOGIN, GOOD_PASSWORD)).thenReturn(LoginService.Result.Ok(SESSION_ID))
         Mockito.`when`(service.doLogin(BAD_LOGIN, BAD_PASSWORD)).thenReturn(LoginService.Result.WrongLoginOrPassword(BAD_LOGIN))
-        Mockito.`when`(usersCache.get(Mockito.anyString())).thenReturn(Optional.ofNullable(null))
+        Mockito.`when`(usersCache.get(Mockito.anyString())).thenReturn(Fickle.empty())
         Mockito.`when`(generator.generateSessionId()).thenReturn(SESSION_ID)
-        Mockito.`when`(userRepo.findByLogin(GOOD_LOGIN)).thenReturn(Optional.of(TEST_USER))
+        Mockito.`when`(userRepo.findByLogin(GOOD_LOGIN)).thenReturn(Fickle.of(TEST_USER))
     }
 
     /*

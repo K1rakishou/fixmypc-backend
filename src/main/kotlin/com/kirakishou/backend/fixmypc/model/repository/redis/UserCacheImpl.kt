@@ -1,11 +1,13 @@
 package com.kirakishou.backend.fixmypc.model.repository.redis
 
+import com.hazelcast.core.HazelcastInstance
+import com.hazelcast.core.IMap
+import com.kirakishou.backend.fixmypc.model.Fickle
 import com.kirakishou.backend.fixmypc.model.User
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.cache.Cache
-import org.springframework.cache.CacheManager
 import org.springframework.stereotype.Component
-import java.util.*
+import java.util.concurrent.TimeUnit
+import javax.annotation.PostConstruct
 
 
 /**
@@ -16,24 +18,25 @@ import java.util.*
 class UserCacheImpl : UserCache {
 
     @Autowired
-    lateinit var cacheManager: CacheManager
+    lateinit var hazelcast: HazelcastInstance
 
-    val cache: Cache by lazy {
-        cacheManager.getCache("users")
+    lateinit var cache: IMap<String, User>
+
+    @PostConstruct
+    fun init() {
+        cache = hazelcast.getMap<String, User>("users_cache")
     }
 
     override fun save(key: String, user: User) {
-        cache.put(key, user)
+        cache.put(key, user, 10, TimeUnit.SECONDS)
     }
 
-    override fun get(key: String): Optional<User> {
-        val cachedValWrapped = cache.get(key) ?:
-                return Optional.ofNullable(null)
-
-        return Optional.of(cachedValWrapped.get() as User)
+    override fun get(key: String): Fickle<User> {
+        val value = cache[key] ?: return Fickle.empty()
+        return Fickle.of(value)
     }
 
     override fun delete(key: String) {
-        cache.evict(key)
+        cache.remove(key)
     }
 }

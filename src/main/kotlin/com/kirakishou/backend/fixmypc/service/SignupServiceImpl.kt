@@ -33,7 +33,7 @@ class SignupServiceImpl : SignupService {
         }
 
         val user = userRepo.findByLogin(login)
-        if (user.isPresent) {
+        if (user.isPresent()) {
             return SignupService.Result.LoginAlreadyExists()
         }
 

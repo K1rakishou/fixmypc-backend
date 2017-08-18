@@ -24,7 +24,7 @@ class LoginServiceImpl: LoginService {
     override fun doLogin(login: String, password: String): LoginService.Result {
         val userFromCache = userCache.get(login)
 
-        if (userFromCache.isPresent) {
+        if (userFromCache.isPresent()) {
             if (userFromCache.get().password != password) {
                 return LoginService.Result.WrongLoginOrPassword(login)
             }
@@ -33,12 +33,11 @@ class LoginServiceImpl: LoginService {
         }
 
         val newUserOpt = userRepo.findByLogin(login)
-        if (!newUserOpt.isPresent) {
+        if (!newUserOpt.isPresent()) {
             return LoginService.Result.WrongLoginOrPassword(login)
         }
 
         val newUser = newUserOpt.get()
-
         if (newUser.password != password) {
             return LoginService.Result.WrongLoginOrPassword(login)
         }

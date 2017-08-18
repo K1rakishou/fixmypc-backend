@@ -4,6 +4,7 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.kirakishou.backend.fixmypc.FixmypcApplication
 import com.kirakishou.backend.fixmypc.model.AccountType
 import com.kirakishou.backend.fixmypc.model.Constant
+import com.kirakishou.backend.fixmypc.model.Fickle
 import com.kirakishou.backend.fixmypc.model.User
 import com.kirakishou.backend.fixmypc.model.net.request.SignupRequest
 import com.kirakishou.backend.fixmypc.model.repository.postgresql.UserRepository
@@ -76,7 +77,7 @@ class SignupControllerTest {
         Mockito.`when`(service.doSignup(INCORRECT_LOGIN, GOOD_PASSWORD, GOOD_ACCOUNT_TYPE)).thenReturn(SignupService.Result.LoginIsIncorrect())
         Mockito.`when`(service.doSignup(GOOD_LOGIN, INCORRECT_PASSWORD_SHORT, GOOD_ACCOUNT_TYPE)).thenReturn(SignupService.Result.PasswordIsIncorrect())
         Mockito.`when`(service.doSignup(GOOD_LOGIN, INCORRECT_PASSWORD_LONG, GOOD_ACCOUNT_TYPE)).thenReturn(SignupService.Result.PasswordIsIncorrect())
-        Mockito.`when`(userRepo.findByLogin(GOOD_LOGIN)).thenReturn(Optional.of(TEST_USER))
+        Mockito.`when`(userRepo.findByLogin(GOOD_LOGIN)).thenReturn(Fickle.of(TEST_USER))
     }
 
     /*

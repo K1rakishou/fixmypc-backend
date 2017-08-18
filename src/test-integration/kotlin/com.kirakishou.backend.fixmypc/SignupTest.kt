@@ -57,7 +57,7 @@ class SignupTest {
         assertEquals(HttpStatus.CREATED, responseEntity.statusCode)
 
         val userInDb = userRepo.findByLogin(GOOD_LOGIN)
-        assertEquals(userInDb.isPresent, true)
+        assertEquals(userInDb.isPresent(), true)
         assertEquals(userInDb.get().login, GOOD_LOGIN)
         assertEquals(userInDb.get().password, PASSWORD)
     }

@@ -1,6 +1,7 @@
 package com.kirakishou.backend.fixmypc.service
 
 import com.kirakishou.backend.fixmypc.model.AccountType
+import com.kirakishou.backend.fixmypc.model.Fickle
 import com.kirakishou.backend.fixmypc.model.User
 import com.kirakishou.backend.fixmypc.model.repository.postgresql.UserRepository
 import com.kirakishou.backend.fixmypc.model.repository.redis.UserCache
@@ -41,10 +42,10 @@ class LoginServiceTest {
     fun init() {
         MockitoAnnotations.initMocks(this)
 
-        Mockito.`when`(userRepo.findByLogin(GOOD_LOGIN)).thenReturn(Optional.of(TEST_USER))
-        Mockito.`when`(userRepo.findByLogin(BAD_LOGIN)).thenReturn(Optional.empty())
+        Mockito.`when`(userRepo.findByLogin(GOOD_LOGIN)).thenReturn(Fickle.of(TEST_USER))
+        Mockito.`when`(userRepo.findByLogin(BAD_LOGIN)).thenReturn(Fickle.empty())
         Mockito.`when`(generator.generateSessionId()).thenReturn(GOOD_SESSION_ID)
-        Mockito.`when`(usersCache.get(Mockito.anyString())).thenReturn(Optional.ofNullable(null))
+        Mockito.`when`(usersCache.get(Mockito.anyString())).thenReturn(Fickle.empty())
     }
 
     @Test

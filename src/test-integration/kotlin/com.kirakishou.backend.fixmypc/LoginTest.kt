@@ -63,7 +63,7 @@ class LoginTest {
         assertEquals(response.sessionId.isEmpty(), false)
 
         val userInCache = userCache.get(GOOD_LOGIN)
-        assertEquals(userInCache.isPresent, true)
+        assertEquals(userInCache.isPresent(), true)
         assertEquals(userInCache.get().login, GOOD_LOGIN)
         assertEquals(userInCache.get().password, PASSWORD)
     }
