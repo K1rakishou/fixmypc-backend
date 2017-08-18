@@ -2,7 +2,7 @@ package com.kirakishou.backend.fixmypc
 
 import com.kirakishou.backend.fixmypc.model.AccountType
 import com.kirakishou.backend.fixmypc.model.Constant
-import com.kirakishou.backend.fixmypc.model.User
+import com.kirakishou.backend.fixmypc.model.entity.User
 import com.kirakishou.backend.fixmypc.model.net.request.LoginRequest
 import com.kirakishou.backend.fixmypc.model.net.response.LoginResponse
 import com.kirakishou.backend.fixmypc.model.repository.postgresql.UserRepository

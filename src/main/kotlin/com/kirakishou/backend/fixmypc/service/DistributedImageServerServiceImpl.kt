@@ -20,35 +20,25 @@ class DistributedImageServerServiceImpl : DistributedImageServerService {
     @Autowired
     lateinit var restTemplate: AsyncRestTemplate
 
-    @Autowired
-    lateinit var generator: Generator
-
     @PostConstruct
     fun init() {
         restTemplate.messageConverters.add(FormHttpMessageConverter())
     }
 
-    override fun <T> storeImage(serverId: Int, host: String, tempFile: String, originalFileName: String, imageType: Int,
+    override fun <T> storeImage(serverId: Int, host: String, tempFile: String, originalImageName: String, newImageName: String, imageType: Int,
                                 ownerId: Long, responseType: Class<T>): Flowable<T> {
 
         val mvmap = LinkedMultiValueMap<String, Any>()
         mvmap.add("images", FileSystemResource(tempFile))
 
-        val generatedImageName = generator.generateImageName()
-        val newImageName = "n${serverId}_i${generatedImageName}"
-
-        val distImage = DistributedImage()
-        distImage.imageOrigName.add(originalFileName)
-        distImage.imageType.add(imageType)
-        distImage.imageNewName.add(newImageName)
-        distImage.ownerId.add(ownerId)
+        val distImage = DistributedImage(originalImageName, imageType, newImageName, ownerId)
         mvmap.add("images_info", distImage)
 
         val headers = HttpHeaders()
         headers.contentType = MediaType.MULTIPART_FORM_DATA
 
         val httpEntity = HttpEntity<MultiValueMap<String, Any>>(mvmap, headers)
-        val url = "http://${host}/v1/api/upload_image"
+        val url = "http://$host/v1/api/upload_image"
 
         return Flowable.fromFuture(restTemplate.postForEntity(url, httpEntity, responseType))
                 .map {

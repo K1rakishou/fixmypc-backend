@@ -6,4 +6,5 @@ package com.kirakishou.backend.fixmypc.service
 interface Generator {
     fun generateSessionId(): String
     fun generateImageName(): String
+    fun generateMalfunctionRequestId(): String
 }

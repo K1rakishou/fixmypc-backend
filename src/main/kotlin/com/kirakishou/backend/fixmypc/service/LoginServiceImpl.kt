@@ -32,12 +32,12 @@ class LoginServiceImpl: LoginService {
             return LoginService.Result.Ok(userFromCache.get().sessionId!!)
         }
 
-        val newUserOpt = userRepo.findByLogin(login)
-        if (!newUserOpt.isPresent()) {
+        val newUserFickle = userRepo.findByLogin(login)
+        if (!newUserFickle.isPresent()) {
             return LoginService.Result.WrongLoginOrPassword(login)
         }
 
-        val newUser = newUserOpt.get()
+        val newUser = newUserFickle.get()
         if (newUser.password != password) {
             return LoginService.Result.WrongLoginOrPassword(login)
         }

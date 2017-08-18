@@ -1,7 +1,7 @@
 package com.kirakishou.backend.fixmypc.service
 
-import com.kirakishou.backend.fixmypc.util.GenerateUtils
 import org.springframework.stereotype.Component
+import java.security.SecureRandom
 
 /**
  * Created by kirakishou on 7/11/2017.
@@ -9,12 +9,33 @@ import org.springframework.stereotype.Component
 
 @Component
 class GeneratorImpl : Generator {
+    private val alphabetWithSpecialSymbols = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_!@#$%^&*()"
+    private val alphabetWithoutSpecialSymbols = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    private val random = SecureRandom()
+
+    fun generateRandomString(len: Int, alphabet: String): String {
+        val bytes = ByteArray(len)
+        random.nextBytes(bytes)
+
+        val sb = StringBuilder()
+        val alphabetLen = alphabet.length
+
+        for (i in 0 until len) {
+            sb.append(alphabet[Math.abs(bytes[i] % alphabetLen)])
+        }
+
+        return sb.toString()
+    }
 
     override fun generateSessionId(): String {
-        return GenerateUtils.generateSessionId()
+        return generateRandomString(64, alphabetWithSpecialSymbols)
     }
 
     override fun generateImageName(): String {
-        return GenerateUtils.generateImageName()
+        return generateRandomString(96, alphabetWithoutSpecialSymbols)
+    }
+
+    override fun generateMalfunctionRequestId(): String {
+        return generateRandomString(64, alphabetWithSpecialSymbols)
     }
 }

@@ -6,6 +6,7 @@ import com.kirakishou.backend.fixmypc.manager.FileServersManagerImpl
 import com.kirakishou.backend.fixmypc.model.FileServerAnswer
 import com.kirakishou.backend.fixmypc.model.FileServerErrorCode
 import com.kirakishou.backend.fixmypc.model.FileServerInfo
+import com.kirakishou.backend.fixmypc.model.entity.Malfunction
 import com.kirakishou.backend.fixmypc.model.net.request.MalfunctionRequest
 import io.reactivex.Flowable
 import io.reactivex.Single
@@ -40,6 +41,9 @@ class MalfunctionRequestServiceImpl : MalfunctionRequestService {
     private lateinit var log: FileLog
 
     @Autowired
+    lateinit var generator: Generator
+
+    @Autowired
     private lateinit var fileServerManager: FileServersManager
 
     @Autowired
@@ -64,13 +68,16 @@ class MalfunctionRequestServiceImpl : MalfunctionRequestService {
     override fun handleNewMalfunctionRequest(uploadingFiles: Array<MultipartFile>, imageType: Int,
                                              request: MalfunctionRequest): Single<MalfunctionRequestService.Result> {
 
+        val newMalfunctionRequest = Malfunction()
+        val ownerId = 0L //getOwnerId
+
         //return error code if user somehow sent a request without any images
         if (uploadingFiles.isEmpty()) {
             log.e("No files to upload")
             return Single.just(MalfunctionRequestService.Result.NoFilesToUpload())
         }
 
-        //return error code if user somehow sent more that "maxImagesPerRequest" images
+        //return error code if user somehow sent more than "maxImagesPerRequest" images
         if (uploadingFiles.size > maxImagesPerRequest) {
             log.e("Too many files to upload (uploadingFiles.size > maxImagesPerRequest)")
             return Single.just(MalfunctionRequestService.Result.ImagesCountExceeded())
@@ -107,16 +114,19 @@ class MalfunctionRequestServiceImpl : MalfunctionRequestService {
 
         return Flowable.just(zippedFilesAndServers)
                 .subscribeOn(Schedulers.io())
+                //send all images
                 .flatMap { filesAndServers ->
-                    return@flatMap handleFiles(filesAndServers, uploadingFiles)
+                    return@flatMap handleFiles(imageType, ownerId, filesAndServers, uploadingFiles)
                 }
+                //collect all responses
                 .toList()
                 .map { results ->
-                    //whatever the results - do not forget to delete temp files
+                    //whatever the responses - do not forget to delete temp files
                     tempFileService.deleteAllTempFiles()
 
                     for (result in results) {
                         if (result !is MalfunctionRequestService.Result.Ok) {
+                            //the only possible reason for this to happen is when all file servers are down
                             log.e("Error. Something went wrong")
                             return@map result
                         }
@@ -127,15 +137,17 @@ class MalfunctionRequestServiceImpl : MalfunctionRequestService {
                 }
     }
 
-    private fun handleFiles(filesAndServers: List<Pair<MultipartFile, FileServersManagerImpl.ServerWithId>>,
+    private fun handleFiles(imageType: Int, ownerId: Long, filesAndServers: List<Pair<MultipartFile, FileServersManagerImpl.ServerWithId>>,
                             uploadingFiles: Array<MultipartFile>): Flowable<out MalfunctionRequestService.Result> {
 
         val responses = arrayListOf<Flowable<FileServerAnswer>>()
 
         //send all images and retrieve responds
         for ((multipartFile, fileServerInfo) in filesAndServers) {
+            val newImageName = makeNewImageName(fileServerInfo.id)
             val tempFile = tempFileService.fromMultipartFile(multipartFile)
-            responses += storeImage(fileServerInfo, tempFile, multipartFile)
+
+            responses += storeImage(newImageName, imageType, ownerId, fileServerInfo, tempFile, multipartFile)
         }
 
         //TODO: Would be nice to get rid of the blockingGet() but dunno how to do that atm
@@ -186,9 +198,10 @@ class MalfunctionRequestServiceImpl : MalfunctionRequestService {
             val fileServer = fileServerFickle.get()
             val multipartFile = getFileByOriginalName(uploadingFiles, badFile)
             val tempFile = tempFileService.fromMultipartFile(multipartFile)
+            val newImageName = makeNewImageName(fileServer.id)
             log.d("Trying to resend a file. fileIndex = ${index}, serverId = ${fileServer.id}")
 
-            val response = storeImage(fileServer, tempFile, multipartFile)
+            val response = storeImage(newImageName, imageType, ownerId, fileServer, tempFile, multipartFile)
                     .blockingFirst()
 
             val errorCode = FileServerErrorCode.from(response.errorCode)
@@ -210,14 +223,21 @@ class MalfunctionRequestServiceImpl : MalfunctionRequestService {
         return Flowable.just(MalfunctionRequestService.Result.Ok())
     }
 
-    private fun storeImage(server: FileServersManagerImpl.ServerWithId, tempFile: String, uploadingFile: MultipartFile): Flowable<FileServerAnswer> {
+    private fun makeNewImageName(serverId: Int): String {
+        val generatedImageName = generator.generateImageName()
+        return "n${serverId}_i$generatedImageName"
+    }
+
+    private fun storeImage(newImageName: String, imageType: Int, ownerId: Long, server: FileServersManagerImpl.ServerWithId,
+                           tempFile: String, uploadingFile: MultipartFile): Flowable<FileServerAnswer> {
+
         return distributedImageServerService.storeImage(server.id, server.fileServerInfo.host, tempFile,
-                uploadingFile.originalFilename, 0, 0L, FileServerAnswer::class.java)
+                uploadingFile.originalFilename, newImageName, imageType, ownerId, FileServerAnswer::class.java)
                 //max request waiting time
                 .timeout(FILE_SERVER_REQUEST_TIMEOUT, TimeUnit.SECONDS)
                 .onErrorResumeNext({ error: Throwable ->
                     if (error is TimeoutException) {
-                        log.d("Operation was cancelled because of timeout")
+                        log.d("Operation was cancelled due to timeout")
                         fileServerManager.notWorking(server.id)
 
                         return@onErrorResumeNext Flowable.just(FileServerAnswer(

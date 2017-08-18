@@ -2,7 +2,7 @@ package com.kirakishou.backend.fixmypc.service
 
 import com.kirakishou.backend.fixmypc.model.AccountType
 import com.kirakishou.backend.fixmypc.model.Fickle
-import com.kirakishou.backend.fixmypc.model.User
+import com.kirakishou.backend.fixmypc.model.entity.User
 import com.kirakishou.backend.fixmypc.model.repository.postgresql.UserRepository
 import org.junit.Before
 import org.junit.Test

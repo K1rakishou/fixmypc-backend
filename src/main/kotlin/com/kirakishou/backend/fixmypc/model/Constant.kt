@@ -25,6 +25,10 @@ object Constant {
         val SERVERS_IPS = arrayListOf("127.0.0.1:9119")
     }
 
+    object HazelcastNames {
+        val USER_CACHE_KEY = "user_cache"
+    }
+
     val MIN_PASSWORD_LENGTH = 10
     val MAX_PASSWORD_LENGTH = 32
     val USER_CACHE_LIFE_TIME_SECONDS = 60L
