@@ -57,7 +57,11 @@ class MalfunctionRequestController {
                         }
 
                         is MalfunctionRequestService.Result.AllFileServersAreNotWorking -> {
-                            return@map ResponseEntity(MalfunctionResponse(ServerErrorCode.SEC_ALL_FILE_SERVERS_ARE_NOT_WORKING.value), HttpStatus.SERVICE_UNAVAILABLE)
+                            return@map ResponseEntity(MalfunctionResponse(ServerErrorCode.SEC_ALL_FILE_SERVERS_ARE_NOT_WORKING.value), HttpStatus.INTERNAL_SERVER_ERROR)
+                        }
+
+                        is MalfunctionRequestService.Result.DatabaseError -> {
+                            return@map ResponseEntity(MalfunctionResponse(ServerErrorCode.SEC_DATABASE_ERROR.ordinal), HttpStatus.INTERNAL_SERVER_ERROR)
                         }
 
                         is MalfunctionRequestService.Result.UnknownError -> {

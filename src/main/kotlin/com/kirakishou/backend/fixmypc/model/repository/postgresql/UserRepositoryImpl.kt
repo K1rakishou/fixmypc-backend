@@ -2,6 +2,7 @@ package com.kirakishou.backend.fixmypc.model.repository.postgresql
 
 import com.kirakishou.backend.fixmypc.extension.prepareStatementScrollable
 import com.kirakishou.backend.fixmypc.extension.transactional
+import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.AccountType
 import com.kirakishou.backend.fixmypc.model.Fickle
 import com.kirakishou.backend.fixmypc.model.entity.User
@@ -19,6 +20,9 @@ class UserRepositoryImpl : UserRepository {
     @Autowired
     lateinit var hikariCP: DataSource
 
+    @Autowired
+    lateinit var log: FileLog
+
     override fun findByLogin(login: String): Fickle<User> {
         var user: Fickle<User> = Fickle.empty()
 
@@ -27,9 +31,12 @@ class UserRepositoryImpl : UserRepository {
                 ps.setString(1, login)
                 ps.executeQuery().use { rs ->
                     if (rs.first()) {
-                        user = Fickle.of(User(rs.getString("login"),
+                        user = Fickle.of(User(
+                                rs.getLong("owner_id"),
+                                rs.getString("login"),
                                 rs.getString("password"),
-                                AccountType.from(rs.getInt("account_type"))))
+                                AccountType.from(rs.getInt("account_type")),
+                                rs.getTimestamp("created_on")))
                     }
                 }
             }
@@ -39,9 +46,9 @@ class UserRepositoryImpl : UserRepository {
     }
 
     override fun createNew(user: User) {
-        hikariCP.connection.transactional { connection ->
-            connection.prepareStatement("INSERT INTO public.users (login, password, account_type, created_on, " +
-                    "deleted_on) VALUES (?, ?, ?, NOW(), NULL)").use { ps ->
+        hikariCP.connection.transactional(log) { connection ->
+            connection.prepareStatement("INSERT INTO public.users (login, password, account_type, created_on, deleted_on) " +
+                    "VALUES (?, ?, ?, NOW(), NULL)").use { ps ->
 
                 ps.setString(1, user.login)
                 ps.setString(2, user.password)

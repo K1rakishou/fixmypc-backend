@@ -70,7 +70,7 @@ class LoginControllerTest {
     private val BAD_LOGIN: String = "badlogin@gmail.com"
     private val BAD_PASSWORD: String = "badpassword"
     private val SESSION_ID: String = "123"
-    private val TEST_USER = User(GOOD_LOGIN, GOOD_PASSWORD, AccountType.Guest, Timestamp(Date().time))
+    private val TEST_USER = User(0L, GOOD_LOGIN, GOOD_PASSWORD, AccountType.Guest, Timestamp(Date().time))
 
     @Before
     fun init() {

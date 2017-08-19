@@ -34,7 +34,7 @@ class SignupServiceTest {
     private val GOOD_ACCOUNT_TYPE: AccountType = AccountType.Client
     private val INCORRECT_PASSWORD_SHORT: String = "123"
     private val INCORRECT_PASSWORD_LONG: String = "123643563463463465687679670-7698-6706783567563486479758075890-78"
-    private val TEST_USER = User(GOOD_LOGIN, GOOD_PASSWORD, AccountType.Guest, Timestamp(Date().time))
+    private val TEST_USER = User(0L, GOOD_LOGIN, GOOD_PASSWORD, AccountType.Guest, Timestamp(Date().time))
 
     @Before
     fun init() {

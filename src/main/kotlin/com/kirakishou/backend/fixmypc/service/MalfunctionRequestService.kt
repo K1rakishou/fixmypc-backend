@@ -13,6 +13,8 @@ interface MalfunctionRequestService {
         class FileSizeExceeded: Result
         class RequestSizeExceeded: Result
         class AllFileServersAreNotWorking: Result
+        class AllImagesUploaded(val names: List<String>): Result
+        class DatabaseError: Result
         class UnknownError: Result
     }
 

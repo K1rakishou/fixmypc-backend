@@ -26,7 +26,7 @@ open class AppConfig {
     @Bean
     fun provideHazelcast(): HazelcastInstance {
         val config = ClientConfig()
-        config.networkConfig.addAddress("192.168.99.100:9230")
+        //config.networkConfig.addAddress("192.168.99.100:9230")
         config.networkConfig.addAddress("192.168.99.100:9229")
 
         return HazelcastClient.newHazelcastClient(config)

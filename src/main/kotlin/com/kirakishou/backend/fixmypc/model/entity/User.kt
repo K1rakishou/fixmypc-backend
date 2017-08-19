@@ -8,11 +8,11 @@ import java.sql.Timestamp
  * Created by kirakishou on 7/9/2017.
  */
 
-data class User(var login: String = "",
+data class User(var owner_id: Long = 0L,
+                var login: String = "",
                 var password: String = "",
                 var accountType: AccountType = AccountType.Guest,
-                var createdOn: Timestamp? = null,
-                var id: Long = 0) : Serializable {
+                var createdOn: Timestamp? = null) : Serializable {
 
     var sessionId: String? = null
 }

@@ -36,7 +36,7 @@ class LoginServiceTest {
     private val GOOD_LOGIN: String = "test@gmail.com"
     private val GOOD_PASSWORD: String = "1234567890"
     private val GOOD_SESSION_ID: String = "abcdef1234567890"
-    private val TEST_USER = User(GOOD_LOGIN, GOOD_PASSWORD, AccountType.Guest, Timestamp(Date().time))
+    private val TEST_USER = User(0L, GOOD_LOGIN, GOOD_PASSWORD, AccountType.Guest, Timestamp(Date().time))
 
     @Before
     fun init() {

@@ -6,8 +6,6 @@ import com.kirakishou.backend.fixmypc.model.repository.postgresql.UserRepository
 import com.kirakishou.backend.fixmypc.util.TextUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
-import java.sql.Timestamp
-import java.util.*
 
 /**
  * Created by kirakishou on 7/15/2017.
@@ -37,7 +35,7 @@ class SignupServiceImpl : SignupService {
             return SignupService.Result.LoginAlreadyExists()
         }
 
-        val newUser = User(login, password, accountType, Timestamp(Date().time))
+        val newUser = User(0L, login, password, accountType)
         userRepo.createNew(newUser)
 
         return SignupService.Result.Ok()

@@ -1,5 +1,6 @@
 package com.kirakishou.backend.fixmypc.log
 
+import com.kirakishou.backend.fixmypc.util.ServerUtils
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -12,12 +13,11 @@ import java.util.concurrent.Semaphore
 import java.util.concurrent.atomic.AtomicBoolean
 
 open class FileLogImpl : FileLog {
-    val MSECS_IN_MINUTE = (1000 * 60).toLong()
-    val MSECS_IN_HOUR = MSECS_IN_MINUTE * 60
-    val defaultFormat: String = "yyyy-MM-dd HH:mm:ss"
-    val LOG_DUMP_TIME: Long = MSECS_IN_MINUTE * 10
-
-    private val sdf2 = SimpleDateFormat("dd:MM:yyyy HH:mm:ss")
+    private val MSECS_IN_MINUTE = (1000 * 60).toLong()
+    private val MSECS_IN_HOUR = MSECS_IN_MINUTE * 60
+    private val MSECS_IN_DAY = MSECS_IN_HOUR * 24
+    private val defaultFormat: String = "yyyy-MM-dd HH:mm:ss"
+    private val LOG_DUMP_TIME: Long = MSECS_IN_MINUTE * 10
     private val logQueue = LinkedBlockingQueue<String>()
     private val semaphore = Semaphore(0)
 
@@ -44,15 +44,15 @@ open class FileLogImpl : FileLog {
         return Date().time
     }
 
-    private fun longToFormattedTime(time: Long, format: String): String {
+    fun longToFormatedTime(time: Long, format: String): String {
         val dateFormat = SimpleDateFormat(format)
         val date = Date()
         date.time = time
         return dateFormat.format(date)
     }
 
-    private fun getFormattedTime(): String {
-        return longToFormattedTime(now(), defaultFormat)
+    fun getFormattedTime(): String {
+        return longToFormatedTime(now(), defaultFormat)
     }
 
     private fun dumpLogToFile() {
@@ -150,7 +150,8 @@ open class FileLogImpl : FileLog {
     }
 
     override fun e(message: String) {
-        val str = "[" + sdf2.format(Date().time) + "] " + message + "\n"
+        val sdf2 = SimpleDateFormat("dd:MM:yyyy HH:mm:ss")
+        val str = "[" + sdf2.format(ServerUtils.getTimeFast()) + "] " + message + "\n"
 
         synchronized(logQueue) {
             logQueue.add(str)
@@ -166,7 +167,8 @@ open class FileLogImpl : FileLog {
     }
 
     override fun e(exception: Throwable) {
-        val str = StringBuilder("[" + sdf2.format(Date().time) + "] " + exception + "\n")
+        val sdf2 = SimpleDateFormat("dd:MM:yyyy HH:mm:ss")
+        val str = StringBuilder("[" + sdf2.format(ServerUtils.getTimeFast()) + "] " + exception + "\n")
         val ste = exception.stackTrace
         for (e in ste) {
             str.append(e.toString())
@@ -188,7 +190,8 @@ open class FileLogImpl : FileLog {
     }
 
     override fun d(message: String) {
-        val str = "[" + sdf2.format(Date().time) + "] " + message + "\n"
+        val sdf2 = SimpleDateFormat("dd:MM:yyyy HH:mm:ss")
+        val str = "[" + sdf2.format(ServerUtils.getTimeFast()) + "] " + message + "\n"
 
         synchronized(logQueue) {
             logQueue.add(str)
@@ -204,7 +207,8 @@ open class FileLogImpl : FileLog {
     }
 
     override fun w(message: String) {
-        val str = "[" + sdf2.format(Date().time) + "] " + message + "\n"
+        val sdf2 = SimpleDateFormat("dd:MM:yyyy HH:mm:ss")
+        val str = "[" + sdf2.format(ServerUtils.getTimeFast()) + "] " + message + "\n"
 
         synchronized(logQueue) {
             logQueue.add(str)

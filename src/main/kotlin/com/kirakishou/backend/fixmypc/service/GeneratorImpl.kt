@@ -9,8 +9,8 @@ import java.security.SecureRandom
 
 @Component
 class GeneratorImpl : Generator {
-    private val alphabetWithSpecialSymbols = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_!@#$%^&*()"
-    private val alphabetWithoutSpecialSymbols = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    private val numericAlphabeticSpecialSymbols = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_!@#$%^&*()"
+    private val numericAlphabetic = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
     private val random = SecureRandom()
 
     fun generateRandomString(len: Int, alphabet: String): String {
@@ -28,14 +28,14 @@ class GeneratorImpl : Generator {
     }
 
     override fun generateSessionId(): String {
-        return generateRandomString(64, alphabetWithSpecialSymbols)
+        return generateRandomString(64, numericAlphabeticSpecialSymbols)
     }
 
     override fun generateImageName(): String {
-        return generateRandomString(96, alphabetWithoutSpecialSymbols)
+        return generateRandomString(64, numericAlphabetic)
     }
 
     override fun generateMalfunctionRequestId(): String {
-        return generateRandomString(64, alphabetWithSpecialSymbols)
+        return generateRandomString(64, numericAlphabetic)
     }
 }
