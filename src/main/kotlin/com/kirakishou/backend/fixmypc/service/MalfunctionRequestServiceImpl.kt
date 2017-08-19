@@ -7,6 +7,7 @@ import com.kirakishou.backend.fixmypc.model.*
 import com.kirakishou.backend.fixmypc.model.entity.Malfunction
 import com.kirakishou.backend.fixmypc.model.net.request.MalfunctionRequest
 import com.kirakishou.backend.fixmypc.model.repository.postgresql.MalfunctionRepository
+import com.kirakishou.backend.fixmypc.util.TextUtils
 import io.reactivex.Flowable
 import io.reactivex.Single
 import io.reactivex.schedulers.Schedulers
@@ -151,9 +152,12 @@ class MalfunctionRequestServiceImpl : MalfunctionRequestService {
             } catch (e: SQLException) {
                 log.e(e)
 
-                //TODO: we failed to save malfunction request in the DB, so we have to notify file servers to delete images related to the request
+                //we failed to save malfunction request in the DB, so we have to notify file servers to delete images related to the request
                 for (imageName in imageNamesList) {
-                    fileServerService.deleteImage(0L, malfunctionRequestId, imageName)
+                    val extractedImageInfo = TextUtils.parseImageName(imageName)
+                    val host = fileServerManager.getHostById(extractedImageInfo.serverId)
+
+                    fileServerService.deleteAllImagesForRequest(ownerId, host, malfunctionRequestId, imageName)
                 }
 
                 return@map MalfunctionRequestService.Result.DatabaseError()

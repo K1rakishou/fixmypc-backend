@@ -10,4 +10,5 @@ interface FileServersManager {
     fun getAliveServersCount(): Int
     fun isAtLeastOneServerAlive(): Boolean
     fun notWorking(i: Int)
+    fun getHostById(id: Int): String
 }

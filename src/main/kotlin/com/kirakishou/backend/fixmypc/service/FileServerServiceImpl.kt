@@ -3,7 +3,9 @@ package com.kirakishou.backend.fixmypc.service
 import com.kirakishou.backend.fixmypc.model.DistributedImage
 import com.kirakishou.backend.fixmypc.model.FileServerAnswer
 import com.kirakishou.backend.fixmypc.model.FileServerAnswerWrapper
+import com.kirakishou.backend.fixmypc.model.FileServerErrorCode
 import io.reactivex.Flowable
+import io.reactivex.Single
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.io.FileSystemResource
 import org.springframework.http.HttpEntity
@@ -54,7 +56,13 @@ class FileServerServiceImpl : FileServerService {
                 }
     }
 
-    override fun deleteImage(owner_id: Long, malfunctionRequestId: String, imageName: String) {
+    override fun deleteAllImagesForRequest(ownerId: Long, host: String, malfunctionRequestId: String, imageName: String): Single<FileServerErrorCode> {
+        val url = "/v1/api/malfunction_image/${ownerId}/${malfunctionRequestId}"
 
+        return Single.fromFuture(restTemplate.delete(url))
+                .map { errorCode ->
+                    val errCode = errorCode as Int
+                    return@map FileServerErrorCode.from(errCode)
+                }
     }
 }

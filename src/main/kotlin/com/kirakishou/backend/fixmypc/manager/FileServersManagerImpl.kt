@@ -135,10 +135,24 @@ class FileServersManagerImpl : FileServersManager {
         return false
     }
 
-    override fun notWorking(i: Int) {
+    override fun notWorking(id: Int) {
+        if (id < 0 || id > fileServerInfoList.size) {
+            throw RuntimeException("getHostById dad id")
+        }
+
         lock.lockRead {
-            fileServerInfoList[i].isWorking = false
-            fileServerInfoList[i].timeOfDeath = ServerUtils.getTimeFast()
+            fileServerInfoList[id].isWorking = false
+            fileServerInfoList[id].timeOfDeath = ServerUtils.getTimeFast()
+        }
+    }
+
+    override fun getHostById(id: Int): String {
+        if (id < 0 || id > fileServerInfoList.size) {
+            throw RuntimeException("getHostById dad id")
+        }
+
+        return lock.lockReadReturn {
+            fileServerInfoList[id].host
         }
     }
 
