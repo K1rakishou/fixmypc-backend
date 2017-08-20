@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
+import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RequestPart
@@ -29,15 +30,20 @@ class MalfunctionRequestController {
     @RequestMapping(
             path = arrayOf(Constant.Paths.MALFUNCTION_REQUEST_CONTROLLER_PATH),
             method = arrayOf(RequestMethod.POST))
-    fun malfunctionRequest(@RequestPart("photos") uploadingFiles: Array<MultipartFile>,
+    fun malfunctionRequest(@RequestHeader(value = "session_id", defaultValue = "") sessionId: String,
+                           @RequestPart("photos") uploadingFiles: Array<MultipartFile>,
                            @RequestPart("request") request: MalfunctionRequest,
                            @RequestPart("images_type") imagesType: Int): Single<ResponseEntity<MalfunctionResponse>> {
 
-        return malfunctionRequestService.handleNewMalfunctionRequest(uploadingFiles, imagesType, request)
+        return malfunctionRequestService.handleNewMalfunctionRequest(uploadingFiles, imagesType, request, sessionId)
                 .map { result ->
                     when (result) {
                         is MalfunctionRequestService.Result.Ok -> {
                             return@map ResponseEntity(MalfunctionResponse(ServerErrorCode.SEC_OK.value), HttpStatus.OK)
+                        }
+
+                        is MalfunctionRequestService.Result.SessionIdExpired -> {
+                            return@map ResponseEntity(MalfunctionResponse(ServerErrorCode.SEC_SESSION_ID_EXPIRED.value), HttpStatus.UNAUTHORIZED)
                         }
 
                         is MalfunctionRequestService.Result.NoFilesToUpload -> {

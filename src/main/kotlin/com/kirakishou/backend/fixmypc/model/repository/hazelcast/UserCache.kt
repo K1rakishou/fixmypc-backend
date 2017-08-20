@@ -1,4 +1,4 @@
-package com.kirakishou.backend.fixmypc.model.repository.redis
+package com.kirakishou.backend.fixmypc.model.repository.hazelcast
 
 import com.kirakishou.backend.fixmypc.model.Fickle
 import com.kirakishou.backend.fixmypc.model.entity.User

@@ -6,6 +6,7 @@ import com.kirakishou.backend.fixmypc.manager.FileServersManagerImpl
 import com.kirakishou.backend.fixmypc.model.*
 import com.kirakishou.backend.fixmypc.model.entity.Malfunction
 import com.kirakishou.backend.fixmypc.model.net.request.MalfunctionRequest
+import com.kirakishou.backend.fixmypc.model.repository.hazelcast.UserCache
 import com.kirakishou.backend.fixmypc.model.repository.postgresql.MalfunctionRepository
 import com.kirakishou.backend.fixmypc.util.TextUtils
 import io.reactivex.Flowable
@@ -54,6 +55,9 @@ class MalfunctionRequestServiceImpl : MalfunctionRequestService {
     @Autowired
     private lateinit var malfunctionRepository: MalfunctionRepository
 
+    @Autowired
+    private lateinit var userCache: UserCache
+
     private val FILE_SERVER_REQUEST_TIMEOUT: Long = 7L
 
     @PostConstruct
@@ -68,9 +72,17 @@ class MalfunctionRequestServiceImpl : MalfunctionRequestService {
     }
 
     override fun handleNewMalfunctionRequest(uploadingFiles: Array<MultipartFile>, imageType: Int,
-                                             request: MalfunctionRequest): Single<MalfunctionRequestService.Result> {
+                                             request: MalfunctionRequest, sessionId: String): Single<MalfunctionRequestService.Result> {
 
-        val ownerId = 0L //getOwnerId
+        //if userCache does not contain this sessionId that means it has expired and user needs to login again
+        val userFickle = userCache.get(sessionId)
+        if (!userFickle.isPresent()) {
+            log.d("sessionId $sessionId was not found in the cache")
+            return Single.just(MalfunctionRequestService.Result.SessionIdExpired())
+        }
+
+        val user = userFickle.get()
+        val ownerId = user.id
         val malfunctionRequestId = generator.generateMalfunctionRequestId()
 
         //return error code if user somehow sent a request without any images

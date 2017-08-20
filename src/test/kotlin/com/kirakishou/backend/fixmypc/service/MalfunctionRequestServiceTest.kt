@@ -116,6 +116,7 @@ class MalfunctionRequestServiceTest {
         val host = "127.0.0.1"
         val tempFile = "tempfile"
         val malfunctionRequestId = "34563467"
+        val sessionId = "1234567"
         val uploadingFiles = arrayOf<MultipartFile>(MockMultipartFile("test", origFileName,
                 MediaType.IMAGE_JPEG_VALUE, getBufferedImageBytes(normalImage)))
 
@@ -134,7 +135,7 @@ class MalfunctionRequestServiceTest {
                 TestUtils.anyObject()))
                 .thenReturn(Flowable.just(FileServerAnswerWrapper(FileServerAnswer(FileServerErrorCode.OK.value, emptyList()), "")))
 
-        val response = service.handleNewMalfunctionRequest(uploadingFiles, 0, MalfunctionRequest(0, "test"))
+        val response = service.handleNewMalfunctionRequest(uploadingFiles, 0, MalfunctionRequest(0, "test"), sessionId)
                 .blockingGet()
 
         assertEquals(true, response is MalfunctionRequestService.Result.Ok)
@@ -146,6 +147,7 @@ class MalfunctionRequestServiceTest {
         val host = "127.0.0.1"
         val tempFile = "tempfile"
         val malfunctionRequestId = "34563467"
+        val sessionId = "1234567"
 
         val uploadingFiles = arrayOf<MultipartFile>(
                 MockMultipartFile("test", origFileName, MediaType.IMAGE_JPEG_VALUE, getBufferedImageBytes(normalImage)),
@@ -207,7 +209,7 @@ class MalfunctionRequestServiceTest {
                 TestUtils.anyObject()))
                 .thenReturn(Flowable.just(FileServerAnswerWrapper(FileServerAnswer(FileServerErrorCode.OK.value, emptyList()), "")))
 
-        val response = service.handleNewMalfunctionRequest(uploadingFiles, 0, MalfunctionRequest(0, "test"))
+        val response = service.handleNewMalfunctionRequest(uploadingFiles, 0, MalfunctionRequest(0, "test"), sessionId)
                 .blockingGet()
 
         assertEquals(true, response is MalfunctionRequestService.Result.Ok)
@@ -216,14 +218,15 @@ class MalfunctionRequestServiceTest {
     @Test
     fun shouldNotUploadIfOneOfTheImagesSizeExceedsMaxSizeValue() {
         val origFileName = "1234567890-234236-236-236-236.jpg"
+        val sessionId = "1234567"
         val uploadingFiles = arrayOf<MultipartFile>(
                 MockMultipartFile("test", origFileName, MediaType.IMAGE_JPEG_VALUE, getBufferedImageBytes(tooBigImage)),
                 MockMultipartFile("test2", origFileName, MediaType.IMAGE_JPEG_VALUE, getBufferedImageBytes(normalImage)),
                 MockMultipartFile("test3", origFileName, MediaType.IMAGE_JPEG_VALUE, getBufferedImageBytes(normalImage)),
                 MockMultipartFile("test4", origFileName, MediaType.IMAGE_JPEG_VALUE, getBufferedImageBytes(normalImage)))
 
-        val response = service.handleNewMalfunctionRequest(uploadingFiles, 0, MalfunctionRequest(0, "test")).
-                blockingGet()
+        val response = service.handleNewMalfunctionRequest(uploadingFiles, 0, MalfunctionRequest(0, "test"), sessionId)
+                .blockingGet()
 
         assertEquals(true, response is MalfunctionRequestService.Result.FileSizeExceeded)
     }
@@ -231,6 +234,8 @@ class MalfunctionRequestServiceTest {
     @Test
     fun shouldNotUploadIfImagesCountMoreThatImagesPerRequestValue() {
         val origFileName = "1234567890-234236-236-236-236.jpg"
+
+        val sessionId = "1234567"
         val uploadingFiles = arrayOf<MultipartFile>(
                 MockMultipartFile("test", origFileName, MediaType.IMAGE_JPEG_VALUE, getBufferedImageBytes(normalImage)),
                 MockMultipartFile("test2", origFileName, MediaType.IMAGE_JPEG_VALUE, getBufferedImageBytes(normalImage)),
@@ -238,7 +243,7 @@ class MalfunctionRequestServiceTest {
                 MockMultipartFile("test4", origFileName, MediaType.IMAGE_JPEG_VALUE, getBufferedImageBytes(normalImage)),
                 MockMultipartFile("test5", origFileName, MediaType.IMAGE_JPEG_VALUE, getBufferedImageBytes(normalImage)))
 
-        val response = service.handleNewMalfunctionRequest(uploadingFiles, 0, MalfunctionRequest(0, "test"))
+        val response = service.handleNewMalfunctionRequest(uploadingFiles, 0, MalfunctionRequest(0, "test"), sessionId)
                 .blockingGet()
 
         assertEquals(true, response is MalfunctionRequestService.Result.ImagesCountExceeded)
@@ -247,11 +252,12 @@ class MalfunctionRequestServiceTest {
     @Test
     fun shouldNotUploadInThereAreNoWorkingFileServers() {
         val origFileName = "1234567890-234236-236-236-236.jpg"
+        val sessionId = "1234567"
         val uploadingFiles = arrayOf<MultipartFile>(MockMultipartFile("test", origFileName, MediaType.IMAGE_JPEG_VALUE, getBufferedImageBytes(normalImage)))
 
         Mockito.`when`(fileServerManager.isAtLeastOneServerAlive()).thenReturn(false)
 
-        val response = service.handleNewMalfunctionRequest(uploadingFiles, 0, MalfunctionRequest(0, "test"))
+        val response = service.handleNewMalfunctionRequest(uploadingFiles, 0, MalfunctionRequest(0, "test"), sessionId)
                 .blockingGet()
 
         assertEquals(true, response is MalfunctionRequestService.Result.AllFileServersAreNotWorking)
@@ -260,8 +266,9 @@ class MalfunctionRequestServiceTest {
     @Test
     fun shouldNotUploadIfThereAreNoFiles() {
         val uploadingFiles = arrayOf<MultipartFile>()
+        val sessionId = "1234567"
 
-        val response = service.handleNewMalfunctionRequest(uploadingFiles, 0, MalfunctionRequest(0, "test"))
+        val response = service.handleNewMalfunctionRequest(uploadingFiles, 0, MalfunctionRequest(0, "test"), sessionId)
                 .blockingGet()
 
         assertEquals(true, response is MalfunctionRequestService.Result.NoFilesToUpload)
@@ -273,6 +280,7 @@ class MalfunctionRequestServiceTest {
         val host = "127.0.0.1"
         val tempFile = "tempfile"
         val malfunctionRequestId = "34563467"
+        val sessionId = "1234567"
         val uploadingFiles = arrayOf<MultipartFile>(
                 MockMultipartFile("test", origFileName, MediaType.IMAGE_JPEG_VALUE, getBufferedImageBytes(normalImage)),
                 MockMultipartFile("test2", origFileName, MediaType.IMAGE_JPEG_VALUE, getBufferedImageBytes(normalImage)),
@@ -348,7 +356,7 @@ class MalfunctionRequestServiceTest {
                 TestUtils.anyObject()))
                 .thenReturn(Flowable.just(FileServerAnswerWrapper(FileServerAnswer(FileServerErrorCode.OK.value, emptyList()), "")))
 
-        val response = service.handleNewMalfunctionRequest(uploadingFiles, 0, MalfunctionRequest(0, "test"))
+        val response = service.handleNewMalfunctionRequest(uploadingFiles, 0, MalfunctionRequest(0, "test"), sessionId)
                 .blockingGet()
 
         assertEquals(true, response is MalfunctionRequestService.Result.Ok)
@@ -360,6 +368,7 @@ class MalfunctionRequestServiceTest {
         val host = "127.0.0.1"
         val tempFile = "tempfile"
         val malfunctionRequestId = "34563467"
+        val sessionId = "1234567"
         val file = MockMultipartFile("test", origFileName, MediaType.IMAGE_JPEG_VALUE, getBufferedImageBytes(normalImage))
 
         val fourServers = listOf(
@@ -399,7 +408,7 @@ class MalfunctionRequestServiceTest {
                 .thenReturn(Flowable.just(FileServerAnswerWrapper(FileServerAnswer(FileServerErrorCode.REQUEST_TIMEOUT.value, emptyList()), ""))
                         .delay(1100, TimeUnit.MILLISECONDS))
 
-        val response = service.handleNewMalfunctionRequest(arrayOf(file), 0, MalfunctionRequest(0, "test"))
+        val response = service.handleNewMalfunctionRequest(arrayOf(file), 0, MalfunctionRequest(0, "test"), sessionId)
                 .blockingGet()
 
         assertEquals(true, response is MalfunctionRequestService.Result.AllFileServersAreNotWorking)
@@ -411,6 +420,7 @@ class MalfunctionRequestServiceTest {
         val host = "127.0.0.1"
         val tempFile = "tempfile"
         val malfunctionRequestId = "34563467"
+        val sessionId = "1234567"
         val uploadingFiles = arrayOf<MultipartFile>(MockMultipartFile("test", origFileName,
                 MediaType.IMAGE_JPEG_VALUE, getBufferedImageBytes(normalImage)))
 
@@ -423,7 +433,7 @@ class MalfunctionRequestServiceTest {
         Mockito.`when`(fileServerService.saveMalfunctionRequestImage(0, host, tempFile, origFileName, 0, 0L, malfunctionRequestId))
                 .thenReturn(Flowable.just(FileServerAnswerWrapper(FileServerAnswer(FileServerErrorCode.OK.value, emptyList()), "n0_i45435346")))
 
-        val response = service.handleNewMalfunctionRequest(uploadingFiles, 0, MalfunctionRequest(0, "test"))
+        val response = service.handleNewMalfunctionRequest(uploadingFiles, 0, MalfunctionRequest(0, "test"), sessionId)
                 .blockingGet()
 
         assertEquals(true, response is MalfunctionRequestService.Result.DatabaseError)

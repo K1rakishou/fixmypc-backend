@@ -8,6 +8,8 @@ interface MalfunctionRequestService {
 
     interface Result {
         class Ok: Result
+        class SessionIdExpired: Result
+        class BadSessionId: Result
         class NoFilesToUpload: Result
         class ImagesCountExceeded: Result
         class FileSizeExceeded: Result
@@ -18,5 +20,5 @@ interface MalfunctionRequestService {
         class UnknownError: Result
     }
 
-    fun handleNewMalfunctionRequest(uploadingFiles: Array<MultipartFile>, imageType: Int, request: MalfunctionRequest): Single<Result>
+    fun handleNewMalfunctionRequest(uploadingFiles: Array<MultipartFile>, imageType: Int, request: MalfunctionRequest, sessionId: String): Single<Result>
 }

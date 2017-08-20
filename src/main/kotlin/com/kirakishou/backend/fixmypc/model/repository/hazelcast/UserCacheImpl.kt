@@ -1,4 +1,4 @@
-package com.kirakishou.backend.fixmypc.model.repository.redis
+package com.kirakishou.backend.fixmypc.model.repository.hazelcast
 
 import com.hazelcast.core.HazelcastInstance
 import com.hazelcast.core.IMap
@@ -29,7 +29,7 @@ class UserCacheImpl : UserCache {
     }
 
     override fun save(key: String, user: User) {
-        userCache.put(key, user, 10, TimeUnit.SECONDS)
+        userCache.put(key, user, 20, TimeUnit.SECONDS)
     }
 
     override fun get(key: String): Fickle<User> {

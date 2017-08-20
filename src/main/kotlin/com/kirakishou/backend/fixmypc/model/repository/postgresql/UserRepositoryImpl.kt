@@ -32,7 +32,7 @@ class UserRepositoryImpl : UserRepository {
                 ps.executeQuery().use { rs ->
                     if (rs.first()) {
                         user = Fickle.of(User(
-                                rs.getLong("owner_id"),
+                                rs.getLong("id"),
                                 rs.getString("login"),
                                 rs.getString("password"),
                                 AccountType.from(rs.getInt("account_type")),

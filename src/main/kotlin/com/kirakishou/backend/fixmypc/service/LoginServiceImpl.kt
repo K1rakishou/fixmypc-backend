@@ -1,7 +1,7 @@
 package com.kirakishou.backend.fixmypc.service
 
 import com.kirakishou.backend.fixmypc.model.repository.postgresql.UserRepository
-import com.kirakishou.backend.fixmypc.model.repository.redis.UserCache
+import com.kirakishou.backend.fixmypc.model.repository.hazelcast.UserCache
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
@@ -45,7 +45,7 @@ class LoginServiceImpl: LoginService {
         val sessionId = generator.generateSessionId()
 
         newUser.sessionId = sessionId
-        userCache.save(login, newUser)
+        userCache.save(sessionId, newUser)
 
         return LoginService.Result.Ok(sessionId)
     }

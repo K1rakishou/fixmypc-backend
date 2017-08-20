@@ -4,7 +4,7 @@ import com.kirakishou.backend.fixmypc.model.AccountType
 import com.kirakishou.backend.fixmypc.model.Fickle
 import com.kirakishou.backend.fixmypc.model.entity.User
 import com.kirakishou.backend.fixmypc.model.repository.postgresql.UserRepository
-import com.kirakishou.backend.fixmypc.model.repository.redis.UserCache
+import com.kirakishou.backend.fixmypc.model.repository.hazelcast.UserCache
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test

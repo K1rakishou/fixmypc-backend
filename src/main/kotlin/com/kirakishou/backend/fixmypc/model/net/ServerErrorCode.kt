@@ -13,6 +13,7 @@ enum class ServerErrorCode(val value: Int) {
     SEC_REQUEST_SIZE_EXCEEDED(9),
     SEC_ALL_FILE_SERVERS_ARE_NOT_WORKING(10),
     SEC_DATABASE_ERROR(11),
+    SEC_SESSION_ID_EXPIRED(12),
     SEC_UNKNOWN_SERVER_ERROR(-1);
 
     companion object {

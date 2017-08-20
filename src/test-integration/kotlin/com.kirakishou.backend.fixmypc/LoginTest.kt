@@ -6,7 +6,7 @@ import com.kirakishou.backend.fixmypc.model.entity.User
 import com.kirakishou.backend.fixmypc.model.net.request.LoginRequest
 import com.kirakishou.backend.fixmypc.model.net.response.LoginResponse
 import com.kirakishou.backend.fixmypc.model.repository.postgresql.UserRepository
-import com.kirakishou.backend.fixmypc.model.repository.redis.UserCache
+import com.kirakishou.backend.fixmypc.model.repository.hazelcast.UserCache
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
