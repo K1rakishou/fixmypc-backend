@@ -1,5 +1,6 @@
 package com.kirakishou.backend.fixmypc.service
 
+import com.kirakishou.backend.fixmypc.TestUtils
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.manager.FileServersManager
 import com.kirakishou.backend.fixmypc.manager.FileServersManagerImpl
@@ -23,6 +24,7 @@ import org.springframework.test.util.ReflectionTestUtils
 import org.springframework.web.multipart.MultipartFile
 import java.awt.image.BufferedImage
 import java.io.ByteArrayOutputStream
+import java.sql.SQLException
 import java.util.concurrent.TimeUnit
 import javax.imageio.ImageIO
 
@@ -120,9 +122,16 @@ class MalfunctionRequestServiceTest {
         Mockito.`when`(generator.generateMalfunctionRequestId()).thenReturn(malfunctionRequestId)
         Mockito.`when`(fileServerManager.isAtLeastOneServerAlive()).thenReturn(true)
         Mockito.`when`(fileServerManager.getServers(1)).thenReturn(listOf(FileServersManagerImpl.ServerWithId(0, FileServerInfo(host))))
-        Mockito.`when`(tempFileService.fromMultipartFile(uploadingFiles[0])).thenReturn(tempFile)
+        Mockito.`when`(tempFileService.fromMultipartFile(TestUtils.anyObject())).thenReturn(tempFile)
 
-        Mockito.`when`(fileServerService.saveMalfunctionRequestImage(0, host, tempFile, origFileName, 0, 0L, malfunctionRequestId))
+        Mockito.`when`(fileServerService.saveMalfunctionRequestImage(
+                Mockito.anyInt(),
+                TestUtils.anyObject(),
+                TestUtils.anyObject(),
+                TestUtils.anyObject(),
+                Mockito.anyInt(),
+                Mockito.anyLong(),
+                TestUtils.anyObject()))
                 .thenReturn(Flowable.just(FileServerAnswerWrapper(FileServerAnswer(FileServerErrorCode.OK.value, emptyList()), "")))
 
         val response = service.handleNewMalfunctionRequest(uploadingFiles, 0, MalfunctionRequest(0, "test"))
@@ -137,6 +146,7 @@ class MalfunctionRequestServiceTest {
         val host = "127.0.0.1"
         val tempFile = "tempfile"
         val malfunctionRequestId = "34563467"
+
         val uploadingFiles = arrayOf<MultipartFile>(
                 MockMultipartFile("test", origFileName, MediaType.IMAGE_JPEG_VALUE, getBufferedImageBytes(normalImage)),
                 MockMultipartFile("test2", origFileName, MediaType.IMAGE_JPEG_VALUE, getBufferedImageBytes(normalImage)),
@@ -152,37 +162,49 @@ class MalfunctionRequestServiceTest {
         Mockito.`when`(generator.generateMalfunctionRequestId()).thenReturn(malfunctionRequestId)
         Mockito.`when`(fileServerManager.isAtLeastOneServerAlive()).thenReturn(true)
         Mockito.`when`(fileServerManager.getServers(4)).thenReturn(fourServers)
-        Mockito.`when`(tempFileService.fromMultipartFile(uploadingFiles[0])).thenReturn(tempFile)
-        Mockito.`when`(tempFileService.fromMultipartFile(uploadingFiles[1])).thenReturn(tempFile)
-        Mockito.`when`(tempFileService.fromMultipartFile(uploadingFiles[2])).thenReturn(tempFile)
-        Mockito.`when`(tempFileService.fromMultipartFile(uploadingFiles[3])).thenReturn(tempFile)
+        Mockito.`when`(tempFileService.fromMultipartFile(TestUtils.anyObject())).thenReturn(tempFile)
+        Mockito.`when`(tempFileService.fromMultipartFile(TestUtils.anyObject())).thenReturn(tempFile)
+        Mockito.`when`(tempFileService.fromMultipartFile(TestUtils.anyObject())).thenReturn(tempFile)
+        Mockito.`when`(tempFileService.fromMultipartFile(TestUtils.anyObject())).thenReturn(tempFile)
 
         Mockito.`when`(fileServerService.saveMalfunctionRequestImage(
-                fourServers[0].id,
-                fourServers[0].fileServerInfo.host,
-                tempFile,
-                origFileName, 0, 0L, malfunctionRequestId))
+                Mockito.anyInt(),
+                TestUtils.anyObject(),
+                TestUtils.anyObject(),
+                TestUtils.anyObject(),
+                Mockito.anyInt(),
+                Mockito.anyLong(),
+                TestUtils.anyObject()))
                 .thenReturn(Flowable.just(FileServerAnswerWrapper(FileServerAnswer(FileServerErrorCode.OK.value, emptyList()), "")))
 
         Mockito.`when`(fileServerService.saveMalfunctionRequestImage(
-                fourServers[1].id,
-                fourServers[1].fileServerInfo.host,
-                tempFile,
-                origFileName, 0, 0L, malfunctionRequestId))
+                Mockito.anyInt(),
+                TestUtils.anyObject(),
+                TestUtils.anyObject(),
+                TestUtils.anyObject(),
+                Mockito.anyInt(),
+                Mockito.anyLong(),
+                TestUtils.anyObject()))
                 .thenReturn(Flowable.just(FileServerAnswerWrapper(FileServerAnswer(FileServerErrorCode.OK.value, emptyList()), "")))
 
         Mockito.`when`(fileServerService.saveMalfunctionRequestImage(
-                fourServers[2].id,
-                fourServers[2].fileServerInfo.host,
-                tempFile,
-                origFileName, 0, 0L, malfunctionRequestId))
+                Mockito.anyInt(),
+                TestUtils.anyObject(),
+                TestUtils.anyObject(),
+                TestUtils.anyObject(),
+                Mockito.anyInt(),
+                Mockito.anyLong(),
+                TestUtils.anyObject()))
                 .thenReturn(Flowable.just(FileServerAnswerWrapper(FileServerAnswer(FileServerErrorCode.OK.value, emptyList()), "")))
 
         Mockito.`when`(fileServerService.saveMalfunctionRequestImage(
-                fourServers[3].id,
-                fourServers[3].fileServerInfo.host,
-                tempFile,
-                origFileName, 0, 0L, malfunctionRequestId))
+                Mockito.anyInt(),
+                TestUtils.anyObject(),
+                TestUtils.anyObject(),
+                TestUtils.anyObject(),
+                Mockito.anyInt(),
+                Mockito.anyLong(),
+                TestUtils.anyObject()))
                 .thenReturn(Flowable.just(FileServerAnswerWrapper(FileServerAnswer(FileServerErrorCode.OK.value, emptyList()), "")))
 
         val response = service.handleNewMalfunctionRequest(uploadingFiles, 0, MalfunctionRequest(0, "test"))
@@ -270,45 +292,60 @@ class MalfunctionRequestServiceTest {
         Mockito.`when`(fileServerManager.getServers(4)).thenReturn(fourServers)
         Mockito.`when`(fileServerManager.getServer()).thenReturn(Fickle.of(fifthServer))
 
-        Mockito.`when`(tempFileService.fromMultipartFile(uploadingFiles[0])).thenReturn(tempFile)
-        Mockito.`when`(tempFileService.fromMultipartFile(uploadingFiles[1])).thenReturn(tempFile)
-        Mockito.`when`(tempFileService.fromMultipartFile(uploadingFiles[2])).thenReturn(tempFile)
-        Mockito.`when`(tempFileService.fromMultipartFile(uploadingFiles[3])).thenReturn(tempFile)
+        Mockito.`when`(tempFileService.fromMultipartFile(TestUtils.anyObject())).thenReturn(tempFile)
+        Mockito.`when`(tempFileService.fromMultipartFile(TestUtils.anyObject())).thenReturn(tempFile)
+        Mockito.`when`(tempFileService.fromMultipartFile(TestUtils.anyObject())).thenReturn(tempFile)
+        Mockito.`when`(tempFileService.fromMultipartFile(TestUtils.anyObject())).thenReturn(tempFile)
 
         Mockito.`when`(fileServerService.saveMalfunctionRequestImage(
-                fourServers[0].id,
-                fourServers[0].fileServerInfo.host,
-                tempFile,
-                origFileName, 0, 0L, malfunctionRequestId))
+                Mockito.anyInt(),
+                TestUtils.anyObject(),
+                TestUtils.anyObject(),
+                TestUtils.anyObject(),
+                Mockito.anyInt(),
+                Mockito.anyLong(),
+                TestUtils.anyObject()))
                 .thenReturn(Flowable.just(FileServerAnswerWrapper(FileServerAnswer(FileServerErrorCode.OK.value, emptyList()), "")))
 
         Mockito.`when`(fileServerService.saveMalfunctionRequestImage(
-                fourServers[1].id,
-                fourServers[1].fileServerInfo.host,
-                tempFile,
-                origFileName, 0, 0L, malfunctionRequestId))
+                Mockito.anyInt(),
+                TestUtils.anyObject(),
+                TestUtils.anyObject(),
+                TestUtils.anyObject(),
+                Mockito.anyInt(),
+                Mockito.anyLong(),
+                TestUtils.anyObject()))
                 .thenReturn(Flowable.just(FileServerAnswerWrapper(FileServerAnswer(FileServerErrorCode.REQUEST_TIMEOUT.value, emptyList()), ""))
                                 .delay(1100, TimeUnit.MILLISECONDS))
 
         Mockito.`when`(fileServerService.saveMalfunctionRequestImage(
-                fourServers[2].id,
-                fourServers[2].fileServerInfo.host,
-                tempFile,
-                origFileName, 0, 0L, malfunctionRequestId))
+                Mockito.anyInt(),
+                TestUtils.anyObject(),
+                TestUtils.anyObject(),
+                TestUtils.anyObject(),
+                Mockito.anyInt(),
+                Mockito.anyLong(),
+                TestUtils.anyObject()))
                 .thenReturn(Flowable.just(FileServerAnswerWrapper(FileServerAnswer(FileServerErrorCode.OK.value, emptyList()), "")))
 
         Mockito.`when`(fileServerService.saveMalfunctionRequestImage(
-                fourServers[3].id,
-                fourServers[3].fileServerInfo.host,
-                tempFile,
-                origFileName, 0, 0L, malfunctionRequestId))
+                Mockito.anyInt(),
+                TestUtils.anyObject(),
+                TestUtils.anyObject(),
+                TestUtils.anyObject(),
+                Mockito.anyInt(),
+                Mockito.anyLong(),
+                TestUtils.anyObject()))
                 .thenReturn(Flowable.just(FileServerAnswerWrapper(FileServerAnswer(FileServerErrorCode.OK.value, emptyList()), "")))
 
         Mockito.`when`(fileServerService.saveMalfunctionRequestImage(
-                fifthServer.id,
-                fifthServer.fileServerInfo.host,
-                tempFile,
-                origFileName, 0, 0L, malfunctionRequestId))
+                Mockito.anyInt(),
+                TestUtils.anyObject(),
+                TestUtils.anyObject(),
+                TestUtils.anyObject(),
+                Mockito.anyInt(),
+                Mockito.anyLong(),
+                TestUtils.anyObject()))
                 .thenReturn(Flowable.just(FileServerAnswerWrapper(FileServerAnswer(FileServerErrorCode.OK.value, emptyList()), "")))
 
         val response = service.handleNewMalfunctionRequest(uploadingFiles, 0, MalfunctionRequest(0, "test"))
@@ -341,18 +378,24 @@ class MalfunctionRequestServiceTest {
                 .thenReturn(Fickle.empty())
 
         Mockito.`when`(fileServerService.saveMalfunctionRequestImage(
-                fourServers[0].id,
-                fourServers[0].fileServerInfo.host,
-                tempFile,
-                origFileName, 0, 0L, malfunctionRequestId))
+                Mockito.anyInt(),
+                TestUtils.anyObject(),
+                TestUtils.anyObject(),
+                TestUtils.anyObject(),
+                Mockito.anyInt(),
+                Mockito.anyLong(),
+                TestUtils.anyObject()))
                 .thenReturn(Flowable.just(FileServerAnswerWrapper(FileServerAnswer(FileServerErrorCode.REQUEST_TIMEOUT.value, emptyList()), ""))
                         .delay(1100, TimeUnit.MILLISECONDS))
 
         Mockito.`when`(fileServerService.saveMalfunctionRequestImage(
-                fourServers[1].id,
-                fourServers[1].fileServerInfo.host,
-                tempFile,
-                origFileName, 0, 0L, malfunctionRequestId))
+                Mockito.anyInt(),
+                TestUtils.anyObject(),
+                TestUtils.anyObject(),
+                TestUtils.anyObject(),
+                Mockito.anyInt(),
+                Mockito.anyLong(),
+                TestUtils.anyObject()))
                 .thenReturn(Flowable.just(FileServerAnswerWrapper(FileServerAnswer(FileServerErrorCode.REQUEST_TIMEOUT.value, emptyList()), ""))
                         .delay(1100, TimeUnit.MILLISECONDS))
 
@@ -360,6 +403,30 @@ class MalfunctionRequestServiceTest {
                 .blockingGet()
 
         assertEquals(true, response is MalfunctionRequestService.Result.AllFileServersAreNotWorking)
+    }
+
+    @Test
+    fun shouldReturnDatabaseErrorWhenFailedToSaveRequestToDatabase() {
+        val origFileName = "1234567890-234236-236-236-236.jpg"
+        val host = "127.0.0.1"
+        val tempFile = "tempfile"
+        val malfunctionRequestId = "34563467"
+        val uploadingFiles = arrayOf<MultipartFile>(MockMultipartFile("test", origFileName,
+                MediaType.IMAGE_JPEG_VALUE, getBufferedImageBytes(normalImage)))
+
+        Mockito.`when`(generator.generateMalfunctionRequestId()).thenReturn(malfunctionRequestId)
+        Mockito.`when`(fileServerManager.isAtLeastOneServerAlive()).thenReturn(true)
+        Mockito.`when`(fileServerManager.getServers(1)).thenReturn(listOf(FileServersManagerImpl.ServerWithId(0, FileServerInfo(host))))
+        Mockito.`when`(tempFileService.fromMultipartFile(TestUtils.anyObject())).thenReturn(tempFile)
+        Mockito.`when`(malfunctionRepository.createNewMalfunctionRequest(TestUtils.anyObject())).thenThrow(SQLException("DB is ded"))
+
+        Mockito.`when`(fileServerService.saveMalfunctionRequestImage(0, host, tempFile, origFileName, 0, 0L, malfunctionRequestId))
+                .thenReturn(Flowable.just(FileServerAnswerWrapper(FileServerAnswer(FileServerErrorCode.OK.value, emptyList()), "n0_i45435346")))
+
+        val response = service.handleNewMalfunctionRequest(uploadingFiles, 0, MalfunctionRequest(0, "test"))
+                .blockingGet()
+
+        assertEquals(true, response is MalfunctionRequestService.Result.DatabaseError)
     }
 }
 
