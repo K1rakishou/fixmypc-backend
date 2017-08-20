@@ -9,14 +9,15 @@ object Constant {
         const val LOGIN_CONTROLLER_PATH = "/v1/api/login"
         const val SIGNUP_CONTROLLER_PATH = "/v1/api/signup"
         const val MALFUNCTION_REQUEST_CONTROLLER_PATH = "/v1/api/m_request"
+        const val MALFUNCTION_IMAGE_CONTROLLER_PATH = "/v1/api/malfunction_image"
     }
 
     object SerializedNames {
-        const val LOGIN_SERIALIZED_NAME = "login"
-        const val PASSWORD_SERIALIZED_NAME = "password"
-        const val ACCOUNT_TYPE_SERIALIZED_NAME = "account_type"
-        const val SESSION_ID_SERIALIZED_NAME = "session_id"
-        const val SERVER_ERROR_CODE_SERIALIZED_NAME = "server_error_code"
+        const val LOGIN = "login"
+        const val PASSWORD = "password"
+        const val ACCOUNT_TYPE = "account_type"
+        const val SESSION_ID = "session_id"
+        const val SERVER_ERROR_CODE = "server_error_code"
         const val MALFUNCTION_CATEGORY = "m_category"
         const val MALFUNCTION_DESCRIPTION = "m_description"
 
@@ -27,11 +28,7 @@ object Constant {
         const val IMAGE_TYPE = "image_type"
         const val IMAGE_NAME = "image_name"
         const val OWNER_ID = "owner_id"
-        const val MALFUNCTION_REQUEST_ID = "malfunction_request_id"
-    }
-
-    object FileServers {
-        val SERVERS_IPS = arrayListOf("127.0.0.1:9119")
+        const val MALFUNCTION_REQUEST_ID = "m_request_id"
     }
 
     object HazelcastNames {
@@ -40,6 +37,14 @@ object Constant {
 
     object ImageTypes {
         val IMAGE_TYPE_MALFUNCTION_PHOTO = 0
+    }
+
+    object Url {
+        //"http://$host/v1/api/upload_image"
+        val SAVE_MALFUNCTION_REQUEST_IMAGE_URL = "http://%s${Paths.MALFUNCTION_IMAGE_CONTROLLER_PATH}"
+
+        //"http://$host/v1/api/malfunction_image/${ownerId}/${malfunctionRequestId}"
+        val DELETE_MALFUNCTION_REQUEST_IMAGES_URL = "http://%s${Paths.MALFUNCTION_IMAGE_CONTROLLER_PATH}/%d/%s"
     }
 
     val MIN_PASSWORD_LENGTH = 10

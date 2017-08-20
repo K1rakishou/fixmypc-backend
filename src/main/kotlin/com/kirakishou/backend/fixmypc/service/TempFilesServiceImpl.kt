@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component
 import org.springframework.web.multipart.MultipartFile
 import java.io.File
 import java.io.FileOutputStream
+import javax.annotation.PostConstruct
 
 @Component
 class TempFilesServiceImpl : TempFilesService {
@@ -19,6 +20,14 @@ class TempFilesServiceImpl : TempFilesService {
     lateinit var log: FileLog
 
     private val tempFiles = arrayListOf<String>()
+
+    @PostConstruct
+    fun init() {
+        val file = File(tempImagesDir)
+        if (!file.exists()) {
+            file.mkdirs()
+        }
+    }
 
     override fun fromMultipartFile(file: MultipartFile): String {
         val tempFilePath = "${tempImagesDir}${file.originalFilename}"

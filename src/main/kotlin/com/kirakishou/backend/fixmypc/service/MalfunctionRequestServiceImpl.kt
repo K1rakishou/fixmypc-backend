@@ -157,7 +157,7 @@ class MalfunctionRequestServiceImpl : MalfunctionRequestService {
                     val extractedImageInfo = TextUtils.parseImageName(imageName)
                     val host = fileServerManager.getHostById(extractedImageInfo.serverId)
 
-                    fileServerService.deleteAllImagesForRequest(ownerId, host, malfunctionRequestId, imageName)
+                    fileServerService.deleteMalfunctionRequestImages(ownerId, host, malfunctionRequestId, imageName)
                 }
 
                 return@map MalfunctionRequestService.Result.DatabaseError()
@@ -265,7 +265,7 @@ class MalfunctionRequestServiceImpl : MalfunctionRequestService {
     private fun storeImage(imageType: Int, ownerId: Long, malfunctionRequestId: String, server: FileServersManagerImpl.ServerWithId,
                            tempFile: String, uploadingFile: MultipartFile): Flowable<FileServerAnswerWrapper> {
 
-        return fileServerService.storeImage(server.id, server.fileServerInfo.host, tempFile,
+        return fileServerService.saveMalfunctionRequestImage(server.id, server.fileServerInfo.host, tempFile,
                 uploadingFile.originalFilename, imageType, ownerId, malfunctionRequestId)
                 //max request waiting time
                 .timeout(FILE_SERVER_REQUEST_TIMEOUT, TimeUnit.SECONDS)

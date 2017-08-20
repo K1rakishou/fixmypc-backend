@@ -1,9 +1,6 @@
 package com.kirakishou.backend.fixmypc.service
 
-import com.kirakishou.backend.fixmypc.model.DistributedImage
-import com.kirakishou.backend.fixmypc.model.FileServerAnswer
-import com.kirakishou.backend.fixmypc.model.FileServerAnswerWrapper
-import com.kirakishou.backend.fixmypc.model.FileServerErrorCode
+import com.kirakishou.backend.fixmypc.model.*
 import io.reactivex.Flowable
 import io.reactivex.Single
 import org.springframework.beans.factory.annotation.Autowired
@@ -32,8 +29,8 @@ class FileServerServiceImpl : FileServerService {
         restTemplate.messageConverters.add(FormHttpMessageConverter())
     }
 
-    override fun storeImage(serverId: Int, host: String, tempFile: String, originalImageName: String, imageType: Int,
-                                ownerId: Long, malfunctionRequestId: String): Flowable<FileServerAnswerWrapper> {
+    override fun saveMalfunctionRequestImage(serverId: Int, host: String, tempFile: String, originalImageName: String, imageType: Int,
+                                             ownerId: Long, malfunctionRequestId: String): Flowable<FileServerAnswerWrapper> {
 
         val mvmap = LinkedMultiValueMap<String, Any>()
         mvmap.add("images", FileSystemResource(tempFile))
@@ -48,7 +45,7 @@ class FileServerServiceImpl : FileServerService {
         headers.contentType = MediaType.MULTIPART_FORM_DATA
 
         val httpEntity = HttpEntity<MultiValueMap<String, Any>>(mvmap, headers)
-        val url = "http://$host/v1/api/upload_image"
+        val url = String.format(Constant.Url.SAVE_MALFUNCTION_REQUEST_IMAGE_URL, host)
 
         return Flowable.fromFuture(restTemplate.postForEntity(url, httpEntity, FileServerAnswer::class.java))
                 .map {
@@ -56,8 +53,8 @@ class FileServerServiceImpl : FileServerService {
                 }
     }
 
-    override fun deleteAllImagesForRequest(ownerId: Long, host: String, malfunctionRequestId: String, imageName: String): Single<FileServerErrorCode> {
-        val url = "/v1/api/malfunction_image/${ownerId}/${malfunctionRequestId}"
+    override fun deleteMalfunctionRequestImages(ownerId: Long, host: String, malfunctionRequestId: String, imageName: String): Single<FileServerErrorCode> {
+        val url = String.format(Constant.Url.DELETE_MALFUNCTION_REQUEST_IMAGES_URL, ownerId, malfunctionRequestId)
 
         return Single.fromFuture(restTemplate.delete(url))
                 .map { errorCode ->

@@ -4,6 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.kirakishou.backend.fixmypc.model.AccountType
 import com.kirakishou.backend.fixmypc.model.Constant
 
-data class SignupRequest(@JsonProperty(Constant.SerializedNames.LOGIN_SERIALIZED_NAME) val login: String,
-                         @JsonProperty(Constant.SerializedNames.PASSWORD_SERIALIZED_NAME) val password: String,
-                         @JsonProperty(Constant.SerializedNames.ACCOUNT_TYPE_SERIALIZED_NAME) val accountType: AccountType)
+data class SignupRequest(@JsonProperty(Constant.SerializedNames.LOGIN) val login: String,
+                         @JsonProperty(Constant.SerializedNames.PASSWORD) val password: String,
+                         @JsonProperty(Constant.SerializedNames.ACCOUNT_TYPE) val accountType: AccountType)

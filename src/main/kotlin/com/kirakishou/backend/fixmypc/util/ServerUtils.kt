@@ -42,24 +42,6 @@ object ServerUtils {
         return System.currentTimeMillis()
     }
 
-    /*fun deleteFiles(files: ArrayList<String>) {
-        for (fileName in files) {
-            val f = File(fileName)
-
-            if (f.exists()) {
-                f.delete()
-            }
-        }
-    }
-
-    fun deleteFile(file: String) {
-        val f = File(file)
-
-        if (f.exists()) {
-            f.delete()
-        }
-    }*/
-
     fun purgeDirectory(dir: File) {
         for (file in dir.listFiles()!!) {
             if (file.isDirectory) {
