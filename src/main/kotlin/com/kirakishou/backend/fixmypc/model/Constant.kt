@@ -33,6 +33,7 @@ object Constant {
 
     object HazelcastNames {
         val USER_CACHE_KEY = "user_cache"
+        val MALFUNCTION_CACHE_KEY = "malfunction_cache"
     }
 
     object ImageTypes {

@@ -8,6 +8,7 @@ import com.kirakishou.backend.fixmypc.model.Fickle
 import com.kirakishou.backend.fixmypc.model.entity.Malfunction
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Repository
+import java.sql.Connection
 import java.sql.SQLException
 import java.sql.Statement
 import javax.sql.DataSource
@@ -76,27 +77,64 @@ class MalfunctionRepositoryImpl : MalfunctionRepository {
                                 rs.getString("description"),
                                 rs.getTimestamp("created_on")))
 
-                        val images = arrayListOf<String>()
-
-                        connection.prepareStatement("SELECT image_name FROM public.malfunction_photos WHERE malfunction_id = ? " +
-                                "AND deleted_on IS NULL LIMIT ${Constant.MALFUNCTION_MAX_IMAGES_PER_REQUEST}").use { ps2 ->
-
-                            ps2.setLong(1, malfunction.get().id)
-
-                            ps2.executeQuery().use { rs2 ->
-                                while (rs2.next()) {
-                                    images.add(rs2.getString("image_name"))
-                                }
-                            }
-
-                            malfunction.get().imageNamesList = images
-                        }
+                        malfunction.get().imageNamesList = getImagesByMalfunctionId(connection, malfunction.get().id)
                     }
                 }
             }
         }
 
         return malfunction
+    }
+
+    @Throws(SQLException::class)
+    fun getImagesByMalfunctionId(connection: Connection, malfunctionId: Long): List<String> {
+        val images = arrayListOf<String>()
+
+        connection.prepareStatement("SELECT image_name FROM public.malfunction_photos WHERE malfunction_id = ? " +
+                "AND deleted_on IS NULL LIMIT ${Constant.MALFUNCTION_MAX_IMAGES_PER_REQUEST}").use { ps2 ->
+
+            ps2.setLong(1, malfunctionId)
+
+            ps2.executeQuery().use { rs2 ->
+                while (rs2.next()) {
+                    images.add(rs2.getString("image_name"))
+                }
+            }
+
+        }
+
+        return images
+    }
+
+    @Throws(SQLException::class)
+    fun getUserMalfunctionRequestList(ownerId: Long, offset: Long, count: Int): List<Malfunction> {
+        val malfunctions = arrayListOf<Malfunction>()
+
+        hikariCP.connection.use { connection ->
+            connection.prepareStatement("SELECT id, category, description, created_on, malfunction_request_id, " +
+                    "FROM public.malfunctions WHERE owner_id = ? AND deleted_on IS NULL OFFSET ? LIMIT ?").use { ps ->
+
+                ps.setLong(1, ownerId)
+                ps.setLong(2, offset)
+                ps.setInt(3, count)
+
+                ps.executeQuery().use { rs ->
+                    while (rs.next()) {
+                        val malfunction = Malfunction(
+                                rs.getLong("id"),
+                                ownerId,
+                                rs.getString("malfunction_request_id"),
+                                rs.getInt("category"),
+                                rs.getString("description"),
+                                rs.getTimestamp("created_on"))
+
+                        malfunction.imageNamesList = getImagesByMalfunctionId(connection, malfunction.id)
+                    }
+                }
+            }
+        }
+
+        return malfunctions
     }
 
     @Throws(SQLException::class)

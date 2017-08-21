@@ -4,40 +4,33 @@ import com.hazelcast.core.HazelcastInstance
 import com.hazelcast.core.IMap
 import com.kirakishou.backend.fixmypc.model.Constant
 import com.kirakishou.backend.fixmypc.model.Fickle
-import com.kirakishou.backend.fixmypc.model.entity.User
+import com.kirakishou.backend.fixmypc.model.entity.Malfunction
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Component
 import java.util.concurrent.TimeUnit
 import javax.annotation.PostConstruct
 
-
-/**
- * Created by kirakishou on 7/11/2017.
- */
-
-@Component
-class UserCacheImpl : UserCache {
+class MalfunctionCacheImpl : MalfunctionCache {
 
     @Autowired
     lateinit var hazelcast: HazelcastInstance
 
-    lateinit var userCache: IMap<String, User>
+    lateinit var malfunctionCache: IMap<String, Malfunction>
 
     @PostConstruct
     fun init() {
-        userCache = hazelcast.getMap<String, User>(Constant.HazelcastNames.USER_CACHE_KEY)
+        malfunctionCache = hazelcast.getMap<String, Malfunction>(Constant.HazelcastNames.MALFUNCTION_CACHE_KEY)
     }
 
-    override fun save(key: String, user: User) {
-        userCache.put(key, user, 20, TimeUnit.MINUTES)
+    override fun save(key: String, malfunction: Malfunction) {
+        malfunctionCache.put(key, malfunction, 1, TimeUnit.HOURS)
     }
 
-    override fun get(key: String): Fickle<User> {
-        val value = userCache[key] ?: return Fickle.empty()
+    override fun get(key: String): Fickle<Malfunction> {
+        val value = malfunctionCache[key] ?: return Fickle.empty()
         return Fickle.of(value)
     }
 
     override fun delete(key: String) {
-        userCache.remove(key)
+        malfunctionCache.remove(key)
     }
 }
