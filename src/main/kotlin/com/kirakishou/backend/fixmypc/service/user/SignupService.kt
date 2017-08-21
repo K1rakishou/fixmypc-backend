@@ -1,4 +1,4 @@
-package com.kirakishou.backend.fixmypc.service
+package com.kirakishou.backend.fixmypc.service.user
 
 import com.kirakishou.backend.fixmypc.model.AccountType
 

@@ -5,6 +5,8 @@ import com.kirakishou.backend.fixmypc.model.Fickle
 import com.kirakishou.backend.fixmypc.model.entity.User
 import com.kirakishou.backend.fixmypc.model.repository.postgresql.UserRepository
 import com.kirakishou.backend.fixmypc.model.repository.hazelcast.UserCache
+import com.kirakishou.backend.fixmypc.service.user.LoginService
+import com.kirakishou.backend.fixmypc.service.user.LoginServiceImpl
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test

@@ -10,7 +10,7 @@ import com.kirakishou.backend.fixmypc.model.net.request.LoginRequest
 import com.kirakishou.backend.fixmypc.model.repository.postgresql.UserRepository
 import com.kirakishou.backend.fixmypc.model.repository.hazelcast.UserCache
 import com.kirakishou.backend.fixmypc.service.Generator
-import com.kirakishou.backend.fixmypc.service.LoginService
+import com.kirakishou.backend.fixmypc.service.user.LoginService
 import org.hamcrest.Matchers
 import org.junit.Before
 import org.junit.Test

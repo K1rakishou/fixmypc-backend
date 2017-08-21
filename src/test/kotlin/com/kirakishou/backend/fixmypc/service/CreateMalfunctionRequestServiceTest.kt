@@ -7,6 +7,8 @@ import com.kirakishou.backend.fixmypc.manager.FileServersManagerImpl
 import com.kirakishou.backend.fixmypc.model.*
 import com.kirakishou.backend.fixmypc.model.net.request.MalfunctionRequest
 import com.kirakishou.backend.fixmypc.model.repository.postgresql.MalfunctionRepository
+import com.kirakishou.backend.fixmypc.service.malfunction.CreateMalfunctionRequestService
+import com.kirakishou.backend.fixmypc.service.malfunction.CreateMalfunctionRequestServiceImpl
 import io.reactivex.Flowable
 import io.reactivex.plugins.RxJavaPlugins
 import io.reactivex.schedulers.Schedulers
@@ -28,10 +30,10 @@ import java.sql.SQLException
 import java.util.concurrent.TimeUnit
 import javax.imageio.ImageIO
 
-class MalfunctionRequestServiceTest {
+class CreateMalfunctionRequestServiceTest {
 
     @InjectMocks
-    val service = MalfunctionRequestServiceImpl()
+    val service = CreateMalfunctionRequestServiceImpl()
 
     @Mock
     lateinit var log: FileLog
@@ -135,10 +137,10 @@ class MalfunctionRequestServiceTest {
                 TestUtils.anyObject()))
                 .thenReturn(Flowable.just(FileServerAnswerWrapper(FileServerAnswer(FileServerErrorCode.OK.value, emptyList()), "")))
 
-        val response = service.handleNewMalfunctionRequest(uploadingFiles, 0, MalfunctionRequest(0, "test"), sessionId)
+        val response = service.createMalfunctionRequest(uploadingFiles, 0, MalfunctionRequest(0, "test"), sessionId)
                 .blockingGet()
 
-        assertEquals(true, response is MalfunctionRequestService.Result.Ok)
+        assertEquals(true, response is CreateMalfunctionRequestService.Post.Result.Ok)
     }
 
     @Test
@@ -209,10 +211,10 @@ class MalfunctionRequestServiceTest {
                 TestUtils.anyObject()))
                 .thenReturn(Flowable.just(FileServerAnswerWrapper(FileServerAnswer(FileServerErrorCode.OK.value, emptyList()), "")))
 
-        val response = service.handleNewMalfunctionRequest(uploadingFiles, 0, MalfunctionRequest(0, "test"), sessionId)
+        val response = service.createMalfunctionRequest(uploadingFiles, 0, MalfunctionRequest(0, "test"), sessionId)
                 .blockingGet()
 
-        assertEquals(true, response is MalfunctionRequestService.Result.Ok)
+        assertEquals(true, response is CreateMalfunctionRequestService.Post.Result.Ok)
     }
 
     @Test
@@ -225,10 +227,10 @@ class MalfunctionRequestServiceTest {
                 MockMultipartFile("test3", origFileName, MediaType.IMAGE_JPEG_VALUE, getBufferedImageBytes(normalImage)),
                 MockMultipartFile("test4", origFileName, MediaType.IMAGE_JPEG_VALUE, getBufferedImageBytes(normalImage)))
 
-        val response = service.handleNewMalfunctionRequest(uploadingFiles, 0, MalfunctionRequest(0, "test"), sessionId)
+        val response = service.createMalfunctionRequest(uploadingFiles, 0, MalfunctionRequest(0, "test"), sessionId)
                 .blockingGet()
 
-        assertEquals(true, response is MalfunctionRequestService.Result.FileSizeExceeded)
+        assertEquals(true, response is CreateMalfunctionRequestService.Post.Result.FileSizeExceeded)
     }
 
     @Test
@@ -243,10 +245,10 @@ class MalfunctionRequestServiceTest {
                 MockMultipartFile("test4", origFileName, MediaType.IMAGE_JPEG_VALUE, getBufferedImageBytes(normalImage)),
                 MockMultipartFile("test5", origFileName, MediaType.IMAGE_JPEG_VALUE, getBufferedImageBytes(normalImage)))
 
-        val response = service.handleNewMalfunctionRequest(uploadingFiles, 0, MalfunctionRequest(0, "test"), sessionId)
+        val response = service.createMalfunctionRequest(uploadingFiles, 0, MalfunctionRequest(0, "test"), sessionId)
                 .blockingGet()
 
-        assertEquals(true, response is MalfunctionRequestService.Result.ImagesCountExceeded)
+        assertEquals(true, response is CreateMalfunctionRequestService.Post.Result.ImagesCountExceeded)
     }
 
     @Test
@@ -257,10 +259,10 @@ class MalfunctionRequestServiceTest {
 
         Mockito.`when`(fileServerManager.isAtLeastOneServerAlive()).thenReturn(false)
 
-        val response = service.handleNewMalfunctionRequest(uploadingFiles, 0, MalfunctionRequest(0, "test"), sessionId)
+        val response = service.createMalfunctionRequest(uploadingFiles, 0, MalfunctionRequest(0, "test"), sessionId)
                 .blockingGet()
 
-        assertEquals(true, response is MalfunctionRequestService.Result.AllFileServersAreNotWorking)
+        assertEquals(true, response is CreateMalfunctionRequestService.Post.Result.AllFileServersAreNotWorking)
     }
 
     @Test
@@ -268,10 +270,10 @@ class MalfunctionRequestServiceTest {
         val uploadingFiles = arrayOf<MultipartFile>()
         val sessionId = "1234567"
 
-        val response = service.handleNewMalfunctionRequest(uploadingFiles, 0, MalfunctionRequest(0, "test"), sessionId)
+        val response = service.createMalfunctionRequest(uploadingFiles, 0, MalfunctionRequest(0, "test"), sessionId)
                 .blockingGet()
 
-        assertEquals(true, response is MalfunctionRequestService.Result.NoFilesToUpload)
+        assertEquals(true, response is CreateMalfunctionRequestService.Post.Result.NoFilesToUpload)
     }
 
     @Test
@@ -356,10 +358,10 @@ class MalfunctionRequestServiceTest {
                 TestUtils.anyObject()))
                 .thenReturn(Flowable.just(FileServerAnswerWrapper(FileServerAnswer(FileServerErrorCode.OK.value, emptyList()), "")))
 
-        val response = service.handleNewMalfunctionRequest(uploadingFiles, 0, MalfunctionRequest(0, "test"), sessionId)
+        val response = service.createMalfunctionRequest(uploadingFiles, 0, MalfunctionRequest(0, "test"), sessionId)
                 .blockingGet()
 
-        assertEquals(true, response is MalfunctionRequestService.Result.Ok)
+        assertEquals(true, response is CreateMalfunctionRequestService.Post.Result.Ok)
     }
 
     @Test
@@ -408,10 +410,10 @@ class MalfunctionRequestServiceTest {
                 .thenReturn(Flowable.just(FileServerAnswerWrapper(FileServerAnswer(FileServerErrorCode.REQUEST_TIMEOUT.value, emptyList()), ""))
                         .delay(1100, TimeUnit.MILLISECONDS))
 
-        val response = service.handleNewMalfunctionRequest(arrayOf(file), 0, MalfunctionRequest(0, "test"), sessionId)
+        val response = service.createMalfunctionRequest(arrayOf(file), 0, MalfunctionRequest(0, "test"), sessionId)
                 .blockingGet()
 
-        assertEquals(true, response is MalfunctionRequestService.Result.AllFileServersAreNotWorking)
+        assertEquals(true, response is CreateMalfunctionRequestService.Post.Result.AllFileServersAreNotWorking)
     }
 
     @Test
@@ -433,10 +435,10 @@ class MalfunctionRequestServiceTest {
         Mockito.`when`(fileServerService.saveMalfunctionRequestImage(0, host, tempFile, origFileName, 0, 0L, malfunctionRequestId))
                 .thenReturn(Flowable.just(FileServerAnswerWrapper(FileServerAnswer(FileServerErrorCode.OK.value, emptyList()), "n0_i45435346")))
 
-        val response = service.handleNewMalfunctionRequest(uploadingFiles, 0, MalfunctionRequest(0, "test"), sessionId)
+        val response = service.createMalfunctionRequest(uploadingFiles, 0, MalfunctionRequest(0, "test"), sessionId)
                 .blockingGet()
 
-        assertEquals(true, response is MalfunctionRequestService.Result.DatabaseError)
+        assertEquals(true, response is CreateMalfunctionRequestService.Post.Result.DatabaseError)
     }
 }
 

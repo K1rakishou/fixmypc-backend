@@ -8,7 +8,7 @@ import com.kirakishou.backend.fixmypc.model.Fickle
 import com.kirakishou.backend.fixmypc.model.entity.User
 import com.kirakishou.backend.fixmypc.model.net.request.SignupRequest
 import com.kirakishou.backend.fixmypc.model.repository.postgresql.UserRepository
-import com.kirakishou.backend.fixmypc.service.SignupService
+import com.kirakishou.backend.fixmypc.service.user.SignupService
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith

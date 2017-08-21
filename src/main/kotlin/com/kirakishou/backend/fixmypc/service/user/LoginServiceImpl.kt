@@ -1,7 +1,8 @@
-package com.kirakishou.backend.fixmypc.service
+package com.kirakishou.backend.fixmypc.service.user
 
 import com.kirakishou.backend.fixmypc.model.repository.postgresql.UserRepository
 import com.kirakishou.backend.fixmypc.model.repository.hazelcast.UserCache
+import com.kirakishou.backend.fixmypc.service.Generator
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 

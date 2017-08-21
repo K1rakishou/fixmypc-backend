@@ -4,6 +4,8 @@ import com.kirakishou.backend.fixmypc.model.AccountType
 import com.kirakishou.backend.fixmypc.model.Fickle
 import com.kirakishou.backend.fixmypc.model.entity.User
 import com.kirakishou.backend.fixmypc.model.repository.postgresql.UserRepository
+import com.kirakishou.backend.fixmypc.service.user.SignupService
+import com.kirakishou.backend.fixmypc.service.user.SignupServiceImpl
 import org.junit.Before
 import org.junit.Test
 import org.mockito.InjectMocks

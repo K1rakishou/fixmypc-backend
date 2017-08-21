@@ -1,4 +1,4 @@
-package com.kirakishou.backend.fixmypc.service
+package com.kirakishou.backend.fixmypc.service.user
 
 /**
  * Created by kirakishou on 7/9/2017.
