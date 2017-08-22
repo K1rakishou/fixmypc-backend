@@ -19,7 +19,7 @@ class MalfunctionRepositoryImpl : MalfunctionRepository {
 
     override fun createMalfunction(malfunction: Malfunction) {
         malfunctionDao.createNewMalfunctionRequest(malfunction)
-        malfunctionCache.save(malfunction.owner_id, malfunction)
+        malfunctionCache.save(malfunction.ownerId, malfunction)
     }
 
     override fun getMalfunctionById(ownerId: Long, malfunctionId: Long): Fickle<Malfunction> {
@@ -35,14 +35,24 @@ class MalfunctionRepositoryImpl : MalfunctionRepository {
         val remainder = count - malfunctionsList.size
         val malfunctionsFromDb = malfunctionDao.getAllUserMalfunctions(ownerId)
         val filteredMF = malfunctionsFromDb.stream()
-                .filter { mf -> malfunctionsList.contains(mf) }
+                .filter { mf -> !contains(mf.id, malfunctionsList) }
                 .limit(remainder)
                 .collect(Collectors.toList())
 
-        malfunctionCache.saveMany(ownerId, malfunctionsFromDb)
-
+        malfunctionCache.saveMany(ownerId, filteredMF)
         filteredMF.addAll(malfunctionsList)
+
         return malfunctionsFromDb
+    }
+
+    private fun contains(id: Long, malfunctionsList: List<Malfunction>): Boolean {
+        for (malfunction in malfunctionsList) {
+            if (malfunction.id == id) {
+                return true
+            }
+        }
+
+        return false
     }
 
     override fun deleteMalfunction(ownerId: Long, malfunctionId: Long) {

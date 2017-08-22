@@ -36,6 +36,11 @@ object Constant {
         val MALFUNCTION_CACHE_KEY = "malfunction_cache"
     }
 
+    object HazelcastType {
+        val TYPE_USER = 0
+        val TYPE_MALFUNCTION = 1
+    }
+
     object ImageTypes {
         val IMAGE_TYPE_MALFUNCTION_PHOTO = 0
     }

@@ -28,7 +28,7 @@ class MalfunctionDaoImpl : MalfunctionDao {
             connection.prepareStatement("INSERT INTO public.malfunctions (owner_id, category, description, malfunction_request_id, created_on, deleted_on) " +
                     "VALUES (?, ?, ?, ?, NOW(), NULL)", Statement.RETURN_GENERATED_KEYS).use { ps ->
 
-                ps.setLong(1, malfunction.owner_id)
+                ps.setLong(1, malfunction.ownerId)
                 ps.setInt(2, malfunction.category)
                 ps.setString(3, malfunction.description)
                 ps.setString(4, malfunction.malfunctionRequestId)
@@ -130,6 +130,7 @@ class MalfunctionDaoImpl : MalfunctionDao {
                                 rs.getTimestamp("created_on"))
 
                         malfunction.imageNamesList = getImagesByMalfunctionId(connection, malfunction.id)
+                        malfunctions.add(malfunction)
                     }
                 }
             }
@@ -158,6 +159,7 @@ class MalfunctionDaoImpl : MalfunctionDao {
                                 rs.getTimestamp("created_on"))
 
                         malfunction.imageNamesList = getImagesByMalfunctionId(connection, malfunction.id)
+                        malfunctions.add(malfunction)
                     }
                 }
             }

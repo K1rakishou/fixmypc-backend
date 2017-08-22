@@ -157,7 +157,7 @@ class CreateMalfunctionRequestServiceImpl : CreateMalfunctionRequestService {
                     .collect(Collectors.toList())
 
             val malfunction = Malfunction(
-                    owner_id = ownerId,
+                    ownerId = ownerId,
                     category = request.category,
                     description = request.description,
                     malfunctionRequestId = malfunctionRequestId,
