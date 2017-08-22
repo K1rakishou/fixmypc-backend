@@ -7,7 +7,7 @@ import com.kirakishou.backend.fixmypc.model.*
 import com.kirakishou.backend.fixmypc.model.entity.Malfunction
 import com.kirakishou.backend.fixmypc.model.net.request.MalfunctionRequest
 import com.kirakishou.backend.fixmypc.model.repository.hazelcast.UserCache
-import com.kirakishou.backend.fixmypc.model.repository.postgresql.MalfunctionRepository
+import com.kirakishou.backend.fixmypc.model.repository.postgresql.MalfunctionDao
 import com.kirakishou.backend.fixmypc.service.FileServerService
 import com.kirakishou.backend.fixmypc.service.Generator
 import com.kirakishou.backend.fixmypc.service.TempFilesService
@@ -56,7 +56,7 @@ class CreateMalfunctionRequestServiceImpl : CreateMalfunctionRequestService {
     private lateinit var tempFileService: TempFilesService
 
     @Autowired
-    private lateinit var malfunctionRepository: MalfunctionRepository
+    private lateinit var malfunctionDao: MalfunctionDao
 
     @Autowired
     private lateinit var userCache: UserCache
@@ -163,7 +163,7 @@ class CreateMalfunctionRequestServiceImpl : CreateMalfunctionRequestService {
                     imageNamesList = imageNamesList)
 
             try {
-                malfunctionRepository.createNewMalfunctionRequest(malfunction)
+                malfunctionDao.createNewMalfunctionRequest(malfunction)
             } catch (e: SQLException) {
                 log.e(e)
 

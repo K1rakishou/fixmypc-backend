@@ -7,7 +7,7 @@ import com.kirakishou.backend.fixmypc.model.Constant
 import com.kirakishou.backend.fixmypc.model.Fickle
 import com.kirakishou.backend.fixmypc.model.entity.User
 import com.kirakishou.backend.fixmypc.model.net.request.SignupRequest
-import com.kirakishou.backend.fixmypc.model.repository.postgresql.UserRepository
+import com.kirakishou.backend.fixmypc.model.repository.postgresql.UserDao
 import com.kirakishou.backend.fixmypc.service.user.SignupService
 import org.junit.Before
 import org.junit.Test
@@ -49,7 +49,7 @@ class SignupControllerTest {
     lateinit var service: SignupService
 
     @Mock
-    lateinit var userRepo: UserRepository
+    lateinit var userRepo: UserDao
 
     @Autowired
     @InjectMocks

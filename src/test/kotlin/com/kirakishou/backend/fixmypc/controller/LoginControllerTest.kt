@@ -7,7 +7,7 @@ import com.kirakishou.backend.fixmypc.model.Constant
 import com.kirakishou.backend.fixmypc.model.Fickle
 import com.kirakishou.backend.fixmypc.model.entity.User
 import com.kirakishou.backend.fixmypc.model.net.request.LoginRequest
-import com.kirakishou.backend.fixmypc.model.repository.postgresql.UserRepository
+import com.kirakishou.backend.fixmypc.model.repository.postgresql.UserDao
 import com.kirakishou.backend.fixmypc.model.repository.hazelcast.UserCache
 import com.kirakishou.backend.fixmypc.service.Generator
 import com.kirakishou.backend.fixmypc.service.user.LoginService
@@ -59,7 +59,7 @@ class LoginControllerTest {
     lateinit var generator: Generator
 
     @Mock
-    lateinit var userRepo: UserRepository
+    lateinit var userRepo: UserDao
 
     @Autowired
     @InjectMocks

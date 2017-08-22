@@ -15,7 +15,7 @@ import javax.sql.DataSource
  */
 
 @Repository
-class UserRepositoryImpl : UserRepository {
+class UserDaoImpl : UserDao {
 
     @Autowired
     private lateinit var hikariCP: DataSource

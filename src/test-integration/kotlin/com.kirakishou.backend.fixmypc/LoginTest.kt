@@ -5,7 +5,7 @@ import com.kirakishou.backend.fixmypc.model.Constant
 import com.kirakishou.backend.fixmypc.model.entity.User
 import com.kirakishou.backend.fixmypc.model.net.request.LoginRequest
 import com.kirakishou.backend.fixmypc.model.net.response.LoginResponse
-import com.kirakishou.backend.fixmypc.model.repository.postgresql.UserRepository
+import com.kirakishou.backend.fixmypc.model.repository.postgresql.UserDao
 import com.kirakishou.backend.fixmypc.model.repository.hazelcast.UserCache
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -29,7 +29,7 @@ class LoginTest {
     lateinit var restTemplate: TestRestTemplate
 
     @Autowired
-    lateinit var userRepo: UserRepository
+    lateinit var userRepo: UserDao
 
     @Autowired
     lateinit var userCache: UserCache

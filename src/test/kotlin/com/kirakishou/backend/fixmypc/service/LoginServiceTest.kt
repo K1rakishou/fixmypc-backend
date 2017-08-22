@@ -3,7 +3,7 @@ package com.kirakishou.backend.fixmypc.service
 import com.kirakishou.backend.fixmypc.model.AccountType
 import com.kirakishou.backend.fixmypc.model.Fickle
 import com.kirakishou.backend.fixmypc.model.entity.User
-import com.kirakishou.backend.fixmypc.model.repository.postgresql.UserRepository
+import com.kirakishou.backend.fixmypc.model.repository.postgresql.UserDao
 import com.kirakishou.backend.fixmypc.model.repository.hazelcast.UserCache
 import com.kirakishou.backend.fixmypc.service.user.LoginService
 import com.kirakishou.backend.fixmypc.service.user.LoginServiceImpl
@@ -27,7 +27,7 @@ class LoginServiceTest {
     val service = LoginServiceImpl()
 
     @Mock
-    lateinit var userRepo: UserRepository
+    lateinit var userRepo: UserDao
 
     @Mock
     lateinit var generator: Generator

@@ -11,5 +11,5 @@ interface GetUserMalfunctionRequestListService {
         }
     }
 
-    fun getUserMalfunctionRequestList(sessionId: String): Single<Get.Result>
+    fun getUserMalfunctionRequestList(sessionId: String, offset: Long): Single<Get.Result>
 }

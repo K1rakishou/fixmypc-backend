@@ -6,7 +6,7 @@ import com.kirakishou.backend.fixmypc.manager.FileServersManager
 import com.kirakishou.backend.fixmypc.manager.FileServersManagerImpl
 import com.kirakishou.backend.fixmypc.model.*
 import com.kirakishou.backend.fixmypc.model.net.request.MalfunctionRequest
-import com.kirakishou.backend.fixmypc.model.repository.postgresql.MalfunctionRepository
+import com.kirakishou.backend.fixmypc.model.repository.postgresql.MalfunctionDao
 import com.kirakishou.backend.fixmypc.service.malfunction.CreateMalfunctionRequestService
 import com.kirakishou.backend.fixmypc.service.malfunction.CreateMalfunctionRequestServiceImpl
 import io.reactivex.Flowable
@@ -51,7 +51,7 @@ class CreateMalfunctionRequestServiceTest {
     lateinit var generator: Generator
 
     @Mock
-    lateinit var malfunctionRepository: MalfunctionRepository
+    lateinit var malfunctionDao: MalfunctionDao
 
     lateinit var tooBigImage: BufferedImage
     lateinit var normalImage: BufferedImage
@@ -430,7 +430,7 @@ class CreateMalfunctionRequestServiceTest {
         Mockito.`when`(fileServerManager.isAtLeastOneServerAlive()).thenReturn(true)
         Mockito.`when`(fileServerManager.getServers(1)).thenReturn(listOf(FileServersManagerImpl.ServerWithId(0, FileServerInfo(host))))
         Mockito.`when`(tempFileService.fromMultipartFile(TestUtils.anyObject())).thenReturn(tempFile)
-        Mockito.`when`(malfunctionRepository.createNewMalfunctionRequest(TestUtils.anyObject())).thenThrow(SQLException("DB is ded"))
+        Mockito.`when`(malfunctionDao.createNewMalfunctionRequest(TestUtils.anyObject())).thenThrow(SQLException("DB is ded"))
 
         Mockito.`when`(fileServerService.saveMalfunctionRequestImage(0, host, tempFile, origFileName, 0, 0L, malfunctionRequestId))
                 .thenReturn(Flowable.just(FileServerAnswerWrapper(FileServerAnswer(FileServerErrorCode.OK.value, emptyList()), "n0_i45435346")))

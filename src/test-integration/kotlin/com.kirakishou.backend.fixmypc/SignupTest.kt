@@ -4,7 +4,7 @@ import com.kirakishou.backend.fixmypc.model.AccountType
 import com.kirakishou.backend.fixmypc.model.Constant
 import com.kirakishou.backend.fixmypc.model.net.request.SignupRequest
 import com.kirakishou.backend.fixmypc.model.net.response.SignupResponse
-import com.kirakishou.backend.fixmypc.model.repository.postgresql.UserRepository
+import com.kirakishou.backend.fixmypc.model.repository.postgresql.UserDao
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -27,7 +27,7 @@ class SignupTest {
     lateinit var restTemplate: TestRestTemplate
 
     @Autowired
-    lateinit var userRepo: UserRepository
+    lateinit var userRepo: UserDao
 
     @Before
     fun init() {

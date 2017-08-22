@@ -1,8 +1,10 @@
 package com.kirakishou.backend.fixmypc.service.malfunction
 
 import com.kirakishou.backend.fixmypc.log.FileLog
+import com.kirakishou.backend.fixmypc.model.Constant
+import com.kirakishou.backend.fixmypc.model.repository.hazelcast.MalfunctionCache
 import com.kirakishou.backend.fixmypc.model.repository.hazelcast.UserCache
-import com.kirakishou.backend.fixmypc.model.repository.postgresql.MalfunctionRepository
+import com.kirakishou.backend.fixmypc.model.repository.postgresql.MalfunctionDao
 import io.reactivex.Single
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -14,12 +16,15 @@ class GetUserMalfunctionRequestListServiceImpl : GetUserMalfunctionRequestListSe
     private lateinit var userCache: UserCache
 
     @Autowired
-    private lateinit var malfunctionRepository: MalfunctionRepository
+    private lateinit var malfunctionCache: MalfunctionCache
+
+    @Autowired
+    private lateinit var malfunctionDao: MalfunctionDao
 
     @Autowired
     private lateinit var log: FileLog
 
-    override fun getUserMalfunctionRequestList(sessionId: String): Single<GetUserMalfunctionRequestListService.Get.Result> {
+    override fun getUserMalfunctionRequestList(sessionId: String, offset: Long): Single<GetUserMalfunctionRequestListService.Get.Result> {
 
         //user must re login if sessionId was removed from the cache
         val userFickle = userCache.get(sessionId)
@@ -28,7 +33,10 @@ class GetUserMalfunctionRequestListServiceImpl : GetUserMalfunctionRequestListSe
             return Single.just(GetUserMalfunctionRequestListService.Get.Result.SessionIdExpired())
         }
 
-
+        val user = userFickle.get()
+        val malfunctionList = malfunctionCache.get(user.id).stream()
+                .skip(offset)
+                .limit(Constant.MAX_MALFUNCTIONS_PER_PAGE)
 
         return Single.just(GetUserMalfunctionRequestListService.Get.Result.Ok())
     }

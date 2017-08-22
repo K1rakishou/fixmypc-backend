@@ -14,7 +14,7 @@ import java.sql.Statement
 import javax.sql.DataSource
 
 @Repository
-class MalfunctionRepositoryImpl : MalfunctionRepository {
+class MalfunctionDaoImpl : MalfunctionDao {
 
     @Autowired
     private lateinit var hikariCP: DataSource
@@ -87,7 +87,7 @@ class MalfunctionRepositoryImpl : MalfunctionRepository {
     }
 
     @Throws(SQLException::class)
-    fun getImagesByMalfunctionId(connection: Connection, malfunctionId: Long): List<String> {
+    private fun getImagesByMalfunctionId(connection: Connection, malfunctionId: Long): List<String> {
         val images = arrayListOf<String>()
 
         connection.prepareStatement("SELECT image_name FROM public.malfunction_photos WHERE malfunction_id = ? " +
@@ -107,7 +107,7 @@ class MalfunctionRepositoryImpl : MalfunctionRepository {
     }
 
     @Throws(SQLException::class)
-    fun getUserMalfunctionRequestList(ownerId: Long, offset: Long, count: Int): List<Malfunction> {
+    override fun getUserMalfunctionRequestList(ownerId: Long, offset: Long, count: Int): List<Malfunction> {
         val malfunctions = arrayListOf<Malfunction>()
 
         hikariCP.connection.use { connection ->

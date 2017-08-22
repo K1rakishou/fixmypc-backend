@@ -2,7 +2,7 @@ package com.kirakishou.backend.fixmypc.service.user
 
 import com.kirakishou.backend.fixmypc.model.AccountType
 import com.kirakishou.backend.fixmypc.model.entity.User
-import com.kirakishou.backend.fixmypc.model.repository.postgresql.UserRepository
+import com.kirakishou.backend.fixmypc.model.repository.postgresql.UserDao
 import com.kirakishou.backend.fixmypc.util.TextUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component
 class SignupServiceImpl : SignupService {
 
     @Autowired
-    lateinit var userRepo: UserRepository
+    lateinit var userRepo: UserDao
 
     override fun doSignup(login: String, password: String, accountType: AccountType): SignupService.Result {
         if (!TextUtils.checkLoginCorrect(login)) {
