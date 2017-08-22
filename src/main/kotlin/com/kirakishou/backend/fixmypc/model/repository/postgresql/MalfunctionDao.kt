@@ -9,6 +9,7 @@ interface MalfunctionDao {
     @Throws(SQLException::class)
     fun createNewMalfunctionRequest(malfunction: Malfunction)
     fun findMalfunctionRequestById(id: Long): Fickle<Malfunction>
+    fun getAllUserMalfunctions(ownerId: Long): List<Malfunction>
     fun getUserMalfunctionRequestList(ownerId: Long, offset: Long, count: Int): List<Malfunction>
     fun deleteMalfunctionRequest(id: Long)
 }

@@ -2,9 +2,8 @@ package com.kirakishou.backend.fixmypc.service.malfunction
 
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.Constant
-import com.kirakishou.backend.fixmypc.model.repository.hazelcast.MalfunctionCache
+import com.kirakishou.backend.fixmypc.model.repository.MalfunctionRepository
 import com.kirakishou.backend.fixmypc.model.repository.hazelcast.UserCache
-import com.kirakishou.backend.fixmypc.model.repository.postgresql.MalfunctionDao
 import io.reactivex.Single
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -16,10 +15,7 @@ class GetUserMalfunctionRequestListServiceImpl : GetUserMalfunctionRequestListSe
     private lateinit var userCache: UserCache
 
     @Autowired
-    private lateinit var malfunctionCache: MalfunctionCache
-
-    @Autowired
-    private lateinit var malfunctionDao: MalfunctionDao
+    private lateinit var malfunctionRepository: MalfunctionRepository
 
     @Autowired
     private lateinit var log: FileLog
@@ -34,9 +30,7 @@ class GetUserMalfunctionRequestListServiceImpl : GetUserMalfunctionRequestListSe
         }
 
         val user = userFickle.get()
-        val malfunctionList = malfunctionCache.get(user.id).stream()
-                .skip(offset)
-                .limit(Constant.MAX_MALFUNCTIONS_PER_PAGE)
+        val malfunctionList = malfunctionRepository.getUserMalfunctions(user.id, offset, Constant.MAX_MALFUNCTIONS_PER_PAGE)
 
         return Single.just(GetUserMalfunctionRequestListService.Get.Result.Ok())
     }

@@ -86,6 +86,7 @@ class MalfunctionDaoImpl : MalfunctionDao {
         return malfunction
     }
 
+    //TODO: Rewrite this function to accept list of malfunctionId
     @Throws(SQLException::class)
     private fun getImagesByMalfunctionId(connection: Connection, malfunctionId: Long): List<String> {
         val images = arrayListOf<String>()
@@ -111,12 +112,40 @@ class MalfunctionDaoImpl : MalfunctionDao {
         val malfunctions = arrayListOf<Malfunction>()
 
         hikariCP.connection.use { connection ->
-            connection.prepareStatement("SELECT id, category, description, created_on, malfunction_request_id, " +
+            connection.prepareStatement("SELECT id, category, description, created_on, malfunction_request_id " +
                     "FROM public.malfunctions WHERE owner_id = ? AND deleted_on IS NULL OFFSET ? LIMIT ?").use { ps ->
 
                 ps.setLong(1, ownerId)
                 ps.setLong(2, offset)
                 ps.setInt(3, count)
+
+                ps.executeQuery().use { rs ->
+                    while (rs.next()) {
+                        val malfunction = Malfunction(
+                                rs.getLong("id"),
+                                ownerId,
+                                rs.getString("malfunction_request_id"),
+                                rs.getInt("category"),
+                                rs.getString("description"),
+                                rs.getTimestamp("created_on"))
+
+                        malfunction.imageNamesList = getImagesByMalfunctionId(connection, malfunction.id)
+                    }
+                }
+            }
+        }
+
+        return malfunctions
+    }
+
+    override fun getAllUserMalfunctions(ownerId: Long): List<Malfunction> {
+        val malfunctions = arrayListOf<Malfunction>()
+
+        hikariCP.connection.use { connection ->
+            connection.prepareStatement("SELECT id, category, description, created_on, malfunction_request_id " +
+                    "FROM public.malfunctions WHERE owner_id = ? AND deleted_on IS NULL").use { ps ->
+
+                ps.setLong(1, ownerId)
 
                 ps.executeQuery().use { rs ->
                     while (rs.next()) {
