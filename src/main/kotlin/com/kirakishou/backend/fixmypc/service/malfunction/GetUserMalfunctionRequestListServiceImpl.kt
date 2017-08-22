@@ -5,7 +5,9 @@ import com.kirakishou.backend.fixmypc.model.repository.hazelcast.UserCache
 import com.kirakishou.backend.fixmypc.model.repository.postgresql.MalfunctionRepository
 import io.reactivex.Single
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
 
+@Component
 class GetUserMalfunctionRequestListServiceImpl : GetUserMalfunctionRequestListService {
 
     @Autowired

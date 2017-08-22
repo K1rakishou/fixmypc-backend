@@ -18,10 +18,10 @@ import javax.sql.DataSource
 class UserRepositoryImpl : UserRepository {
 
     @Autowired
-    lateinit var hikariCP: DataSource
+    private lateinit var hikariCP: DataSource
 
     @Autowired
-    lateinit var log: FileLog
+    private lateinit var log: FileLog
 
     override fun findByLogin(login: String): Fickle<User> {
         var user: Fickle<User> = Fickle.empty()

@@ -6,15 +6,17 @@ import com.kirakishou.backend.fixmypc.model.Constant
 import com.kirakishou.backend.fixmypc.model.Fickle
 import com.kirakishou.backend.fixmypc.model.entity.Malfunction
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
 import java.util.concurrent.TimeUnit
 import javax.annotation.PostConstruct
 
+@Component
 class MalfunctionCacheImpl : MalfunctionCache {
 
     @Autowired
-    lateinit var hazelcast: HazelcastInstance
+    private lateinit var hazelcast: HazelcastInstance
 
-    lateinit var malfunctionCache: IMap<String, Malfunction>
+    private lateinit var malfunctionCache: IMap<String, Malfunction>
 
     @PostConstruct
     fun init() {

@@ -17,7 +17,7 @@ class TempFilesServiceImpl : TempFilesService {
     private lateinit var tempImagesDir: String
 
     @Autowired
-    lateinit var log: FileLog
+    private lateinit var log: FileLog
 
     private val tempFiles = arrayListOf<String>()
 

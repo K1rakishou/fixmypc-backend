@@ -19,9 +19,9 @@ import javax.annotation.PostConstruct
 class UserCacheImpl : UserCache {
 
     @Autowired
-    lateinit var hazelcast: HazelcastInstance
+    private lateinit var hazelcast: HazelcastInstance
 
-    lateinit var userCache: IMap<String, User>
+    private lateinit var userCache: IMap<String, User>
 
     @PostConstruct
     fun init() {

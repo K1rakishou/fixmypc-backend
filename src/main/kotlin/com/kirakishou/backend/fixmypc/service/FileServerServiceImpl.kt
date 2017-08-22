@@ -19,10 +19,10 @@ import javax.annotation.PostConstruct
 class FileServerServiceImpl : FileServerService {
 
     @Autowired
-    lateinit var generator: Generator
+    private lateinit var generator: Generator
 
     @Autowired
-    lateinit var restTemplate: AsyncRestTemplate
+    private lateinit var restTemplate: AsyncRestTemplate
 
     @PostConstruct
     fun init() {
@@ -33,13 +33,13 @@ class FileServerServiceImpl : FileServerService {
                                              ownerId: Long, malfunctionRequestId: String): Flowable<FileServerAnswerWrapper> {
 
         val mvmap = LinkedMultiValueMap<String, Any>()
-        mvmap.add("images", FileSystemResource(tempFile))
+        mvmap.add("image", FileSystemResource(tempFile))
 
         val generatedImageName = generator.generateImageName()
         val newImageName = "n${serverId}_i$generatedImageName"
 
         val distImage = DistributedImage(originalImageName, imageType, newImageName, ownerId, malfunctionRequestId)
-        mvmap.add("images_info", distImage)
+        mvmap.add("image_info", distImage)
 
         val headers = HttpHeaders()
         headers.contentType = MediaType.MULTIPART_FORM_DATA

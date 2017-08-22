@@ -9,6 +9,6 @@ interface FileServersManager {
     fun getServer(): Fickle<FileServersManagerImpl.ServerWithId>
     fun getAliveServersCount(): Int
     fun isAtLeastOneServerAlive(): Boolean
-    fun notWorking(i: Int)
+    fun notWorking(id: Int)
     fun getHostById(id: Int): String
 }

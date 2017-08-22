@@ -17,10 +17,10 @@ import javax.sql.DataSource
 class MalfunctionRepositoryImpl : MalfunctionRepository {
 
     @Autowired
-    lateinit var hikariCP: DataSource
+    private lateinit var hikariCP: DataSource
 
     @Autowired
-    lateinit var log: FileLog
+    private lateinit var log: FileLog
 
     @Throws(SQLException::class)
     override fun createNewMalfunctionRequest(malfunction: Malfunction) {
@@ -91,13 +91,13 @@ class MalfunctionRepositoryImpl : MalfunctionRepository {
         val images = arrayListOf<String>()
 
         connection.prepareStatement("SELECT image_name FROM public.malfunction_photos WHERE malfunction_id = ? " +
-                "AND deleted_on IS NULL LIMIT ${Constant.MALFUNCTION_MAX_IMAGES_PER_REQUEST}").use { ps2 ->
+                "AND deleted_on IS NULL LIMIT ${Constant.MALFUNCTION_MAX_IMAGES_PER_REQUEST}").use { ps ->
 
-            ps2.setLong(1, malfunctionId)
+            ps.setLong(1, malfunctionId)
 
-            ps2.executeQuery().use { rs2 ->
-                while (rs2.next()) {
-                    images.add(rs2.getString("image_name"))
+            ps.executeQuery().use { rs ->
+                while (rs.next()) {
+                    images.add(rs.getString("image_name"))
                 }
             }
 
