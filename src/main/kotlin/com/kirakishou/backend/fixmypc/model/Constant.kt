@@ -37,8 +37,8 @@ object Constant {
     }
 
     object HazelcastType {
-        val TYPE_USER = 0
-        val TYPE_MALFUNCTION = 1
+        val TYPE_USER = 1
+        val TYPE_MALFUNCTION = 2
     }
 
     object ImageTypes {
