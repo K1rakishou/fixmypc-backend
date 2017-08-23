@@ -26,8 +26,8 @@ class MalfunctionDaoImpl : MalfunctionDao {
     @Throws(SQLException::class)
     override fun createNewMalfunctionRequest(malfunction: Malfunction) {
         hikariCP.connection.transactional(log) { connection ->
-            connection.prepareStatement("INSERT INTO public.malfunctions (owner_id, category, description, malfunction_request_id, created_on, deleted_on) " +
-                    "VALUES (?, ?, ?, ?, NOW(), NULL)", Statement.RETURN_GENERATED_KEYS).use { ps ->
+            connection.prepareStatement("INSERT INTO public.malfunctions (owner_id, category, description, malfunction_request_id, is_active, created_on, deleted_on) " +
+                    "VALUES (?, ?, ?, ?, true, NOW(), NULL)", Statement.RETURN_GENERATED_KEYS).use { ps ->
 
                 ps.setLong(1, malfunction.ownerId)
                 ps.setInt(2, malfunction.category)
@@ -64,7 +64,7 @@ class MalfunctionDaoImpl : MalfunctionDao {
 
         hikariCP.connection.use { connection ->
             connection.prepareStatementScrollable("SELECT * FROM public.malfunctions WHERE id = ? AND" +
-                    " deleted_on IS NULL LIMIT 1").use { ps ->
+                    " deleted_on IS NULL AND is_active = true LIMIT 1").use { ps ->
 
                 ps.setLong(1, id)
 
@@ -73,6 +73,7 @@ class MalfunctionDaoImpl : MalfunctionDao {
                         malfunction = Malfunction(
                                 rs.getLong("id"),
                                 rs.getLong("owner_id"),
+                                true,
                                 rs.getString("malfunction_request_id"),
                                 rs.getInt("category"),
                                 rs.getString("description"),
@@ -119,16 +120,17 @@ class MalfunctionDaoImpl : MalfunctionDao {
     }
 
     @Throws(SQLException::class)
-    override fun getUserMalfunctionRequestList(ownerId: Long, offset: Long, count: Int): List<Malfunction> {
+    override fun getUserMalfunctionRequestList(ownerId: Long, isActive: Boolean, offset: Long, count: Int): List<Malfunction> {
         val malfunctions = arrayListOf<Malfunction>()
 
         hikariCP.connection.use { connection ->
             connection.prepareStatement("SELECT id, category, description, created_on, malfunction_request_id " +
-                    "FROM public.malfunctions WHERE owner_id = ? AND deleted_on IS NULL OFFSET ? LIMIT ?").use { ps ->
+                    "FROM public.malfunctions WHERE owner_id = ? AND is_active = ? AND deleted_on IS NULL OFFSET ? LIMIT ?").use { ps ->
 
                 ps.setLong(1, ownerId)
-                ps.setLong(2, offset)
-                ps.setInt(3, count)
+                ps.setBoolean(2, isActive)
+                ps.setLong(3, offset)
+                ps.setInt(4, count)
                 val ids = arrayListOf<Long>()
 
                 ps.executeQuery().use { rs ->
@@ -136,6 +138,7 @@ class MalfunctionDaoImpl : MalfunctionDao {
                         val malfunction = Malfunction(
                                 rs.getLong("id"),
                                 ownerId,
+                                isActive,
                                 rs.getString("malfunction_request_id"),
                                 rs.getInt("category"),
                                 rs.getString("description"),
@@ -153,14 +156,15 @@ class MalfunctionDaoImpl : MalfunctionDao {
         return malfunctions
     }
 
-    override fun getAllUserMalfunctions(ownerId: Long): List<Malfunction> {
+    override fun getAllUserMalfunctions(ownerId: Long, isActive: Boolean): List<Malfunction> {
         val malfunctions = arrayListOf<Malfunction>()
 
         hikariCP.connection.use { connection ->
             connection.prepareStatement("SELECT id, category, description, created_on, malfunction_request_id " +
-                    "FROM public.malfunctions WHERE owner_id = ? AND deleted_on IS NULL").use { ps ->
+                    "FROM public.malfunctions WHERE owner_id = ? AND is_active = ? AND deleted_on IS NULL ORDER BY created_on DESC").use { ps ->
 
                 ps.setLong(1, ownerId)
+                ps.setBoolean(2, isActive)
                 val ids = arrayListOf<Long>()
 
                 ps.executeQuery().use { rs ->
@@ -168,6 +172,7 @@ class MalfunctionDaoImpl : MalfunctionDao {
                         val malfunction = Malfunction(
                                 rs.getLong("id"),
                                 ownerId,
+                                isActive,
                                 rs.getString("malfunction_request_id"),
                                 rs.getInt("category"),
                                 rs.getString("description"),
