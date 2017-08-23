@@ -26,4 +26,11 @@ class TextUtilsTest {
         assert(imageInfo.serverId == 123)
         assert(imageInfo.name == "0TWkyymLNCGmsgbQGtrpGwSqD98grbleawPPSk3OgEWtex9F6Bf1LSs1KWH4k053")
     }
+
+    @Test
+    fun testCreateStatementForList() {
+        val statement = TextUtils.createStatementForList(10)
+
+        assert(statement == "?, ?, ?, ?, ?, ?, ?, ?, ?, ?")
+    }
 }

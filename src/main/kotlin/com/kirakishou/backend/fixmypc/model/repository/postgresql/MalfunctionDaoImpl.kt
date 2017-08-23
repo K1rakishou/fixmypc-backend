@@ -6,6 +6,7 @@ import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.Constant
 import com.kirakishou.backend.fixmypc.model.Fickle
 import com.kirakishou.backend.fixmypc.model.entity.Malfunction
+import com.kirakishou.backend.fixmypc.util.TextUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Repository
 import java.sql.Connection
@@ -59,7 +60,7 @@ class MalfunctionDaoImpl : MalfunctionDao {
 
     @Throws(SQLException::class)
     override fun findMalfunctionRequestById(id: Long): Fickle<Malfunction> {
-        var malfunction: Fickle<Malfunction> = Fickle.empty()
+        var malfunction: Malfunction? = null
 
         hikariCP.connection.use { connection ->
             connection.prepareStatementScrollable("SELECT * FROM public.malfunctions WHERE id = ? AND" +
@@ -69,42 +70,52 @@ class MalfunctionDaoImpl : MalfunctionDao {
 
                 ps.executeQuery().use { rs ->
                     if (rs.first()) {
-                        malfunction = Fickle.of(Malfunction(
+                        malfunction = Malfunction(
                                 rs.getLong("id"),
                                 rs.getLong("owner_id"),
                                 rs.getString("malfunction_request_id"),
                                 rs.getInt("category"),
                                 rs.getString("description"),
-                                rs.getTimestamp("created_on")))
-
-                        malfunction.get().imageNamesList = getImagesByMalfunctionId(connection, malfunction.get().id)
+                                rs.getTimestamp("created_on"))
                     }
+                }
+
+                malfunction?.let { mf ->
+                    getImagesByMalfunctionId(connection, arrayListOf(mf), listOf(mf.id))
                 }
             }
         }
 
-        return malfunction
+        return Fickle.of(malfunction)
     }
 
-    //TODO: Rewrite this function to accept list of malfunctionId
     @Throws(SQLException::class)
-    private fun getImagesByMalfunctionId(connection: Connection, malfunctionId: Long): List<String> {
-        val images = arrayListOf<String>()
+    private fun getImagesByMalfunctionId(connection: Connection, malfunctions: ArrayList<Malfunction>, malfunctionIdList: List<Long>) {
+        val malfunctionIdsCount = malfunctionIdList.size
+        val idsToSearch = TextUtils.createStatementForList(malfunctionIdsCount)
 
-        connection.prepareStatement("SELECT image_name FROM public.malfunction_photos WHERE malfunction_id = ? " +
-                "AND deleted_on IS NULL LIMIT ${Constant.MALFUNCTION_MAX_IMAGES_PER_REQUEST}").use { ps ->
+        val sql = "SELECT malfunction_id, image_name FROM public.malfunction_photos WHERE malfunction_id IN ($idsToSearch) " +
+                "AND deleted_on IS NULL LIMIT ${Constant.MALFUNCTION_MAX_IMAGES_PER_REQUEST}"
 
-            ps.setLong(1, malfunctionId)
+        connection.prepareStatement(sql).use { ps ->
+            for (i in 0 until malfunctionIdsCount) {
+                ps.setLong(i + 1, malfunctionIdList[i])
+            }
 
             ps.executeQuery().use { rs ->
                 while (rs.next()) {
-                    images.add(rs.getString("image_name"))
+                    val id = rs.getLong("malfunction_id")
+                    val imageName = rs.getString("image_name")
+
+                    val malfunction = malfunctions.firstOrNull { it.id == id }
+                    if (malfunction == null) {
+                        throw NullPointerException("MalfunctionIdList does not contain this id: $id")
+                    }
+
+                    malfunction.imageNamesList.add(imageName)
                 }
             }
-
         }
-
-        return images
     }
 
     @Throws(SQLException::class)
@@ -118,6 +129,7 @@ class MalfunctionDaoImpl : MalfunctionDao {
                 ps.setLong(1, ownerId)
                 ps.setLong(2, offset)
                 ps.setInt(3, count)
+                val ids = arrayListOf<Long>()
 
                 ps.executeQuery().use { rs ->
                     while (rs.next()) {
@@ -129,10 +141,12 @@ class MalfunctionDaoImpl : MalfunctionDao {
                                 rs.getString("description"),
                                 rs.getTimestamp("created_on"))
 
-                        malfunction.imageNamesList = getImagesByMalfunctionId(connection, malfunction.id)
                         malfunctions.add(malfunction)
+                        ids.add(malfunction.id)
                     }
                 }
+
+                getImagesByMalfunctionId(connection, malfunctions, ids)
             }
         }
 
@@ -147,6 +161,7 @@ class MalfunctionDaoImpl : MalfunctionDao {
                     "FROM public.malfunctions WHERE owner_id = ? AND deleted_on IS NULL").use { ps ->
 
                 ps.setLong(1, ownerId)
+                val ids = arrayListOf<Long>()
 
                 ps.executeQuery().use { rs ->
                     while (rs.next()) {
@@ -158,10 +173,12 @@ class MalfunctionDaoImpl : MalfunctionDao {
                                 rs.getString("description"),
                                 rs.getTimestamp("created_on"))
 
-                        malfunction.imageNamesList = getImagesByMalfunctionId(connection, malfunction.id)
                         malfunctions.add(malfunction)
+                        ids.add(malfunction.id)
                     }
                 }
+
+                getImagesByMalfunctionId(connection, malfunctions, ids)
             }
         }
 

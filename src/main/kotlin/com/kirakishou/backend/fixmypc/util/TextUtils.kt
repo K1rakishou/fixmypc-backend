@@ -37,4 +37,18 @@ object TextUtils {
 
         return ExtractedImageInfo(serverIdStr.toInt(), name)
     }
+
+    fun createStatementForList(length: Int): String {
+        val sb = StringBuilder()
+
+        for (i in 0 until length) {
+            sb.append("?")
+
+            if (i < length - 1) {
+                sb.append(", ")
+            }
+        }
+
+        return sb.toString()
+    }
 }
