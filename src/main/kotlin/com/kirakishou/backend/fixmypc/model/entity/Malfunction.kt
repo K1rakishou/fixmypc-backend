@@ -8,4 +8,4 @@ data class Malfunction(var id: Long = 0L,
                        var category: Int = 0,
                        var description: String = "",
                        var createdOn: Timestamp? = null,
-                       var imageNamesList: ArrayList<String> = arrayListOf())
+                       var imageNamesList: MutableList<String> = mutableListOf())

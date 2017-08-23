@@ -95,7 +95,7 @@ class MalfunctionDaoImpl : MalfunctionDao {
         val idsToSearch = TextUtils.createStatementForList(malfunctionIdsCount)
 
         val sql = "SELECT malfunction_id, image_name FROM public.malfunction_photos WHERE malfunction_id IN ($idsToSearch) " +
-                "AND deleted_on IS NULL LIMIT ${Constant.MALFUNCTION_MAX_IMAGES_PER_REQUEST}"
+                "AND deleted_on IS NULL"
 
         connection.prepareStatement(sql).use { ps ->
             for (i in 0 until malfunctionIdsCount) {
