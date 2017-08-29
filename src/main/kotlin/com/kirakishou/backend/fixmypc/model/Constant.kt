@@ -21,6 +21,9 @@ object Constant {
         const val MALFUNCTION_CATEGORY = "m_category"
         const val MALFUNCTION_DESCRIPTION = "m_description"
 
+        const val LOCATION_LAT = "lat"
+        const val LOCATION_LON = "lon"
+
         const val ERROR_CODE = "error_code"
         const val BAD_PHOTO_NAMES = "bad_photo_names"
 

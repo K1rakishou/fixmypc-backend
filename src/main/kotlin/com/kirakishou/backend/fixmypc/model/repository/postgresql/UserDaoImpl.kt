@@ -46,7 +46,7 @@ class UserDaoImpl : UserDao {
     }
 
     override fun createNew(user: User) {
-        hikariCP.connection.transactional(log) { connection ->
+        hikariCP.connection.transactional { connection ->
             connection.prepareStatement("INSERT INTO public.users (login, password, account_type, created_on, deleted_on) " +
                     "VALUES (?, ?, ?, NOW(), NULL)").use { ps ->
 

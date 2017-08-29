@@ -25,14 +25,18 @@ class MalfunctionDaoImpl : MalfunctionDao {
 
     @Throws(SQLException::class)
     override fun createNewMalfunctionRequest(malfunction: Malfunction) {
-        hikariCP.connection.transactional(log) { connection ->
-            connection.prepareStatement("INSERT INTO public.malfunctions (owner_id, category, description, malfunction_request_id, is_active, created_on, deleted_on) " +
-                    "VALUES (?, ?, ?, ?, true, NOW(), NULL)", Statement.RETURN_GENERATED_KEYS).use { ps ->
+        hikariCP.connection.transactional { connection ->
+            connection.prepareStatement("INSERT INTO public.malfunctions (owner_id, category, description, malfunction_request_id, lat, lon, is_active, created_on, deleted_on) " +
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL)", Statement.RETURN_GENERATED_KEYS).use { ps ->
 
                 ps.setLong(1, malfunction.ownerId)
                 ps.setInt(2, malfunction.category)
                 ps.setString(3, malfunction.description)
                 ps.setString(4, malfunction.malfunctionRequestId)
+                ps.setDouble(5, malfunction.lat)
+                ps.setDouble(6, malfunction.lon)
+                ps.setBoolean(7, malfunction.isActive)
+                ps.setTimestamp(8, malfunction.createdOn)
                 ps.executeUpdate()
 
                 ps.generatedKeys.use {
@@ -77,6 +81,8 @@ class MalfunctionDaoImpl : MalfunctionDao {
                                 rs.getString("malfunction_request_id"),
                                 rs.getInt("category"),
                                 rs.getString("description"),
+                                rs.getDouble("lat"),
+                                rs.getDouble("lon"),
                                 rs.getTimestamp("created_on"))
                     }
                 }
@@ -124,7 +130,7 @@ class MalfunctionDaoImpl : MalfunctionDao {
         val malfunctions = arrayListOf<Malfunction>()
 
         hikariCP.connection.use { connection ->
-            connection.prepareStatement("SELECT id, category, description, created_on, malfunction_request_id " +
+            connection.prepareStatement("SELECT id, category, description, created_on, malfunction_request_id, lat, lon " +
                     "FROM public.malfunctions WHERE owner_id = ? AND is_active = ? AND deleted_on IS NULL OFFSET ? LIMIT ?").use { ps ->
 
                 ps.setLong(1, ownerId)
@@ -142,6 +148,8 @@ class MalfunctionDaoImpl : MalfunctionDao {
                                 rs.getString("malfunction_request_id"),
                                 rs.getInt("category"),
                                 rs.getString("description"),
+                                rs.getDouble("lat"),
+                                rs.getDouble("lon"),
                                 rs.getTimestamp("created_on"))
 
                         malfunctions.add(malfunction)
@@ -156,11 +164,12 @@ class MalfunctionDaoImpl : MalfunctionDao {
         return malfunctions
     }
 
+    @Throws(SQLException::class)
     override fun getAllUserMalfunctions(ownerId: Long, isActive: Boolean): List<Malfunction> {
         val malfunctions = arrayListOf<Malfunction>()
 
         hikariCP.connection.use { connection ->
-            connection.prepareStatement("SELECT id, category, description, created_on, malfunction_request_id " +
+            connection.prepareStatement("SELECT id, category, description, created_on, malfunction_request_id, lat, lon " +
                     "FROM public.malfunctions WHERE owner_id = ? AND is_active = ? AND deleted_on IS NULL ORDER BY created_on DESC").use { ps ->
 
                 ps.setLong(1, ownerId)
@@ -176,6 +185,8 @@ class MalfunctionDaoImpl : MalfunctionDao {
                                 rs.getString("malfunction_request_id"),
                                 rs.getInt("category"),
                                 rs.getString("description"),
+                                rs.getDouble("lat"),
+                                rs.getDouble("lon"),
                                 rs.getTimestamp("created_on"))
 
                         malfunctions.add(malfunction)
@@ -192,16 +203,25 @@ class MalfunctionDaoImpl : MalfunctionDao {
 
     @Throws(SQLException::class)
     override fun deleteMalfunctionRequest(id: Long) {
-        hikariCP.connection.use { connection ->
-            connection.prepareStatement("UPDATE public.malfunctions SET deleted_on = NOW() WHERE id = ?").use { ps ->
-                ps.setLong(1, id)
-                ps.executeUpdate()
-            }
+        hikariCP.connection.transactional { connection ->
+            deleteMalfunction(connection, id)
+            deletePhoto(connection, id)
+        }
+    }
 
-            connection.prepareStatement("UPDATE public.malfunction_photos SET deleted_on = NOW() WHERE id = ?").use { ps ->
-                ps.setLong(1, id)
-                ps.executeUpdate()
-            }
+    @Throws(SQLException::class)
+    private fun deletePhoto(connection: Connection, id: Long) {
+        connection.prepareStatement("UPDATE public.malfunction_photos SET deleted_on = NOW() WHERE id = ?").use { ps ->
+            ps.setLong(1, id)
+            ps.executeUpdate()
+        }
+    }
+
+    @Throws(SQLException::class)
+    private fun deleteMalfunction(connection: Connection, id: Long) {
+        connection.prepareStatement("UPDATE public.malfunctions SET deleted_on = NOW() WHERE id = ?").use { ps ->
+            ps.setLong(1, id)
+            ps.executeUpdate()
         }
     }
 }

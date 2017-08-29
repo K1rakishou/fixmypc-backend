@@ -12,9 +12,12 @@ class MalfunctionSerializer : StreamSerializer<Malfunction> {
     override fun write(output: ObjectDataOutput, malfunction: Malfunction) {
         output.writeLong(malfunction.id)
         output.writeLong(malfunction.ownerId)
+        output.writeBoolean(malfunction.isActive)
         output.writeUTF(malfunction.malfunctionRequestId)
         output.writeInt(malfunction.category)
         output.writeUTF(malfunction.description)
+        output.writeDouble(malfunction.lat)
+        output.writeDouble(malfunction.lon)
         output.writeLong(malfunction.createdOn!!.time)
         output.writeInt(malfunction.imageNamesList.size)
 
@@ -32,9 +35,12 @@ class MalfunctionSerializer : StreamSerializer<Malfunction> {
 
         malfunction.id = input.readLong()
         malfunction.ownerId = input.readLong()
+        malfunction.isActive = input.readBoolean()
         malfunction.malfunctionRequestId = input.readUTF()
         malfunction.category = input.readInt()
         malfunction.description = input.readUTF()
+        malfunction.lat = input.readDouble()
+        malfunction.lon = input.readDouble()
         malfunction.createdOn = Timestamp(input.readLong())
 
         val imagesCount = input.readInt()

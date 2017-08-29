@@ -29,7 +29,7 @@ class UserCacheImpl : UserCache {
     }
 
     override fun save(key: String, user: User) {
-        userCache.put(key, user, 20, TimeUnit.MINUTES)
+        userCache.put(key, user, 5, TimeUnit.SECONDS)
     }
 
     override fun get(key: String): Fickle<User> {

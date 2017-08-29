@@ -6,6 +6,7 @@ import com.kirakishou.backend.fixmypc.model.repository.hazelcast.MalfunctionCach
 import com.kirakishou.backend.fixmypc.model.repository.postgresql.MalfunctionDao
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
+import java.sql.SQLException
 import java.util.stream.Collectors
 
 @Component
@@ -17,6 +18,7 @@ class MalfunctionRepositoryImpl : MalfunctionRepository {
     @Autowired
     private lateinit var malfunctionDao: MalfunctionDao
 
+    @Throws(SQLException::class)
     override fun createMalfunction(malfunction: Malfunction) {
         malfunctionDao.createNewMalfunctionRequest(malfunction)
         malfunctionCache.save(malfunction.ownerId, malfunction)
@@ -33,7 +35,7 @@ class MalfunctionRepositoryImpl : MalfunctionRepository {
         }
 
         val remainder = count - malfunctionsList.size
-        val malfunctionsFromDb = malfunctionDao.getAllUserMalfunctions(ownerId)
+        val malfunctionsFromDb = malfunctionDao.getAllUserMalfunctions(ownerId, true)
         val filteredMF = malfunctionsFromDb.stream()
                 .filter { mf -> !contains(mf.id, malfunctionsList) }
                 .limit(remainder)

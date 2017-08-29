@@ -8,5 +8,7 @@ data class Malfunction(var id: Long = 0L,
                        var malfunctionRequestId: String = "",
                        var category: Int = 0,
                        var description: String = "",
+                       var lat: Double = 0.0,
+                       var lon: Double = 0.0,
                        var createdOn: Timestamp? = null,
                        var imageNamesList: MutableList<String> = mutableListOf())

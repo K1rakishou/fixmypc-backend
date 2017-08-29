@@ -40,7 +40,7 @@ class LoginController {
                         }
 
                         is LoginService.Result.WrongLoginOrPassword -> {
-                            return@map ResponseEntity(LoginResponse("", AccountType.Client.value,
+                            return@map ResponseEntity(LoginResponse("", AccountType.Guest.value,
                                     ServerErrorCode.SEC_WRONG_LOGIN_OR_PASSWORD.value), HttpStatus.UNPROCESSABLE_ENTITY)
                         }
 

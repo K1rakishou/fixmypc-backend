@@ -6,11 +6,13 @@ import com.kirakishou.backend.fixmypc.manager.FileServersManagerImpl
 import com.kirakishou.backend.fixmypc.model.*
 import com.kirakishou.backend.fixmypc.model.entity.Malfunction
 import com.kirakishou.backend.fixmypc.model.net.request.MalfunctionRequest
+import com.kirakishou.backend.fixmypc.model.repository.MalfunctionRepository
 import com.kirakishou.backend.fixmypc.model.repository.hazelcast.UserCache
 import com.kirakishou.backend.fixmypc.model.repository.postgresql.MalfunctionDao
 import com.kirakishou.backend.fixmypc.service.FileServerService
 import com.kirakishou.backend.fixmypc.service.Generator
 import com.kirakishou.backend.fixmypc.service.TempFilesService
+import com.kirakishou.backend.fixmypc.util.ServerUtils
 import com.kirakishou.backend.fixmypc.util.TextUtils
 import io.reactivex.Flowable
 import io.reactivex.Single
@@ -19,7 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import org.springframework.web.multipart.MultipartFile
-import java.sql.SQLException
+import java.sql.Timestamp
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import java.util.stream.Collectors
@@ -57,6 +59,9 @@ class CreateMalfunctionRequestServiceImpl : CreateMalfunctionRequestService {
 
     @Autowired
     private lateinit var malfunctionDao: MalfunctionDao
+
+    @Autowired
+    private lateinit var malfunctionRepository: MalfunctionRepository
 
     @Autowired
     private lateinit var userCache: UserCache
@@ -160,12 +165,17 @@ class CreateMalfunctionRequestServiceImpl : CreateMalfunctionRequestService {
                     ownerId = ownerId,
                     category = request.category,
                     description = request.description,
+                    lat = request.lat,
+                    lon = request.lon,
+                    isActive = true,
                     malfunctionRequestId = malfunctionRequestId,
+                    createdOn = Timestamp(ServerUtils.getTimeFast()),
                     imageNamesList = imageNamesList)
 
             try {
-                malfunctionDao.createNewMalfunctionRequest(malfunction)
-            } catch (e: SQLException) {
+                //malfunctionDao.createNewMalfunctionRequest(malfunction)
+                malfunctionRepository.createMalfunction(malfunction)
+            } catch (e: Exception) {
                 log.e(e)
 
                 //we failed to save malfunction request in the DB, so we have to notify file servers to delete images related to the request

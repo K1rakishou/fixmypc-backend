@@ -54,7 +54,7 @@ class FileServerServiceImpl : FileServerService {
     }
 
     override fun deleteMalfunctionRequestImages(ownerId: Long, host: String, malfunctionRequestId: String, imageName: String): Single<FileServerErrorCode> {
-        val url = String.format(Constant.Url.DELETE_MALFUNCTION_REQUEST_IMAGES_URL, ownerId, malfunctionRequestId)
+        val url = String.format(Constant.Url.DELETE_MALFUNCTION_REQUEST_IMAGES_URL, host, ownerId, malfunctionRequestId)
 
         return Single.fromFuture(restTemplate.delete(url))
                 .map { errorCode ->
