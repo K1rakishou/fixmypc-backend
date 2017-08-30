@@ -13,7 +13,7 @@ interface MalfunctionDao {
     fun findMalfunctionRequestById(id: Long): Fickle<Malfunction>
 
     @Throws(SQLException::class)
-    fun getAllUserMalfunctions(ownerId: Long, isActive: Boolean): List<Malfunction>
+    fun getAll(ownerId: Long, isActive: Boolean): List<Malfunction>
 
     @Throws(SQLException::class)
     fun getUserMalfunctionRequestList(ownerId: Long, isActive: Boolean, offset: Long, count: Int): List<Malfunction>

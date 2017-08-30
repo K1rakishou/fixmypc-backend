@@ -7,7 +7,6 @@ import com.kirakishou.backend.fixmypc.model.Fickle
 import com.kirakishou.backend.fixmypc.model.entity.User
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
-import java.util.concurrent.TimeUnit
 import javax.annotation.PostConstruct
 
 
@@ -16,28 +15,28 @@ import javax.annotation.PostConstruct
  */
 
 @Component
-class UserCacheImpl : UserCache {
+class UserStoreImpl : UserStore {
 
     @Autowired
     private lateinit var hazelcast: HazelcastInstance
 
-    private lateinit var userCache: IMap<String, User>
+    private lateinit var userStore: IMap<String, User>
 
     @PostConstruct
     fun init() {
-        userCache = hazelcast.getMap<String, User>(Constant.HazelcastNames.USER_CACHE_KEY)
+        userStore = hazelcast.getMap<String, User>(Constant.HazelcastNames.USER_CACHE_KEY)
     }
 
     override fun save(key: String, user: User) {
-        userCache.put(key, user, 5, TimeUnit.SECONDS)
+        userStore.put(key, user)
     }
 
     override fun get(key: String): Fickle<User> {
-        val value = userCache[key] ?: return Fickle.empty()
+        val value = userStore[key] ?: return Fickle.empty()
         return Fickle.of(value)
     }
 
     override fun delete(key: String) {
-        userCache.remove(key)
+        userStore.remove(key)
     }
 }

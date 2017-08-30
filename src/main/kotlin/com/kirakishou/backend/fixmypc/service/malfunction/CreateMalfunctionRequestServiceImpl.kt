@@ -7,7 +7,7 @@ import com.kirakishou.backend.fixmypc.model.*
 import com.kirakishou.backend.fixmypc.model.entity.Malfunction
 import com.kirakishou.backend.fixmypc.model.net.request.MalfunctionRequest
 import com.kirakishou.backend.fixmypc.model.repository.MalfunctionRepository
-import com.kirakishou.backend.fixmypc.model.repository.hazelcast.UserCache
+import com.kirakishou.backend.fixmypc.model.repository.hazelcast.UserStore
 import com.kirakishou.backend.fixmypc.model.repository.postgresql.MalfunctionDao
 import com.kirakishou.backend.fixmypc.service.FileServerService
 import com.kirakishou.backend.fixmypc.service.Generator
@@ -64,7 +64,7 @@ class CreateMalfunctionRequestServiceImpl : CreateMalfunctionRequestService {
     private lateinit var malfunctionRepository: MalfunctionRepository
 
     @Autowired
-    private lateinit var userCache: UserCache
+    private lateinit var userStore: UserStore
 
     private val FILE_SERVER_REQUEST_TIMEOUT: Long = 7L
 
@@ -83,7 +83,7 @@ class CreateMalfunctionRequestServiceImpl : CreateMalfunctionRequestService {
                                           request: MalfunctionRequest, sessionId: String): Single<CreateMalfunctionRequestService.Post.Result> {
 
         //user must re login if sessionId was removed from the cache
-        val userFickle = userCache.get(sessionId)
+        val userFickle = userStore.get(sessionId)
         if (!userFickle.isPresent()) {
             log.d("sessionId $sessionId was not found in the cache")
             return Single.just(CreateMalfunctionRequestService.Post.Result.SessionIdExpired())
@@ -172,13 +172,10 @@ class CreateMalfunctionRequestServiceImpl : CreateMalfunctionRequestService {
                     createdOn = Timestamp(ServerUtils.getTimeFast()),
                     imageNamesList = imageNamesList)
 
-            try {
-                //malfunctionDao.createNewMalfunctionRequest(malfunction)
-                malfunctionRepository.createMalfunction(malfunction)
-            } catch (e: Exception) {
-                log.e(e)
+            if (!malfunctionRepository.createMalfunction(malfunction)) {
+                log.d("Failed to create malfunction (Repository error)")
 
-                //we failed to save malfunction request in the DB, so we have to notify file servers to delete images related to the request
+                //we failed to save malfunction request in the repository, so we have to notify file servers to delete images related to the request
                 for (imageName in imageNamesList) {
                     val extractedImageInfo = TextUtils.parseImageName(imageName)
                     val host = fileServerManager.getHostById(extractedImageInfo.serverId)
@@ -189,7 +186,7 @@ class CreateMalfunctionRequestServiceImpl : CreateMalfunctionRequestService {
                 return@map CreateMalfunctionRequestService.Post.Result.DatabaseError()
             }
 
-            log.d("Everything is OK")
+            log.d("Malfunction successfully created")
             return@map CreateMalfunctionRequestService.Post.Result.Ok()
         }
     }

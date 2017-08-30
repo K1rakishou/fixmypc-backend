@@ -46,6 +46,11 @@ class SignupController {
                                     HttpStatus.CONFLICT)
                         }
 
+                        is SignupService.Result.LoginIsTooLong -> {
+                            return@map ResponseEntity(SignupResponse(ServerErrorCode.SEC_LOGIN_IS_TOO_LONG.value),
+                                    HttpStatus.UNPROCESSABLE_ENTITY)
+                        }
+
                         is SignupService.Result.LoginIsIncorrect -> {
                             return@map ResponseEntity(SignupResponse(ServerErrorCode.SEC_LOGIN_IS_INCORRECT.value),
                                     HttpStatus.UNPROCESSABLE_ENTITY)

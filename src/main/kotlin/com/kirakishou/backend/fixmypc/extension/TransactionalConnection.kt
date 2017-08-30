@@ -8,12 +8,11 @@ fun Connection.transactional(body: (connection: Connection) -> Unit) {
         body.invoke(this)
         this.commit()
 
-    } catch (e: Exception) {
+    } catch (e: Throwable) {
         this.rollback()
         throw e
 
     } finally {
-        this.autoCommit = true
         this.close()
     }
 }

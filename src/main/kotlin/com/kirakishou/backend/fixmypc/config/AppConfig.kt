@@ -3,10 +3,12 @@ package com.kirakishou.backend.fixmypc.config
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.hazelcast.client.HazelcastClient
 import com.hazelcast.client.config.ClientConfig
+import com.hazelcast.config.MapConfig
 import com.hazelcast.config.SerializerConfig
 import com.hazelcast.core.HazelcastInstance
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.log.FileLogImpl
+import com.kirakishou.backend.fixmypc.model.Constant
 import com.kirakishou.backend.fixmypc.model.entity.Malfunction
 import com.kirakishou.backend.fixmypc.model.entity.User
 import com.kirakishou.backend.fixmypc.serializer.MalfunctionSerializer
@@ -42,7 +44,22 @@ open class AppConfig {
                 .setImplementation(MalfunctionSerializer())
                 .setTypeClass(Malfunction::class.java))
 
-        return HazelcastClient.newHazelcastClient(config)
+        val instance = HazelcastClient.newHazelcastClient(config)
+
+        val userCacheConfig = MapConfig(Constant.HazelcastNames.USER_CACHE_KEY)
+        userCacheConfig.timeToLiveSeconds = Constant.HazelcastTTL.USER_ENTRY_TTL
+        userCacheConfig.backupCount = 0
+        userCacheConfig.asyncBackupCount = 0
+
+        val malfunctionCacheConfig = MapConfig(Constant.HazelcastNames.MALFUNCTION_CACHE_KEY)
+        malfunctionCacheConfig.timeToLiveSeconds = Constant.HazelcastTTL.MALFUNCTION_ENTRY_TTL
+        malfunctionCacheConfig.backupCount = 0
+        malfunctionCacheConfig.asyncBackupCount = 0
+
+        instance.config.mapConfigs.put(Constant.HazelcastNames.USER_CACHE_KEY, userCacheConfig)
+        instance.config.mapConfigs.put(Constant.HazelcastNames.MALFUNCTION_CACHE_KEY, malfunctionCacheConfig)
+
+        return instance
     }
 
     @Bean

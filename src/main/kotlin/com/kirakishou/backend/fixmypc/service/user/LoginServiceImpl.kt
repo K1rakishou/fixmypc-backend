@@ -1,7 +1,7 @@
 package com.kirakishou.backend.fixmypc.service.user
 
 import com.kirakishou.backend.fixmypc.model.repository.postgresql.UserDao
-import com.kirakishou.backend.fixmypc.model.repository.hazelcast.UserCache
+import com.kirakishou.backend.fixmypc.model.repository.hazelcast.UserStore
 import com.kirakishou.backend.fixmypc.service.Generator
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -20,10 +20,10 @@ class LoginServiceImpl: LoginService {
     lateinit var generator: Generator
 
     @Autowired
-    lateinit var userCache: UserCache
+    lateinit var userStore: UserStore
 
     override fun doLogin(login: String, password: String): LoginService.Result {
-        val userFromCache = userCache.get(login)
+        val userFromCache = userStore.get(login)
 
         if (userFromCache.isPresent()) {
             if (userFromCache.get().password != password) {
@@ -46,7 +46,7 @@ class LoginServiceImpl: LoginService {
         val sessionId = generator.generateSessionId()
 
         newUser.sessionId = sessionId
-        userCache.save(sessionId, newUser)
+        userStore.save(sessionId, newUser)
 
         return LoginService.Result.Ok(sessionId)
     }

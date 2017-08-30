@@ -13,6 +13,7 @@ interface SignupService {
         class PasswordIsIncorrect: Result
         class AccountTypeIsIncorrect: Result
         class LoginAlreadyExists: Result
+        class LoginIsTooLong : Result
     }
 
     fun doSignup(login: String, password: String, accountType: AccountType): Result

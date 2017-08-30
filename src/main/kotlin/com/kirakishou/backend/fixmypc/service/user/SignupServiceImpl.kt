@@ -22,6 +22,10 @@ class SignupServiceImpl : SignupService {
             return SignupService.Result.LoginIsIncorrect()
         }
 
+        if (!TextUtils.checkLoginLenCorrect(login)) {
+            return SignupService.Result.LoginIsTooLong()
+        }
+
         if (!TextUtils.checkPasswordLenCorrect(password)) {
             return SignupService.Result.PasswordIsIncorrect()
         }

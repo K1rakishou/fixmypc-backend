@@ -165,7 +165,7 @@ class MalfunctionDaoImpl : MalfunctionDao {
     }
 
     @Throws(SQLException::class)
-    override fun getAllUserMalfunctions(ownerId: Long, isActive: Boolean): List<Malfunction> {
+    override fun getAll(ownerId: Long, isActive: Boolean): List<Malfunction> {
         val malfunctions = arrayListOf<Malfunction>()
 
         hikariCP.connection.use { connection ->

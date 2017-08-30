@@ -39,6 +39,16 @@ object Constant {
         val MALFUNCTION_CACHE_KEY = "malfunction_cache"
     }
 
+    //seconds
+    object HazelcastTTL {
+        val USER_ENTRY_TTL = 5
+        val MALFUNCTION_ENTRY_TTL = 14400
+    }
+
+    object RedisNames {
+        val LOCATION_STORE_NAME = "malfunction_location_store"
+    }
+
     object HazelcastType {
         val TYPE_USER = 1
         val TYPE_MALFUNCTION = 2
@@ -56,8 +66,13 @@ object Constant {
         val DELETE_MALFUNCTION_REQUEST_IMAGES_URL = "http://%s${Paths.MALFUNCTION_IMAGE_CONTROLLER_PATH}/%d/%s"
     }
 
-    val MIN_PASSWORD_LENGTH = 10
-    val MAX_PASSWORD_LENGTH = 32
+    object TextLength {
+        val MAX_LOGIN_LENGTH = 32
+        val MIN_PASSWORD_LENGTH = 10
+        val MAX_PASSWORD_LENGTH = 20
+        val MAX_DESCRIPTION_LENGTH = 500
+    }
+
     val MALFUNCTION_MAX_IMAGES_PER_REQUEST = 4
     val MAX_MALFUNCTIONS_PER_PAGE = 5L
 }

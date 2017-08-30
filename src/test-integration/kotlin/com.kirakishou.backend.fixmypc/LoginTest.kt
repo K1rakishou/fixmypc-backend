@@ -6,7 +6,7 @@ import com.kirakishou.backend.fixmypc.model.entity.User
 import com.kirakishou.backend.fixmypc.model.net.request.LoginRequest
 import com.kirakishou.backend.fixmypc.model.net.response.LoginResponse
 import com.kirakishou.backend.fixmypc.model.repository.postgresql.UserDao
-import com.kirakishou.backend.fixmypc.model.repository.hazelcast.UserCache
+import com.kirakishou.backend.fixmypc.model.repository.hazelcast.UserStore
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -32,18 +32,18 @@ class LoginTest {
     lateinit var userRepo: UserDao
 
     @Autowired
-    lateinit var userCache: UserCache
+    lateinit var userStore: UserStore
 
     @Before
     fun init() {
         userRepo.deleteByLogin(GOOD_LOGIN)
-        userCache.delete(GOOD_LOGIN)
+        userStore.delete(GOOD_LOGIN)
     }
 
     @After
     fun tearDown() {
         userRepo.deleteByLogin(GOOD_LOGIN)
-        userCache.delete(GOOD_LOGIN)
+        userStore.delete(GOOD_LOGIN)
     }
 
     private val GOOD_LOGIN: String = "test2@gmail.com"
@@ -62,7 +62,7 @@ class LoginTest {
         assertEquals(HttpStatus.OK, responseEntity.statusCode)
         assertEquals(response.sessionId.isEmpty(), false)
 
-        val userInCache = userCache.get(GOOD_LOGIN)
+        val userInCache = userStore.get(GOOD_LOGIN)
         assertEquals(userInCache.isPresent(), true)
         assertEquals(userInCache.get().login, GOOD_LOGIN)
         assertEquals(userInCache.get().password, PASSWORD)

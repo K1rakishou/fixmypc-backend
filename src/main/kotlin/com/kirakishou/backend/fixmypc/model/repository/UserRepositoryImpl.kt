@@ -2,7 +2,7 @@ package com.kirakishou.backend.fixmypc.model.repository
 
 import com.kirakishou.backend.fixmypc.model.Fickle
 import com.kirakishou.backend.fixmypc.model.entity.User
-import com.kirakishou.backend.fixmypc.model.repository.hazelcast.UserCache
+import com.kirakishou.backend.fixmypc.model.repository.hazelcast.UserStore
 import com.kirakishou.backend.fixmypc.model.repository.postgresql.UserDao
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -14,10 +14,10 @@ class UserRepositoryImpl : UserRepository {
     private lateinit var userDao: UserDao
 
     @Autowired
-    private lateinit var userCache: UserCache
+    private lateinit var userStore: UserStore
 
     override fun findUserByLogin(login: String): Fickle<User> {
-        val cachedUserFickle = userCache.get(login)
+        val cachedUserFickle = userStore.get(login)
         if (cachedUserFickle.isPresent()) {
             return cachedUserFickle
         }
@@ -30,7 +30,7 @@ class UserRepositoryImpl : UserRepository {
     }
 
     override fun deleteUser(login: String) {
-        userCache.delete(login)
+        userStore.delete(login)
         userDao.deleteByLogin(login)
     }
 }

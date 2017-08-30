@@ -20,10 +20,18 @@ object TextUtils {
         return true
     }
 
-    fun checkPasswordLenCorrect(password: String): Boolean {
-        if (password.length < Constant.MIN_PASSWORD_LENGTH) {
+    fun checkLoginLenCorrect(login: String): Boolean {
+        if (login.length > Constant.TextLength.MAX_LOGIN_LENGTH) {
             return false
-        } else if (password.length > Constant.MAX_PASSWORD_LENGTH) {
+        }
+
+        return true
+    }
+
+    fun checkPasswordLenCorrect(password: String): Boolean {
+        if (password.length < Constant.TextLength.MIN_PASSWORD_LENGTH) {
+            return false
+        } else if (password.length > Constant.TextLength.MAX_PASSWORD_LENGTH) {
             return false
         }
 

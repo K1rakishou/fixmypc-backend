@@ -6,7 +6,7 @@ import com.kirakishou.backend.fixmypc.model.entity.User
 /**
  * Created by kirakishou on 7/11/2017.
  */
-interface UserCache {
+interface UserStore {
     fun save(key: String, user: User)
     fun get(key: String): Fickle<User>
     fun delete(key: String)
