@@ -2,11 +2,11 @@ package com.kirakishou.backend.fixmypc.model.repository
 
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.Fickle
+import com.kirakishou.backend.fixmypc.model.LatLon
 import com.kirakishou.backend.fixmypc.model.entity.Malfunction
 import com.kirakishou.backend.fixmypc.model.repository.hazelcast.MalfunctionStore
-import com.kirakishou.backend.fixmypc.model.repository.hazelcast.UserMalfunctionsStore
+import com.kirakishou.backend.fixmypc.model.repository.ignite.LocationStore
 import com.kirakishou.backend.fixmypc.model.repository.postgresql.MalfunctionDao
-import com.kirakishou.backend.fixmypc.model.repository.redis.LocationStore
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import java.util.stream.Collectors
@@ -24,74 +24,99 @@ class MalfunctionRepositoryImpl : MalfunctionRepository {
     private lateinit var locationStore: LocationStore
 
     @Autowired
-    private lateinit var userMalfunctionsStore: UserMalfunctionsStore
+    private lateinit var userMalfunctionsRepository: UserMalfunctionsRepository
 
     @Autowired
     private lateinit var log: FileLog
 
-    override fun createMalfunction(malfunction: Malfunction): Boolean {
-        var isOk = true
-
-        try {
-            malfunctionDao.createNewMalfunctionRequest(malfunction)
-        } catch (e: Exception) {
-            isOk = false
-            log.e(e)
-
-            malfunctionDao.deleteMalfunctionRequest(malfunction.id)
-        }
-
-        if (isOk) {
-            try {
-                malfunctionStore.save(malfunction)
-            } catch (e: Exception) {
-                isOk = false
-                log.e(e)
-
-                malfunctionStore.delete(malfunction.id)
+    override fun saveOne(malfunction: Malfunction): Boolean {
+        val malfunctionDaoResult = malfunctionDao.saveOne(malfunction)
+        if (malfunctionDaoResult !is MalfunctionDao.Result.Saved) {
+            if (malfunctionDaoResult is MalfunctionDao.Result.DbError) {
+                log.e(malfunctionDaoResult.e)
+                return false
             }
         }
 
-        if (isOk) {
-            try {
-                locationStore.addLocation(malfunction.lat, malfunction.lon, malfunction.id)
-            } catch (e: Exception) {
-                isOk = false
-                log.e(e)
-
-                locationStore.removeLocation(malfunction.id)
-            }
+        val userMalfunctionRepositoryResult = userMalfunctionsRepository.saveOne(malfunction.ownerId, malfunction.id)
+        if (!userMalfunctionRepositoryResult) {
+            //couldn't store in the userMalfunctionsRepository so we need to delete it from DB as well
+            malfunctionDao.deleteOne(malfunction.id)
+            return false
         }
 
-        return isOk
+        locationStore.saveOne(LatLon(malfunction.lat, malfunction.lon), malfunction.id)
+        return true
     }
 
-    override fun get(malfunctionId: Long): Fickle<Malfunction> {
-        return malfunctionStore.get(malfunctionId)
+    override fun findOne(malfunctionId: Long): Fickle<Malfunction> {
+        val storeResult = malfunctionStore.findOne(malfunctionId)
+        if (storeResult.isPresent()) {
+            return storeResult
+        }
+
+        val daoResult = malfunctionDao.findOne(malfunctionId)
+        if (daoResult !is MalfunctionDao.Result.FoundOne) {
+            if (daoResult is MalfunctionDao.Result.DbError) {
+                log.e(daoResult.e)
+            }
+
+            return Fickle.empty()
+        }
+
+        return Fickle.of(daoResult.malfunction)
     }
 
-    override fun getMany(ownerId: Long, offset: Long, count: Long): List<Malfunction> {
-        val ids = userMalfunctionsStore.getMany(ownerId, offset, count)
+    override fun findMany(ownerId: Long, offset: Long, count: Long): List<Malfunction> {
+        val ids = userMalfunctionsRepository.findMany(ownerId, offset, count)
         if (ids.isEmpty()) {
             return emptyList()
         }
 
-        val malfunctionsList = malfunctionStore.getMany(ids)
+        val malfunctionsList = malfunctionStore.findMany(ids)
         if (malfunctionsList.size == count.toInt()) {
             return malfunctionsList
         }
 
         val remainder = count - malfunctionsList.size
-        val malfunctionsFromDb = malfunctionDao.getAll(ownerId, true)
+        val malfunctionDaoResult = malfunctionDao.findManyActive(ownerId)
+        if (malfunctionDaoResult !is MalfunctionDao.Result.FoundMany) {
+            when (malfunctionDaoResult) {
+                is MalfunctionDao.Result.DbError -> {
+                    log.e(malfunctionDaoResult.e)
+                    return emptyList()
+                }
+            }
+        }
+
+        val malfunctionsFromDb = malfunctionDaoResult.malfunctions
         val filteredMF = malfunctionsFromDb.stream()
                 .filter { !contains(it.id, malfunctionsList) }
                 .limit(remainder)
                 .collect(Collectors.toList())
 
+        if (filteredMF.isEmpty()) {
+            return emptyList()
+        }
+
         malfunctionStore.saveMany(filteredMF)
         filteredMF.addAll(malfunctionsList)
 
-        return malfunctionsFromDb
+        return filteredMF
+    }
+
+    override fun deleteOne(ownerId: Long, malfunctionId: Long): Boolean {
+        try {
+            malfunctionDao.deleteOne(malfunctionId)
+            userMalfunctionsRepository.deleteOne(ownerId, malfunctionId)
+            locationStore.deleteOne(malfunctionId)
+
+            return true
+        } catch (e: Exception) {
+            log.e(e)
+        }
+
+        return false
     }
 
     private fun contains(id: Long, malfunctionsList: List<Malfunction>): Boolean {
@@ -99,20 +124,6 @@ class MalfunctionRepositoryImpl : MalfunctionRepository {
             if (malfunction.id == id) {
                 return true
             }
-        }
-
-        return false
-    }
-
-    override fun deleteMalfunction(ownerId: Long, malfunctionId: Long): Boolean {
-        try {
-            malfunctionDao.deleteMalfunctionRequest(malfunctionId)
-            malfunctionStore.delete(malfunctionId)
-            locationStore.removeLocation(malfunctionId)
-
-            return true
-        } catch (e: Exception) {
-            log.e(e)
         }
 
         return false

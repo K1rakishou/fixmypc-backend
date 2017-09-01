@@ -27,16 +27,16 @@ class UserStoreImpl : UserStore {
         userStore = hazelcast.getMap<String, User>(Constant.HazelcastNames.USER_CACHE_KEY)
     }
 
-    override fun save(key: String, user: User) {
-        userStore.put(key, user)
+    override fun saveOne(sessionId: String, user: User) {
+        userStore.put(sessionId, user)
     }
 
-    override fun get(key: String): Fickle<User> {
-        val value = userStore[key] ?: return Fickle.empty()
+    override fun findOne(sessionId: String): Fickle<User> {
+        val value = userStore[sessionId] ?: return Fickle.empty()
         return Fickle.of(value)
     }
 
-    override fun delete(key: String) {
-        userStore.remove(key)
+    override fun deleteOne(sessionId: String) {
+        userStore.remove(sessionId)
     }
 }

@@ -4,10 +4,11 @@ import com.kirakishou.backend.fixmypc.model.Fickle
 import com.kirakishou.backend.fixmypc.model.entity.Malfunction
 
 interface MalfunctionStore {
-    fun save(malfunction: Malfunction)
+    fun saveOne(malfunction: Malfunction)
     fun saveMany(malfunctionList: List<Malfunction>)
-    fun get(malfunctionId: Long): Fickle<Malfunction>
-    fun getMany(malfunctionIdList: List<Long>): List<Malfunction>
-    fun delete(malfunctionId: Long)
+    fun findOne(malfunctionId: Long): Fickle<Malfunction>
+    fun findMany(malfunctionIdList: List<Long>): List<Malfunction>
+    fun deleteOne(malfunctionId: Long)
     fun deleteMany(malfunctionIdList: List<Long>)
+    fun clear()
 }

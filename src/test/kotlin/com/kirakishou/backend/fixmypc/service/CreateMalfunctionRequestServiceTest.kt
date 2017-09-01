@@ -53,7 +53,7 @@ class CreateMalfunctionRequestServiceTest {
     @Mock
     lateinit var malfunctionDao: MalfunctionDao
 
-    lateinit var tooBigImage: BufferedImage
+    lateinit var bigImage: BufferedImage
     lateinit var normalImage: BufferedImage
 
     @Before
@@ -67,7 +67,7 @@ class CreateMalfunctionRequestServiceTest {
         ReflectionTestUtils.setField(service, "FILE_SERVER_REQUEST_TIMEOUT", 1L)
         ReflectionTestUtils.setField(service, "fileServerHosts", arrayOf("127.0.0.1:9119", "127.0.0.1:9119"))
 
-        tooBigImage = generateImage(2500, 2500)
+        bigImage = generateImage(2500, 2500)
         normalImage = generateImage(1000, 1000)
 
         val fileServerInfoList = arrayListOf<FileServerInfo>()
@@ -222,7 +222,7 @@ class CreateMalfunctionRequestServiceTest {
         val origFileName = "1234567890-234236-236-236-236.jpg"
         val sessionId = "1234567"
         val uploadingFiles = arrayOf<MultipartFile>(
-                MockMultipartFile("test", origFileName, MediaType.IMAGE_JPEG_VALUE, getBufferedImageBytes(tooBigImage)),
+                MockMultipartFile("test", origFileName, MediaType.IMAGE_JPEG_VALUE, getBufferedImageBytes(bigImage)),
                 MockMultipartFile("test2", origFileName, MediaType.IMAGE_JPEG_VALUE, getBufferedImageBytes(normalImage)),
                 MockMultipartFile("test3", origFileName, MediaType.IMAGE_JPEG_VALUE, getBufferedImageBytes(normalImage)),
                 MockMultipartFile("test4", origFileName, MediaType.IMAGE_JPEG_VALUE, getBufferedImageBytes(normalImage)))
@@ -430,7 +430,7 @@ class CreateMalfunctionRequestServiceTest {
         Mockito.`when`(fileServerManager.isAtLeastOneServerAlive()).thenReturn(true)
         Mockito.`when`(fileServerManager.getServers(1)).thenReturn(listOf(FileServersManagerImpl.ServerWithId(0, FileServerInfo(host))))
         Mockito.`when`(tempFileService.fromMultipartFile(TestUtils.anyObject())).thenReturn(tempFile)
-        Mockito.`when`(malfunctionDao.createNewMalfunctionRequest(TestUtils.anyObject())).thenThrow(SQLException("DB is ded"))
+        Mockito.`when`(malfunctionDao.saveOne(TestUtils.anyObject())).thenThrow(SQLException("DB is ded"))
 
         Mockito.`when`(fileServerService.saveMalfunctionRequestImage(0, host, tempFile, origFileName, 0, 0L, malfunctionRequestId))
                 .thenReturn(Flowable.just(FileServerAnswerWrapper(FileServerAnswer(FileServerErrorCode.OK.value, emptyList()), "n0_i45435346")))

@@ -1,8 +1,9 @@
 package com.kirakishou.backend.fixmypc.model.repository.hazelcast
 
 interface UserMalfunctionsStore {
-    fun addMalfunction(ownerId: Long, malfunctionId: Long)
-    fun addMany(ownerId: Long, malfunctionIdList: List<Long>)
-    fun getMany(ownerId: Long, offset: Long, count: Long): List<Long>
-    fun removeMalfunction(ownerId: Long, malfunctionId: Long)
+    fun saveOne(ownerId: Long, malfunctionId: Long)
+    fun saveMany(ownerId: Long, malfunctionIdList: List<Long>)
+    fun findMany(ownerId: Long, offset: Long, count: Long): List<Long>
+    fun findAll(ownerId: Long): List<Long>
+    fun deleteOne(ownerId: Long, malfunctionId: Long)
 }

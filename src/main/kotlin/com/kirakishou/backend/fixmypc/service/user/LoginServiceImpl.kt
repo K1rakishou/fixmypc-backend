@@ -1,7 +1,6 @@
 package com.kirakishou.backend.fixmypc.service.user
 
-import com.kirakishou.backend.fixmypc.model.repository.postgresql.UserDao
-import com.kirakishou.backend.fixmypc.model.repository.hazelcast.UserStore
+import com.kirakishou.backend.fixmypc.model.repository.UserRepository
 import com.kirakishou.backend.fixmypc.service.Generator
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -14,26 +13,13 @@ import org.springframework.stereotype.Component
 class LoginServiceImpl: LoginService {
 
     @Autowired
-    lateinit var userRepo: UserDao
+    lateinit var userRepository: UserRepository
 
     @Autowired
     lateinit var generator: Generator
 
-    @Autowired
-    lateinit var userStore: UserStore
-
     override fun doLogin(login: String, password: String): LoginService.Result {
-        val userFromCache = userStore.get(login)
-
-        if (userFromCache.isPresent()) {
-            if (userFromCache.get().password != password) {
-                return LoginService.Result.WrongLoginOrPassword(login)
-            }
-
-            return LoginService.Result.Ok(userFromCache.get().sessionId!!)
-        }
-
-        val newUserFickle = userRepo.findByLogin(login)
+        val newUserFickle = userRepository.findOne(login)
         if (!newUserFickle.isPresent()) {
             return LoginService.Result.WrongLoginOrPassword(login)
         }
@@ -46,7 +32,7 @@ class LoginServiceImpl: LoginService {
         val sessionId = generator.generateSessionId()
 
         newUser.sessionId = sessionId
-        userStore.save(sessionId, newUser)
+        userRepository.saveOneToStore(sessionId, newUser)
 
         return LoginService.Result.Ok(sessionId)
     }

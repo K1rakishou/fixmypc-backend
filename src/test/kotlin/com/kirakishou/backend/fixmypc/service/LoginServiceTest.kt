@@ -3,8 +3,7 @@ package com.kirakishou.backend.fixmypc.service
 import com.kirakishou.backend.fixmypc.model.AccountType
 import com.kirakishou.backend.fixmypc.model.Fickle
 import com.kirakishou.backend.fixmypc.model.entity.User
-import com.kirakishou.backend.fixmypc.model.repository.postgresql.UserDao
-import com.kirakishou.backend.fixmypc.model.repository.hazelcast.UserStore
+import com.kirakishou.backend.fixmypc.model.repository.UserRepository
 import com.kirakishou.backend.fixmypc.service.user.LoginService
 import com.kirakishou.backend.fixmypc.service.user.LoginServiceImpl
 import org.junit.Assert.assertEquals
@@ -27,13 +26,10 @@ class LoginServiceTest {
     val service = LoginServiceImpl()
 
     @Mock
-    lateinit var userRepo: UserDao
+    lateinit var userRepository: UserRepository
 
     @Mock
     lateinit var generator: Generator
-
-    @Mock
-    lateinit var usersStore: UserStore
 
     private val GOOD_LOGIN: String = "test@gmail.com"
     private val GOOD_PASSWORD: String = "1234567890"
@@ -44,10 +40,9 @@ class LoginServiceTest {
     fun init() {
         MockitoAnnotations.initMocks(this)
 
-        Mockito.`when`(userRepo.findByLogin(GOOD_LOGIN)).thenReturn(Fickle.of(TEST_USER))
-        Mockito.`when`(userRepo.findByLogin(BAD_LOGIN)).thenReturn(Fickle.empty())
+        Mockito.`when`(userRepository.findOne(GOOD_LOGIN)).thenReturn(Fickle.of(TEST_USER))
+        Mockito.`when`(userRepository.findOne(BAD_LOGIN)).thenReturn(Fickle.empty())
         Mockito.`when`(generator.generateSessionId()).thenReturn(GOOD_SESSION_ID)
-        Mockito.`when`(usersStore.get(Mockito.anyString())).thenReturn(Fickle.empty())
     }
 
     @Test

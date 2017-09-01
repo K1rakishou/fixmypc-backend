@@ -2,12 +2,11 @@ package com.kirakishou.backend.fixmypc.model.repository.postgresql
 
 import com.kirakishou.backend.fixmypc.extension.prepareStatementScrollable
 import com.kirakishou.backend.fixmypc.extension.transactional
-import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.AccountType
-import com.kirakishou.backend.fixmypc.model.Fickle
 import com.kirakishou.backend.fixmypc.model.entity.User
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Repository
+import java.sql.SQLException
 import javax.sql.DataSource
 
 /**
@@ -20,51 +19,68 @@ class UserDaoImpl : UserDao {
     @Autowired
     private lateinit var hikariCP: DataSource
 
-    @Autowired
-    private lateinit var log: FileLog
+    override fun findOne(login: String): UserDao.Result {
+        var user: User? = null
 
-    override fun findByLogin(login: String): Fickle<User> {
-        var user: Fickle<User> = Fickle.empty()
-
-        hikariCP.connection.use { connection ->
-            connection.prepareStatementScrollable("SELECT * FROM public.users WHERE login = ? AND deleted_on IS NULL LIMIT 1").use { ps ->
-                ps.setString(1, login)
-                ps.executeQuery().use { rs ->
-                    if (rs.first()) {
-                        user = Fickle.of(User(
-                                rs.getLong("id"),
-                                rs.getString("login"),
-                                rs.getString("password"),
-                                AccountType.from(rs.getInt("account_type")),
-                                rs.getTimestamp("created_on")))
+        try {
+            hikariCP.connection.use { connection ->
+                connection.prepareStatementScrollable("SELECT * FROM public.users WHERE login = ? AND deleted_on IS NULL LIMIT 1").use { ps ->
+                    ps.setString(1, login)
+                    ps.executeQuery().use { rs ->
+                        if (rs.first()) {
+                            user = User(
+                                    rs.getLong("id"),
+                                    rs.getString("login"),
+                                    rs.getString("password"),
+                                    AccountType.from(rs.getInt("account_type")),
+                                    rs.getTimestamp("created_on"))
+                        }
                     }
                 }
             }
+        } catch (e: SQLException) {
+            return UserDao.Result.DbError(e)
         }
 
-        return user
+        if (user == null) {
+            return UserDao.Result.NotFound()
+        }
+
+        return UserDao.Result.Found(user!!)
     }
 
-    override fun createNew(user: User) {
-        hikariCP.connection.transactional { connection ->
-            connection.prepareStatement("INSERT INTO public.users (login, password, account_type, created_on, deleted_on) " +
-                    "VALUES (?, ?, ?, NOW(), NULL)").use { ps ->
+    override fun saveOne(user: User): UserDao.Result {
+        try {
+            hikariCP.connection.transactional { connection ->
+                connection.prepareStatement("INSERT INTO public.users (login, password, account_type, created_on, deleted_on) " +
+                        "VALUES (?, ?, ?, NOW(), NULL)").use { ps ->
 
-                ps.setString(1, user.login)
-                ps.setString(2, user.password)
-                ps.setInt(3, user.accountType.value)
-                ps.executeUpdate()
+                    ps.setString(1, user.login)
+                    ps.setString(2, user.password)
+                    ps.setInt(3, user.accountType.value)
+                    ps.executeUpdate()
+                }
             }
+        } catch (e: SQLException) {
+            return UserDao.Result.DbError(e)
         }
+
+        return UserDao.Result.Saved()
     }
 
     //for tests only!!!
-    override fun deleteByLogin(login: String) {
-        hikariCP.connection.use { connection ->
-            connection.prepareStatement("DELETE FROM public.users WHERE login = ?").use { ps ->
-                ps.setString(1, login)
-                ps.execute()
+    override fun deleteOne(login: String): UserDao.Result {
+        try {
+            hikariCP.connection.use { connection ->
+                connection.prepareStatement("DELETE FROM public.users WHERE login = ?").use { ps ->
+                    ps.setString(1, login)
+                    ps.execute()
+                }
             }
+        } catch (e: SQLException) {
+            return UserDao.Result.DbError(e)
         }
+
+        return UserDao.Result.Deleted()
     }
 }

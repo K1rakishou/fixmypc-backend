@@ -37,15 +37,21 @@ object Constant {
     object HazelcastNames {
         val USER_CACHE_KEY = "user_cache"
         val MALFUNCTION_CACHE_KEY = "malfunction_cache"
+        val USER_MALFUNCTION_KEY = "user_malfunction"
     }
 
     //seconds
     object HazelcastTTL {
-        val USER_ENTRY_TTL = 5
+        val USER_ENTRY_TTL = 6000
         val MALFUNCTION_ENTRY_TTL = 14400
+        val USER_MALFUNCTION_ENTRY_TTL = 0
     }
 
     object RedisNames {
+        val LOCATION_STORE_NAME = "malfunction_location_store"
+    }
+
+    object IgniteNames {
         val LOCATION_STORE_NAME = "malfunction_location_store"
     }
 

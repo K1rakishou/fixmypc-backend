@@ -1,44 +1,29 @@
-package com.kirakishou.backend.fixmypc.config
+package com.kirakishou.backend.fixmypc.model.repository.hazelcast
 
-import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.hazelcast.config.Config
 import com.hazelcast.config.MapConfig
 import com.hazelcast.config.SerializerConfig
 import com.hazelcast.core.Hazelcast
 import com.hazelcast.core.HazelcastInstance
-import com.kirakishou.backend.fixmypc.log.FileLog
-import com.kirakishou.backend.fixmypc.log.FileLogImpl
+import com.hazelcast.core.IMap
 import com.kirakishou.backend.fixmypc.model.Constant
 import com.kirakishou.backend.fixmypc.model.entity.Malfunction
 import com.kirakishou.backend.fixmypc.model.entity.User
 import com.kirakishou.backend.fixmypc.serializer.MalfunctionSerializer
 import com.kirakishou.backend.fixmypc.serializer.UserSerializer
-import com.zaxxer.hikari.HikariDataSource
-import org.apache.ignite.Ignite
-import org.apache.ignite.Ignition
-import org.apache.ignite.configuration.DeploymentMode
-import org.apache.ignite.configuration.IgniteConfiguration
-import org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi
-import org.apache.ignite.spi.discovery.tcp.ipfinder.vm.TcpDiscoveryVmIpFinder
-import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Configuration
-import org.springframework.web.client.AsyncRestTemplate
-import javax.sql.DataSource
+import org.junit.Assert.assertEquals
+import org.junit.Before
+import org.junit.Test
+import org.springframework.test.util.ReflectionTestUtils
+import java.sql.Timestamp
+import java.util.*
 
+class MalfunctionStoreImplTest {
 
+    val store = MalfunctionStoreImpl()
 
+    private lateinit var malfunctionStore: IMap<Long, Malfunction>
 
-/**
- * Created by kirakishou on 7/9/2017.
- */
-
-@Configuration
-class AppConfig {
-
-    @Bean
-    fun kotlinModule() = KotlinModule()
-
-    @Bean
     fun provideHazelcast(): HazelcastInstance {
         val clientConfig = Config()
         clientConfig.networkConfig.publicAddress = "192.168.99.100:9229"
@@ -78,42 +63,79 @@ class AppConfig {
         return instance
     }
 
-    @Bean
-    fun provideIgnite(): Ignite {
-        val ipFinder = TcpDiscoveryVmIpFinder()
-        ipFinder.setAddresses(arrayListOf("192.168.99.100:9339"))
-
-        val discoSpi = TcpDiscoverySpi()
-        discoSpi.ipFinder = ipFinder
-
-        val igniteConfiguration = IgniteConfiguration()
-        igniteConfiguration.discoverySpi = discoSpi
-        igniteConfiguration.deploymentMode = DeploymentMode.SHARED
-
-        return Ignition.start()
+    @Before
+    fun init() {
+        val hazelcast = provideHazelcast()
+        malfunctionStore = hazelcast.getMap<Long, Malfunction>(Constant.HazelcastNames.MALFUNCTION_CACHE_KEY)
+        ReflectionTestUtils.setField(store, "malfunctionStore", malfunctionStore)
     }
 
-    @Bean
-    fun dataSource(): DataSource {
-        val dataSource = HikariDataSource()
-        dataSource.driverClassName = "org.postgresql.Driver"
-        dataSource.jdbcUrl = "jdbc:postgresql://192.168.99.100:9499/postgres"
-        dataSource.username = "postgres"
-        dataSource.password = "4e7d2dfx"
-        /*dataSource.maximumPoolSize = 128
-        dataSource.leakDetectionThreshold = 2000
-        dataSource.connectionTimeout = 20000*/
+    @Test
+    fun testSaveOne() {
+        store.clear()
+        val malfunction = Malfunction(0, 0, true, "436erydfyu", 0, "test description", 55.6, 44.2, Timestamp(Date().time), arrayListOf())
 
-        return dataSource
+        store.saveOne(malfunction)
+        val malfunctionFromStore = store.findOne(malfunction.id)
+
+        assertEquals(true, malfunctionFromStore.isPresent())
+        assertEquals(true, malfunctionFromStore.get().id == malfunction.id)
     }
 
-    @Bean
-    fun restTemplate(): AsyncRestTemplate {
-        return AsyncRestTemplate()
+    @Test
+    fun testSaveMany() {
+        store.clear()
+        val malfunction = Malfunction(0, 0, true, "436erydfyu", 0, "test description", 55.6, 44.2, Timestamp(Date().time), arrayListOf())
+        val malfunction2 = Malfunction(1, 0, true, "436erydfawryu", 0, "test description2", 55.6, 44.2, Timestamp(Date().time), arrayListOf())
+
+        store.saveMany(listOf(malfunction, malfunction2))
+        val malfunctionsFromStore = store.findMany(listOf(0, 1))
+
+        assertEquals(2, malfunctionsFromStore.size)
     }
 
-    @Bean
-    fun provideFileLog(): FileLog {
-        return FileLogImpl()
+    @Test
+    fun deleteOne() {
+        store.clear()
+        val malfunction = Malfunction(0, 0, true, "436erydfyu", 0, "test description", 55.6, 44.2, Timestamp(Date().time), arrayListOf())
+
+        store.saveOne(malfunction)
+        val malfunctionFromStore = store.findOne(malfunction.id)
+
+        assertEquals(true, malfunctionFromStore.isPresent())
+        assertEquals(true, malfunctionFromStore.get().id == malfunction.id)
+
+        store.deleteOne(malfunction.id)
+        val malfunctionFromStore2 = store.findOne(malfunction.id)
+
+        assertEquals(false, malfunctionFromStore2.isPresent())
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

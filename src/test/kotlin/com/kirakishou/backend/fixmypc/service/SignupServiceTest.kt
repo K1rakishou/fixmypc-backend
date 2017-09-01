@@ -3,7 +3,7 @@ package com.kirakishou.backend.fixmypc.service
 import com.kirakishou.backend.fixmypc.model.AccountType
 import com.kirakishou.backend.fixmypc.model.Fickle
 import com.kirakishou.backend.fixmypc.model.entity.User
-import com.kirakishou.backend.fixmypc.model.repository.postgresql.UserDao
+import com.kirakishou.backend.fixmypc.model.repository.UserRepository
 import com.kirakishou.backend.fixmypc.service.user.SignupService
 import com.kirakishou.backend.fixmypc.service.user.SignupServiceImpl
 import org.junit.Before
@@ -26,7 +26,7 @@ class SignupServiceTest {
     val service = SignupServiceImpl()
 
     @Mock
-    lateinit var userRepo: UserDao
+    lateinit var userRepository: UserRepository
 
     private val GOOD_LOGIN: String = "test@gmail.com"
     private val GOOD_PASSWORD: String = "1234567890"
@@ -42,8 +42,8 @@ class SignupServiceTest {
     fun init() {
         MockitoAnnotations.initMocks(this)
 
-        Mockito.`when`(userRepo.findByLogin(ALREADY_EXISTING_LOGIN)).thenReturn(Fickle.of(TEST_USER))
-        Mockito.`when`(userRepo.findByLogin(GOOD_LOGIN)).thenReturn(Fickle.empty())
+        Mockito.`when`(userRepository.findOne(ALREADY_EXISTING_LOGIN)).thenReturn(Fickle.of(TEST_USER))
+        Mockito.`when`(userRepository.findOne(GOOD_LOGIN)).thenReturn(Fickle.empty())
     }
 
     @Test

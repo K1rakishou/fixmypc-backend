@@ -1,23 +1,23 @@
 package com.kirakishou.backend.fixmypc.model.repository.postgresql
 
-import com.kirakishou.backend.fixmypc.model.Fickle
 import com.kirakishou.backend.fixmypc.model.entity.Malfunction
-import java.sql.SQLException
 
 interface MalfunctionDao {
-    //test won't work unless this method marked with @Throws annotation
-    @Throws(SQLException::class)
-    fun createNewMalfunctionRequest(malfunction: Malfunction)
 
-    @Throws(SQLException::class)
-    fun findMalfunctionRequestById(id: Long): Fickle<Malfunction>
+    interface Result {
+        class FoundOne(val malfunction: Malfunction) : Result
+        class FoundMany(val malfunctions: List<Malfunction>) : Result
+        class NotFound : Result
+        class DbError(val e: Throwable) : Result
+        class Deleted : Result
+        class Saved : Result
+    }
 
-    @Throws(SQLException::class)
-    fun getAll(ownerId: Long, isActive: Boolean): List<Malfunction>
-
-    @Throws(SQLException::class)
-    fun getUserMalfunctionRequestList(ownerId: Long, isActive: Boolean, offset: Long, count: Int): List<Malfunction>
-
-    @Throws(SQLException::class)
-    fun deleteMalfunctionRequest(id: Long)
+    fun saveOne(malfunction: Malfunction): Result
+    fun findOne(id: Long): Result
+    fun findManyActive(ownerId: Long): Result
+    fun findManyInactive(ownerId: Long): Result
+    fun findPaged(ownerId: Long, isActive: Boolean, offset: Long, count: Int): Result
+    fun deleteOne(id: Long): Result
+    fun deleteOnePermanently(id: Long): Result
 }

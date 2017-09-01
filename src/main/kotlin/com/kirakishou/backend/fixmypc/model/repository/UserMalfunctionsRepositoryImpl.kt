@@ -19,59 +19,56 @@ class UserMalfunctionsRepositoryImpl : UserMalfunctionsRepository {
     @Autowired
     private lateinit var log: FileLog
 
-    override fun addUserMalfunction(ownerId: Long, malfunctionId: Long): Boolean {
-        var isOk = true
-
-        try {
-            userMalfunctionsDao.addMalfunction(ownerId, malfunctionId)
-        } catch (e: Exception) {
-            isOk = false
-            log.e(e)
-
-            userMalfunctionsDao.removeMalfunction(ownerId, malfunctionId)
-        }
-
-        if (isOk) {
-            try {
-                userMalfunctionsStore.addMalfunction(ownerId, malfunctionId)
-            } catch (e: Exception) {
-                isOk = false
-                log.e(e)
-
-                userMalfunctionsStore.removeMalfunction(ownerId, malfunctionId)
+    override fun saveOne(ownerId: Long, malfunctionId: Long): Boolean {
+        val daoResult = userMalfunctionsDao.saveOne(ownerId, malfunctionId)
+        if (daoResult !is UserMalfunctionsDao.Result.Saved) {
+            if (daoResult is UserMalfunctionsDao.Result.DbError) {
+                log.e(daoResult.e)
+                return false
             }
         }
 
-        return isOk
+        userMalfunctionsStore.saveOne(ownerId, malfunctionId)
+        return true
     }
 
-    override fun getMany(ownerId: Long, offset: Long, count: Long): List<Long> {
-        val idsList = userMalfunctionsStore.getMany(ownerId, offset, count)
+    override fun findMany(ownerId: Long, offset: Long, count: Long): List<Long> {
+        val idsList = userMalfunctionsStore.findMany(ownerId, offset, count)
         if (idsList.size == count.toInt()) {
             return idsList
         }
 
         val remainder = count - idsList.size
-        val idsFromDb = userMalfunctionsDao.getAll(ownerId)
-        val filteredIds = idsFromDb.stream()
+        val daoResult = userMalfunctionsDao.findAll(ownerId)
+        if (daoResult !is UserMalfunctionsDao.Result.FoundMany) {
+            return idsList
+        }
+
+        val filteredIds = daoResult.idList.stream()
                 .filter { !idsList.contains(it) }
                 .limit(remainder)
                 .collect(Collectors.toList())
 
-        userMalfunctionsStore.addMany(ownerId, filteredIds)
+        if (filteredIds.isEmpty()) {
+            return idsList
+        }
+
+        userMalfunctionsStore.saveMany(ownerId, filteredIds)
         filteredIds.addAll(idsList)
 
         return filteredIds
     }
 
-    override fun removeUserMalfunction(ownerId: Long, malfunctionId: Long): Boolean {
-        try {
-            userMalfunctionsDao.removeMalfunction(ownerId, malfunctionId)
-            userMalfunctionsStore.removeMalfunction(ownerId, malfunctionId)
-        } catch (e: Exception) {
-            return false
+    override fun deleteOne(ownerId: Long, malfunctionId: Long): Boolean {
+        val daoResult = userMalfunctionsDao.deleteOne(ownerId, malfunctionId)
+        if (daoResult !is UserMalfunctionsDao.Result.Saved) {
+            if (daoResult is UserMalfunctionsDao.Result.DbError) {
+                log.e(daoResult.e)
+                return false
+            }
         }
 
+        userMalfunctionsStore.deleteOne(ownerId, malfunctionId)
         return true
     }
 }

@@ -3,6 +3,8 @@ package com.kirakishou.backend.fixmypc.service.malfunction
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.Constant
 import com.kirakishou.backend.fixmypc.model.repository.MalfunctionRepository
+import com.kirakishou.backend.fixmypc.model.repository.hazelcast.MalfunctionStore
+import com.kirakishou.backend.fixmypc.model.repository.hazelcast.UserMalfunctionsStore
 import com.kirakishou.backend.fixmypc.model.repository.hazelcast.UserStore
 import io.reactivex.Single
 import org.springframework.beans.factory.annotation.Autowired
@@ -18,19 +20,29 @@ class GetUserMalfunctionRequestListServiceImpl : GetUserMalfunctionRequestListSe
     private lateinit var malfunctionRepository: MalfunctionRepository
 
     @Autowired
+    lateinit var malfunctionStore: MalfunctionStore
+
+    @Autowired
+    lateinit var userMalfunctionsStore: UserMalfunctionsStore
+
+    @Autowired
     private lateinit var log: FileLog
 
     override fun getUserMalfunctionRequestList(sessionId: String, offset: Long): Single<GetUserMalfunctionRequestListService.Get.Result> {
 
         //user must re login if sessionId was removed from the cache
-        val userFickle = userStore.get(sessionId)
+        val userFickle = userStore.findOne(sessionId)
         if (!userFickle.isPresent()) {
             log.d("sessionId $sessionId was not found in the cache")
             return Single.just(GetUserMalfunctionRequestListService.Get.Result.SessionIdExpired())
         }
 
         val user = userFickle.get()
-        val malfunctionList = malfunctionRepository.getMany(user.id, offset, Constant.MAX_MALFUNCTIONS_PER_PAGE)
+
+        val userMalfunctions = userMalfunctionsStore.findAll(user.id)
+        val malfunctions = malfunctionStore.findMany(userMalfunctions)
+
+        val malfunctionList = malfunctionRepository.findMany(user.id, offset, Constant.MAX_MALFUNCTIONS_PER_PAGE)
 
         return Single.just(GetUserMalfunctionRequestListService.Get.Result.Ok())
     }

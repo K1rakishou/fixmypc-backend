@@ -22,8 +22,8 @@ class MalfunctionStoreImpl : MalfunctionStore {
         malfunctionStore = hazelcast.getMap<Long, Malfunction>(Constant.HazelcastNames.MALFUNCTION_CACHE_KEY)
     }
 
-    override fun save(malfunction: Malfunction) {
-        malfunctionStore.putAsync(malfunction.id, malfunction)
+    override fun saveOne(malfunction: Malfunction) {
+        malfunctionStore.put(malfunction.id, malfunction)
     }
 
     override fun saveMany(malfunctionList: List<Malfunction>) {
@@ -36,17 +36,17 @@ class MalfunctionStoreImpl : MalfunctionStore {
         malfunctionStore.putAll(malfunctionMap)
     }
 
-    override fun get(malfunctionId: Long): Fickle<Malfunction> {
+    override fun findOne(malfunctionId: Long): Fickle<Malfunction> {
         val malfunction = malfunctionStore[malfunctionId] ?: return Fickle.empty()
         return Fickle.of(malfunction)
     }
 
-    override fun getMany(malfunctionIdList: List<Long>): List<Malfunction> {
+    override fun findMany(malfunctionIdList: List<Long>): List<Malfunction> {
         val set = malfunctionIdList.toSet()
         return ArrayList(malfunctionStore.getAll(set).values)
     }
 
-    override fun delete(malfunctionId: Long) {
+    override fun deleteOne(malfunctionId: Long) {
         malfunctionStore.remove(malfunctionId)
     }
 
@@ -54,5 +54,9 @@ class MalfunctionStoreImpl : MalfunctionStore {
         malfunctionIdList.forEach {
             malfunctionStore.remove(it)
         }
+    }
+
+    override fun clear() {
+        malfunctionStore.clear()
     }
 }

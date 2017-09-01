@@ -83,7 +83,7 @@ class CreateMalfunctionRequestServiceImpl : CreateMalfunctionRequestService {
                                           request: MalfunctionRequest, sessionId: String): Single<CreateMalfunctionRequestService.Post.Result> {
 
         //user must re login if sessionId was removed from the cache
-        val userFickle = userStore.get(sessionId)
+        val userFickle = userStore.findOne(sessionId)
         if (!userFickle.isPresent()) {
             log.d("sessionId $sessionId was not found in the cache")
             return Single.just(CreateMalfunctionRequestService.Post.Result.SessionIdExpired())
@@ -172,7 +172,7 @@ class CreateMalfunctionRequestServiceImpl : CreateMalfunctionRequestService {
                     createdOn = Timestamp(ServerUtils.getTimeFast()),
                     imageNamesList = imageNamesList)
 
-            if (!malfunctionRepository.createMalfunction(malfunction)) {
+            if (!malfunctionRepository.saveOne(malfunction)) {
                 log.d("Failed to create malfunction (Repository error)")
 
                 //we failed to save malfunction request in the repository, so we have to notify file servers to delete images related to the request

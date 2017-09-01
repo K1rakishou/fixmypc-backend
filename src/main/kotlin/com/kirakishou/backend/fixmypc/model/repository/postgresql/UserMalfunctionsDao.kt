@@ -1,17 +1,18 @@
 package com.kirakishou.backend.fixmypc.model.repository.postgresql
 
-import java.sql.SQLException
-
 interface UserMalfunctionsDao {
-    @Throws(SQLException::class)
-    fun addMalfunction(ownerId: Long, malfunctionId: Long)
 
-    @Throws(SQLException::class)
-    fun getMany(ownerId: Long, offset: Long, count: Long): List<Long>
+    interface Result {
+        class Saved : Result
+        class FoundMany(val idList: List<Long>) : Result
+        class NotFound : Result
+        class Deleted : Result
+        class DbError(val e: Throwable) : Result
+    }
 
-    @Throws(SQLException::class)
-    fun getAll(ownerId: Long): List<Long>
-
-    @Throws(SQLException::class)
-    fun removeMalfunction(ownerId: Long, malfunctionId: Long)
+    fun saveOne(ownerId: Long, malfunctionId: Long): Result
+    fun findMany(ownerId: Long, offset: Long, count: Long): Result
+    fun findAll(ownerId: Long): Result
+    fun deleteOne(ownerId: Long, malfunctionId: Long): Result
+    fun deleteOnePermanently(ownerId: Long, malfunctionId: Long): Result
 }
