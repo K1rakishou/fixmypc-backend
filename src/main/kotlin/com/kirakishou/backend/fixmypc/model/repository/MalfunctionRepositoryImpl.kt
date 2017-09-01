@@ -41,7 +41,7 @@ class MalfunctionRepositoryImpl : MalfunctionRepository {
         val userMalfunctionRepositoryResult = userMalfunctionsRepository.saveOne(malfunction.ownerId, malfunction.id)
         if (!userMalfunctionRepositoryResult) {
             //couldn't store in the userMalfunctionsRepository so we need to delete it from DB as well
-            malfunctionDao.deleteOne(malfunction.id)
+            malfunctionDao.deleteOnePermanently(malfunction.id)
             return false
         }
 
