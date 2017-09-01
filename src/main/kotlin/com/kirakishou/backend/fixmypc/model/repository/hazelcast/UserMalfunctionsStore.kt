@@ -6,4 +6,5 @@ interface UserMalfunctionsStore {
     fun findMany(ownerId: Long, offset: Long, count: Long): List<Long>
     fun findAll(ownerId: Long): List<Long>
     fun deleteOne(ownerId: Long, malfunctionId: Long)
+    fun clear()
 }

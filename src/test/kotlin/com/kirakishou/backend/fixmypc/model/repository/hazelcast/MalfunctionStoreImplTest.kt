@@ -101,7 +101,7 @@ class MalfunctionStoreImplTest {
     }
 
     @Test
-    fun deleteOne() {
+    fun testDeleteOne() {
         store.clear()
         val malfunction = Malfunction(0, 0, true, "436erydfyu", 0, "test description", 55.6, 44.2, Timestamp(Date().time), arrayListOf())
 
@@ -118,7 +118,7 @@ class MalfunctionStoreImplTest {
     }
 
     @Test
-    fun deleteMany() {
+    fun testDeleteMany() {
         store.clear()
         val malfunction = Malfunction(0, 0, true, "436erydfyu", 0, "test description", 55.6, 44.2, Timestamp(Date().time), arrayListOf())
         val malfunction2 = Malfunction(1, 0, true, "436erydfawryu", 0, "test description2", 55.6, 44.2, Timestamp(Date().time), arrayListOf())

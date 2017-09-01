@@ -62,4 +62,7 @@ class UserMalfunctionsStoreImpl : UserMalfunctionsStore {
         userMalfunctionStore.remove(ownerId, malfunctionId)
     }
 
+    override fun clear() {
+        userMalfunctionStore.clear()
+    }
 }
