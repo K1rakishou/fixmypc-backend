@@ -11,6 +11,7 @@ import com.kirakishou.backend.fixmypc.model.entity.Malfunction
 import com.kirakishou.backend.fixmypc.model.entity.User
 import com.kirakishou.backend.fixmypc.serializer.MalfunctionSerializer
 import com.kirakishou.backend.fixmypc.serializer.UserSerializer
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
@@ -70,6 +71,11 @@ class MalfunctionStoreImplTest {
         ReflectionTestUtils.setField(store, "malfunctionStore", malfunctionStore)
     }
 
+    @After
+    fun tearDown() {
+        store.clear()
+    }
+
     @Test
     fun testSaveOne() {
         store.clear()
@@ -109,6 +115,23 @@ class MalfunctionStoreImplTest {
         val malfunctionFromStore2 = store.findOne(malfunction.id)
 
         assertEquals(false, malfunctionFromStore2.isPresent())
+    }
+
+    @Test
+    fun deleteMany() {
+        store.clear()
+        val malfunction = Malfunction(0, 0, true, "436erydfyu", 0, "test description", 55.6, 44.2, Timestamp(Date().time), arrayListOf())
+        val malfunction2 = Malfunction(1, 0, true, "436erydfawryu", 0, "test description2", 55.6, 44.2, Timestamp(Date().time), arrayListOf())
+
+        store.saveMany(listOf(malfunction, malfunction2))
+        val malfunctionsFromStore = store.findMany(listOf(0, 1))
+
+        assertEquals(2, malfunctionsFromStore.size)
+
+        store.deleteMany(listOf(0, 1))
+        val malfunctionsFromStore2 = store.findMany(listOf(0, 1))
+
+        assertEquals(0, malfunctionsFromStore2.size)
     }
 }
 
