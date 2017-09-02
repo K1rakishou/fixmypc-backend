@@ -162,12 +162,18 @@ class MalfunctionRepositoryImplTest {
 
         val result = repository.findMany(0, 0, 5)
         assertEquals(5, result.size)
+        assertEquals(0, result[0].id)
+        assertEquals(4, result[4].id)
 
         val result2 = repository.findMany(0, 5, 5)
         assertEquals(5, result2.size)
+        assertEquals(5, result2[0].id)
+        assertEquals(9, result2[4].id)
 
         val result3 = repository.findMany(0, 10, 5)
         assertEquals(5, result3.size)
+        assertEquals(10, result3[0].id)
+        assertEquals(14, result3[4].id)
     }
 }
 
