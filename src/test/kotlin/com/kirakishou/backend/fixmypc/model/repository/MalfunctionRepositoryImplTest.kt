@@ -112,9 +112,64 @@ class MalfunctionRepositoryImplTest {
         assertEquals(false, result.isPresent())
     }
 
+    @Test
+    fun testFindMany_ShouldReturnEmptyIfUserHasNotAddedAnyMalfunctions() {
+        Mockito.`when`(userMalfunctionsRepository.findMany(Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong())).thenReturn(emptyList())
 
+        val result = repository.findMany(0, 0, 5)
+
+        assertEquals(0, result.size)
+    }
+
+    @Test
+    fun testFindMany_ShouldReturnMalfunctionListIfMalfunctionStoreReturnedEnoughEntries() {
+        val malfunctionIdList = listOf<Long>(0, 1, 2, 3, 4)
+        val malfunctionList = listOf(Malfunction(), Malfunction(), Malfunction(), Malfunction(), Malfunction())
+        val count = 5L
+
+        Mockito.`when`(userMalfunctionsRepository.findMany(Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong())).thenReturn(malfunctionIdList)
+        Mockito.`when`(malfunctionStore.findMany(malfunctionIdList)).thenReturn(malfunctionList)
+
+        val result = repository.findMany(0, 0, count)
+
+        assertEquals(count, result.size.toLong())
+    }
+
+    @Test
+    fun testFindMany_shouldReturnOnePage() {
+        val malfunctionIdList = listOf<Long>(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14)
+        val allUserMalfunctions = listOf(Malfunction(0), Malfunction(1), Malfunction(2), Malfunction(3), Malfunction(4),
+                Malfunction(5), Malfunction(6), Malfunction(7), Malfunction(8), Malfunction(9),
+                Malfunction(10), Malfunction(11), Malfunction(12), Malfunction(13), Malfunction(14))
+
+        val firstPageIds = malfunctionIdList.subList(0, 5)
+        val secondPageIds = malfunctionIdList.subList(5, 10)
+        val thirdPageIds = malfunctionIdList.subList(10, 15)
+
+        val firstPageMalfunctionsFromCache = listOf(Malfunction(0), Malfunction(1), Malfunction(2))
+        val secondPageMalfunctionsFromCache = listOf(Malfunction(5), Malfunction(6))
+        val thirdPageMalfunctionsFromCache = listOf<Malfunction>()
+
+        Mockito.`when`(userMalfunctionsRepository.findMany(Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong()))
+                .thenReturn(firstPageIds)
+                .thenReturn(secondPageIds)
+                .thenReturn(thirdPageIds)
+
+        Mockito.`when`(malfunctionStore.findMany(firstPageIds)).thenReturn(firstPageMalfunctionsFromCache)
+        Mockito.`when`(malfunctionStore.findMany(secondPageIds)).thenReturn(secondPageMalfunctionsFromCache)
+        Mockito.`when`(malfunctionStore.findMany(thirdPageIds)).thenReturn(thirdPageMalfunctionsFromCache)
+        Mockito.`when`(malfunctionDao.findManyActive(0)).thenReturn(MalfunctionDao.Result.FoundMany(allUserMalfunctions))
+
+        val result = repository.findMany(0, 0, 5)
+        assertEquals(5, result.size)
+
+        val result2 = repository.findMany(0, 5, 5)
+        assertEquals(5, result2.size)
+
+        val result3 = repository.findMany(0, 10, 5)
+        assertEquals(5, result3.size)
+    }
 }
-
 
 
 

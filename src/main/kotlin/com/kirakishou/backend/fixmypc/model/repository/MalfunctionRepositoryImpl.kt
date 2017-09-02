@@ -68,17 +68,16 @@ class MalfunctionRepositoryImpl : MalfunctionRepository {
     }
 
     override fun findMany(ownerId: Long, offset: Long, count: Long): List<Malfunction> {
-        val ids = userMalfunctionsRepository.findMany(ownerId, offset, count)
-        if (ids.isEmpty()) {
+        val malfunctionIdList = userMalfunctionsRepository.findMany(ownerId, offset, count)
+        if (malfunctionIdList.isEmpty()) {
             return emptyList()
         }
 
-        val malfunctionsList = malfunctionStore.findMany(ids)
-        if (malfunctionsList.size == count.toInt()) {
-            return malfunctionsList
+        val malfunctionListFromCache = malfunctionStore.findMany(malfunctionIdList)
+        if (malfunctionListFromCache.size == count.toInt()) {
+            return malfunctionListFromCache
         }
 
-        val remainder = count - malfunctionsList.size
         val malfunctionDaoResult = malfunctionDao.findManyActive(ownerId)
         if (malfunctionDaoResult !is MalfunctionDao.Result.FoundMany) {
             when (malfunctionDaoResult) {
@@ -90,19 +89,22 @@ class MalfunctionRepositoryImpl : MalfunctionRepository {
         }
 
         val malfunctionsFromDb = malfunctionDaoResult.malfunctions
-        val filteredMF = malfunctionsFromDb.stream()
-                .filter { !contains(it.id, malfunctionsList) }
+        val remainder = count - malfunctionListFromCache.size
+
+        val filteredMalfunctionList = malfunctionsFromDb.stream()
+                .skip(offset)
+                .filter { !contains(it.id, malfunctionListFromCache) }
                 .limit(remainder)
                 .collect(Collectors.toList())
 
-        if (filteredMF.isEmpty()) {
+        if (filteredMalfunctionList.isEmpty()) {
             return emptyList()
         }
 
-        malfunctionStore.saveMany(filteredMF)
-        filteredMF.addAll(malfunctionsList)
+        malfunctionStore.saveMany(filteredMalfunctionList)
+        filteredMalfunctionList.addAll(0, malfunctionListFromCache)
 
-        return filteredMF
+        return filteredMalfunctionList
     }
 
     override fun deleteOne(ownerId: Long, malfunctionId: Long): Boolean {
