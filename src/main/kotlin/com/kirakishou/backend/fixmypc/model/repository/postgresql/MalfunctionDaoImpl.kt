@@ -113,7 +113,7 @@ class MalfunctionDaoImpl : MalfunctionDao {
             hikariCP.connection.use { connection ->
                 connection.prepareStatement("SELECT id, category, description, created_on, malfunction_request_id, " +
                         "lat, lon FROM public.malfunctions WHERE owner_id = ? AND is_active = ? AND " +
-                        "deleted_on IS NULL OFFSET ? LIMIT ?").use { ps ->
+                        "deleted_on IS NULL ORDER BY id ASC OFFSET ? LIMIT ?").use { ps ->
 
                     ps.setLong(1, ownerId)
                     ps.setBoolean(2, isActive)
@@ -195,7 +195,7 @@ class MalfunctionDaoImpl : MalfunctionDao {
         try {
             hikariCP.connection.use { connection ->
                 connection.prepareStatement("SELECT id, category, description, created_on, malfunction_request_id, lat, lon " +
-                        "FROM public.malfunctions WHERE owner_id = ? AND is_active = ? AND deleted_on IS NULL ORDER BY created_on DESC").use { ps ->
+                        "FROM public.malfunctions WHERE owner_id = ? AND is_active = ? AND deleted_on IS NULL ORDER BY id ASC").use { ps ->
 
                     ps.setLong(1, ownerId)
                     ps.setBoolean(2, isActive)

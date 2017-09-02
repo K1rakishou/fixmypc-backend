@@ -34,7 +34,7 @@ class UserMalfunctionsDaoImpl : UserMalfunctionsDao {
 
         try {
             hikariCP.connection.prepareStatementScrollable("SELECT malfunction_id FROM public.user_malfunctions WHERE " +
-                    "owner_id = ? AND deleted_on IS NULL OFFSET ? LIMIT ?").use { ps ->
+                    "owner_id = ? AND deleted_on IS NULL OFFSET ? LIMIT ? ORDER BY id ASC").use { ps ->
                 ps.setLong(1, ownerId)
                 ps.setLong(2, offset)
                 ps.setLong(3, count)
@@ -61,7 +61,7 @@ class UserMalfunctionsDaoImpl : UserMalfunctionsDao {
 
         try {
             hikariCP.connection.prepareStatementScrollable("SELECT malfunction_id FROM public.user_malfunctions WHERE " +
-                    "owner_id = ? AND deleted_on IS NULL").use { ps ->
+                    "owner_id = ? AND deleted_on IS NULL ORDER BY id ASC").use { ps ->
                 ps.setLong(1, ownerId)
 
                 ps.executeQuery().use { rs ->

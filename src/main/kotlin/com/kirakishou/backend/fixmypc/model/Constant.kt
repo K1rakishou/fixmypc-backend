@@ -37,7 +37,7 @@ object Constant {
     object HazelcastNames {
         val USER_CACHE_KEY = "user_cache"
         val MALFUNCTION_CACHE_KEY = "malfunction_cache"
-        val USER_MALFUNCTION_KEY = "user_malfunction"
+        val ACTIVE_USER_MALFUNCTION_KEY = "active_user_malfunction"
     }
 
     //seconds

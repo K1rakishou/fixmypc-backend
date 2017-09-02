@@ -5,7 +5,7 @@ import com.kirakishou.backend.fixmypc.manager.FileServersManager
 import com.kirakishou.backend.fixmypc.manager.FileServersManagerImpl
 import com.kirakishou.backend.fixmypc.model.*
 import com.kirakishou.backend.fixmypc.model.entity.Malfunction
-import com.kirakishou.backend.fixmypc.model.net.request.MalfunctionRequest
+import com.kirakishou.backend.fixmypc.model.net.request.MalfunctionCreateRequest
 import com.kirakishou.backend.fixmypc.model.repository.MalfunctionRepository
 import com.kirakishou.backend.fixmypc.model.repository.hazelcast.UserStore
 import com.kirakishou.backend.fixmypc.model.repository.postgresql.MalfunctionDao
@@ -80,7 +80,7 @@ class CreateMalfunctionRequestServiceImpl : CreateMalfunctionRequestService {
     }
 
     override fun createMalfunctionRequest(uploadingFiles: Array<MultipartFile>, imageType: Int,
-                                          request: MalfunctionRequest, sessionId: String): Single<CreateMalfunctionRequestService.Post.Result> {
+                                          request: MalfunctionCreateRequest, sessionId: String): Single<CreateMalfunctionRequestService.Post.Result> {
 
         //user must re login if sessionId was removed from the cache
         val userFickle = userStore.findOne(sessionId)
@@ -348,7 +348,7 @@ class CreateMalfunctionRequestServiceImpl : CreateMalfunctionRequestService {
         return CreateMalfunctionRequestService.Post.Result.Ok()
     }
 
-    private fun checkRequestCorrectness(request: MalfunctionRequest): CreateMalfunctionRequestService.Post.Result {
+    private fun checkRequestCorrectness(request: MalfunctionCreateRequest): CreateMalfunctionRequestService.Post.Result {
         return CreateMalfunctionRequestService.Post.Result.Ok()
     }
 }

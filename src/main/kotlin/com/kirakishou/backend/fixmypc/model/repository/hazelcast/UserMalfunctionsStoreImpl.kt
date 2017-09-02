@@ -15,54 +15,65 @@ class UserMalfunctionsStoreImpl : UserMalfunctionsStore {
     @Autowired
     private lateinit var hazelcast: HazelcastInstance
 
-    private lateinit var userMalfunctionStore: MultiMap<Long, Long>
+    private lateinit var activeUserMalfunctionStore: MultiMap<Long, Long>
 
     @PostConstruct
     fun init() {
-        userMalfunctionStore = hazelcast.getMultiMap<Long, Long>(Constant.HazelcastNames.USER_MALFUNCTION_KEY)
+        activeUserMalfunctionStore = hazelcast.getMultiMap<Long, Long>(Constant.HazelcastNames.ACTIVE_USER_MALFUNCTION_KEY)
     }
 
     override fun saveOne(ownerId: Long, malfunctionId: Long) {
-        userMalfunctionStore.lock(ownerId)
+        activeUserMalfunctionStore.lock(ownerId)
 
         try {
-            if (!userMalfunctionStore.containsEntry(ownerId, malfunctionId)) {
-                userMalfunctionStore.put(ownerId, malfunctionId)
+            if (!activeUserMalfunctionStore.containsEntry(ownerId, malfunctionId)) {
+                activeUserMalfunctionStore.put(ownerId, malfunctionId)
             }
         } finally {
-            userMalfunctionStore.unlock(ownerId)
+            activeUserMalfunctionStore.unlock(ownerId)
         }
     }
 
     override fun saveMany(ownerId: Long, malfunctionIdList: List<Long>) {
         hazelcast.doInTransaction {
             for (id in malfunctionIdList) {
-                if (!userMalfunctionStore.containsEntry(ownerId, id)) {
-                    userMalfunctionStore.put(ownerId, id)
+                if (!activeUserMalfunctionStore.containsEntry(ownerId, id)) {
+                    activeUserMalfunctionStore.put(ownerId, id)
                 }
             }
         }
     }
 
     override fun findMany(ownerId: Long, offset: Long, count: Long): List<Long> {
-        val userAllMalfunctions = userMalfunctionStore.get(ownerId) ?: return emptyList()
+        val userAllMalfunctions = activeUserMalfunctionStore.get(ownerId) ?: return emptyList()
 
         return userAllMalfunctions.stream()
+                .sorted { id1, id2 -> comparator(id1, id2) }
                 .skip(offset)
                 .limit(count)
                 .collect(Collectors.toList())
     }
 
     override fun findAll(ownerId: Long): List<Long> {
-        val userAllMalfunctions = userMalfunctionStore.get(ownerId) ?: return emptyList()
+        val userAllMalfunctions = activeUserMalfunctionStore.get(ownerId) ?: return emptyList()
         return ArrayList(userAllMalfunctions)
     }
 
     override fun deleteOne(ownerId: Long, malfunctionId: Long) {
-        userMalfunctionStore.remove(ownerId, malfunctionId)
+        activeUserMalfunctionStore.remove(ownerId, malfunctionId)
     }
 
     override fun clear() {
-        userMalfunctionStore.clear()
+        activeUserMalfunctionStore.clear()
+    }
+
+    private fun comparator(id1: Long, id2: Long): Int {
+        if (id1 < id2) {
+            return -1
+        } else if (id1 > id2) {
+            return 1
+        }
+
+        return 0
     }
 }

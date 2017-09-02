@@ -33,28 +33,31 @@ class UserMalfunctionsRepositoryImpl : UserMalfunctionsRepository {
     }
 
     override fun findMany(ownerId: Long, offset: Long, count: Long): List<Long> {
-        val idsList = userMalfunctionsStore.findMany(ownerId, offset, count)
-        if (idsList.size == count.toInt()) {
-            return idsList
+        val cacheResult = userMalfunctionsStore.findMany(ownerId, offset, count)
+        if (cacheResult.size == count.toInt()) {
+            return cacheResult
         }
 
-        val remainder = count - idsList.size
+        val remainder = count - cacheResult.size
         val daoResult = userMalfunctionsDao.findAll(ownerId)
+
         if (daoResult !is UserMalfunctionsDao.Result.FoundMany) {
-            return idsList
+            return cacheResult
         }
 
-        val filteredIds = daoResult.idList.stream()
-                .filter { !idsList.contains(it) }
+        val ids = daoResult.idList
+        val filteredIds = ids.stream()
+                .skip(offset)
+                .filter { !cacheResult.contains(it) }
                 .limit(remainder)
                 .collect(Collectors.toList())
 
         if (filteredIds.isEmpty()) {
-            return idsList
+            return cacheResult
         }
 
         userMalfunctionsStore.saveMany(ownerId, filteredIds)
-        filteredIds.addAll(idsList)
+        filteredIds.addAll(cacheResult)
 
         return filteredIds
     }

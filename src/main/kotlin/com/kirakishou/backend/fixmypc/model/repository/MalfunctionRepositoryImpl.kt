@@ -73,36 +73,36 @@ class MalfunctionRepositoryImpl : MalfunctionRepository {
             return emptyList()
         }
 
-        val malfunctionListFromCache = malfunctionStore.findMany(malfunctionIdList)
-        if (malfunctionListFromCache.size == count.toInt()) {
-            return malfunctionListFromCache
+        val cacheResult = malfunctionStore.findMany(malfunctionIdList)
+        if (cacheResult.size == count.toInt()) {
+            return cacheResult
         }
 
-        val malfunctionDaoResult = malfunctionDao.findManyActive(ownerId)
-        if (malfunctionDaoResult !is MalfunctionDao.Result.FoundMany) {
-            when (malfunctionDaoResult) {
+        val daoResult = malfunctionDao.findManyActive(ownerId)
+        if (daoResult !is MalfunctionDao.Result.FoundMany) {
+            when (daoResult) {
                 is MalfunctionDao.Result.DbError -> {
-                    log.e(malfunctionDaoResult.e)
+                    log.e(daoResult.e)
                     return emptyList()
                 }
             }
         }
 
-        val malfunctionsFromDb = malfunctionDaoResult.malfunctions
-        val remainder = count - malfunctionListFromCache.size
+        val malfunctionsFromDb = daoResult.malfunctions
+        val remainder = count - cacheResult.size
 
         val filteredMalfunctionList = malfunctionsFromDb.stream()
                 .skip(offset)
-                .filter { !contains(it.id, malfunctionListFromCache) }
+                .filter { !contains(it.id, cacheResult) }
                 .limit(remainder)
                 .collect(Collectors.toList())
 
         if (filteredMalfunctionList.isEmpty()) {
-            return emptyList()
+            return cacheResult
         }
 
         malfunctionStore.saveMany(filteredMalfunctionList)
-        filteredMalfunctionList.addAll(0, malfunctionListFromCache)
+        filteredMalfunctionList.addAll(0, cacheResult)
 
         return filteredMalfunctionList
     }

@@ -38,12 +38,8 @@ class GetUserMalfunctionRequestListServiceImpl : GetUserMalfunctionRequestListSe
         }
 
         val user = userFickle.get()
-
-        val userMalfunctions = userMalfunctionsStore.findAll(user.id)
-        val malfunctions = malfunctionStore.findMany(userMalfunctions)
-
         val malfunctionList = malfunctionRepository.findMany(user.id, offset, Constant.MAX_MALFUNCTIONS_PER_PAGE)
 
-        return Single.just(GetUserMalfunctionRequestListService.Get.Result.Ok())
+        return Single.just(GetUserMalfunctionRequestListService.Get.Result.Ok(malfunctionList))
     }
 }

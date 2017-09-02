@@ -24,21 +24,21 @@ class UserMalfunctionsStoreImplTest {
     private lateinit var userMalfunctionStore: MultiMap<Long, Long>
 
     fun provideHazelcast(): HazelcastInstance {
-        val clientConfig = Config()
-        clientConfig.networkConfig.publicAddress = "192.168.99.100:9229"
+        val config = Config()
+        config.networkConfig.publicAddress = "192.168.99.100:9229"
 
         //config.networkConfig.addAddress("192.168.99.100:9230")
         //clientConfig.networkConfig.addAddress("192.168.99.100:9229")
 
-        clientConfig.serializationConfig.addSerializerConfig(SerializerConfig()
+        config.serializationConfig.addSerializerConfig(SerializerConfig()
                 .setImplementation(UserSerializer())
                 .setTypeClass(User::class.java))
 
-        clientConfig.serializationConfig.addSerializerConfig(SerializerConfig()
+        config.serializationConfig.addSerializerConfig(SerializerConfig()
                 .setImplementation(MalfunctionSerializer())
                 .setTypeClass(Malfunction::class.java))
 
-        val instance = Hazelcast.newHazelcastInstance(clientConfig)
+        val instance = Hazelcast.newHazelcastInstance(config)
 
         val userCacheConfig = MapConfig(Constant.HazelcastNames.USER_CACHE_KEY)
         userCacheConfig.timeToLiveSeconds = Constant.HazelcastTTL.USER_ENTRY_TTL
@@ -50,14 +50,14 @@ class UserMalfunctionsStoreImplTest {
         malfunctionCacheConfig.backupCount = 1
         malfunctionCacheConfig.asyncBackupCount = 0
 
-        val userMalfunctionStoreConfig = MapConfig(Constant.HazelcastNames.USER_MALFUNCTION_KEY)
+        val userMalfunctionStoreConfig = MapConfig(Constant.HazelcastNames.ACTIVE_USER_MALFUNCTION_KEY)
         malfunctionCacheConfig.timeToLiveSeconds = Constant.HazelcastTTL.USER_MALFUNCTION_ENTRY_TTL
         malfunctionCacheConfig.backupCount = 2
         malfunctionCacheConfig.asyncBackupCount = 0
 
         instance.config.mapConfigs.put(Constant.HazelcastNames.USER_CACHE_KEY, userCacheConfig)
         instance.config.mapConfigs.put(Constant.HazelcastNames.MALFUNCTION_CACHE_KEY, malfunctionCacheConfig)
-        instance.config.mapConfigs.put(Constant.HazelcastNames.USER_MALFUNCTION_KEY, userMalfunctionStoreConfig)
+        instance.config.mapConfigs.put(Constant.HazelcastNames.ACTIVE_USER_MALFUNCTION_KEY, userMalfunctionStoreConfig)
 
         return instance
     }
@@ -65,7 +65,7 @@ class UserMalfunctionsStoreImplTest {
     @Before
     fun init() {
         val hazelcast = provideHazelcast()
-        userMalfunctionStore = hazelcast.getMultiMap<Long, Long>(Constant.HazelcastNames.USER_MALFUNCTION_KEY)
+        userMalfunctionStore = hazelcast.getMultiMap<Long, Long>(Constant.HazelcastNames.ACTIVE_USER_MALFUNCTION_KEY)
 
         ReflectionTestUtils.setField(store, "hazelcast", hazelcast)
         ReflectionTestUtils.setField(store, "userMalfunctionStore", userMalfunctionStore)
