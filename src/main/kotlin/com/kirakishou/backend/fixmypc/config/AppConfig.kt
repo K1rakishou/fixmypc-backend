@@ -66,14 +66,14 @@ class AppConfig {
         malfunctionCacheConfig.backupCount = 1
         malfunctionCacheConfig.asyncBackupCount = 0
 
-        val userMalfunctionStoreConfig = MapConfig(Constant.HazelcastNames.ACTIVE_USER_MALFUNCTION_KEY)
+        val userMalfunctionStoreConfig = MapConfig(Constant.HazelcastNames.USER_MALFUNCTION_KEY)
         malfunctionCacheConfig.timeToLiveSeconds = Constant.HazelcastTTL.USER_MALFUNCTION_ENTRY_TTL
         malfunctionCacheConfig.backupCount = 2
         malfunctionCacheConfig.asyncBackupCount = 0
 
         instance.config.mapConfigs.put(Constant.HazelcastNames.USER_CACHE_KEY, userCacheConfig)
         instance.config.mapConfigs.put(Constant.HazelcastNames.MALFUNCTION_CACHE_KEY, malfunctionCacheConfig)
-        instance.config.mapConfigs.put(Constant.HazelcastNames.ACTIVE_USER_MALFUNCTION_KEY, userMalfunctionStoreConfig)
+        instance.config.mapConfigs.put(Constant.HazelcastNames.USER_MALFUNCTION_KEY, userMalfunctionStoreConfig)
 
         return instance
     }
