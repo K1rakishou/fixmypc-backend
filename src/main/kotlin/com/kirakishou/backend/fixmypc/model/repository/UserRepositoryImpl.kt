@@ -36,9 +36,13 @@ class UserRepositoryImpl : UserRepository {
         if (daoResult is Either.Error) {
             log.e(daoResult.error)
             return false
+        } else {
+            if (!(daoResult as Either.Value).value) {
+                return false
+            }
         }
 
-        return (daoResult as Either.Value).value
+        return daoResult.value
     }
 
     override fun saveOneToStore(sessionId: String, user: User) {
@@ -51,9 +55,13 @@ class UserRepositoryImpl : UserRepository {
         if (daoResult is Either.Error) {
             log.e(daoResult.error)
             return false
+        } else {
+            if (!(daoResult as Either.Value).value) {
+                return false
+            }
         }
 
-        return (daoResult as Either.Value).value
+        return daoResult.value
     }
 
     override fun deleteOneFromStore(sessionId: String) {

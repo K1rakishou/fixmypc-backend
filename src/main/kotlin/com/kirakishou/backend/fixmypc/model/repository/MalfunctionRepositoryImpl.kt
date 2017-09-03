@@ -35,11 +35,10 @@ class MalfunctionRepositoryImpl : MalfunctionRepository {
         if (daoResult is Either.Error) {
             log.e(daoResult.error)
             return false
-        }
-
-        val daoResValue = (daoResult as Either.Value).value
-        if (!daoResValue) {
-            return false
+        } else {
+            if (!(daoResult as Either.Value).value) {
+                return false
+            }
         }
 
         val repositoryResult = userMalfunctionsRepository.saveOne(malfunction.ownerId, malfunction.id)
@@ -106,7 +105,15 @@ class MalfunctionRepositoryImpl : MalfunctionRepository {
 
     override fun deleteOne(ownerId: Long, malfunctionId: Long): Boolean {
         try {
-            malfunctionDao.deleteOne(malfunctionId)
+            val daoResult = malfunctionDao.deleteOne(malfunctionId)
+            if (daoResult is Either.Error) {
+                return false
+            } else {
+                if (!(daoResult as Either.Value).value) {
+                    return false
+                }
+            }
+
             userMalfunctionsRepository.deleteOne(ownerId, malfunctionId)
             locationStore.deleteOne(malfunctionId)
 

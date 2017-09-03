@@ -1,5 +1,6 @@
 package com.kirakishou.backend.fixmypc.model.repository.postgresql
 
+import com.kirakishou.backend.fixmypc.core.Either
 import com.kirakishou.backend.fixmypc.extension.prepareStatementScrollable
 import com.kirakishou.backend.fixmypc.extension.transactional
 import org.springframework.beans.factory.annotation.Autowired
@@ -13,7 +14,7 @@ class UserMalfunctionsDaoImpl : UserMalfunctionsDao {
     @Autowired
     private lateinit var hikariCP: DataSource
 
-    override fun saveOne(ownerId: Long, malfunctionId: Long): UserMalfunctionsDao.Result {
+    override fun saveOne(ownerId: Long, malfunctionId: Long): Either<SQLException, Boolean> {
         try {
             hikariCP.connection.transactional { connection ->
                 connection.prepareStatement("INSERT INTO public.user_malfunctions (owner_id, malfunction_id, deleted_on) VALUES (?, ?, NULL)").use { ps ->
@@ -23,13 +24,13 @@ class UserMalfunctionsDaoImpl : UserMalfunctionsDao {
                 }
             }
         } catch (e: SQLException) {
-            return UserMalfunctionsDao.Result.DbError(e)
+            return Either.Error(e)
         }
 
-        return UserMalfunctionsDao.Result.Saved()
+        return Either.Value(true)
     }
 
-    override fun findMany(ownerId: Long, offset: Long, count: Long): UserMalfunctionsDao.Result {
+    override fun findMany(ownerId: Long, offset: Long, count: Long): Either<SQLException, List<Long>> {
         val idsList = arrayListOf<Long>()
 
         try {
@@ -46,17 +47,13 @@ class UserMalfunctionsDaoImpl : UserMalfunctionsDao {
                 }
             }
         } catch (e: SQLException) {
-            return UserMalfunctionsDao.Result.DbError(e)
+            return Either.Error(e)
         }
 
-        if (idsList.isEmpty()) {
-            return UserMalfunctionsDao.Result.NotFound()
-        }
-
-        return UserMalfunctionsDao.Result.FoundMany(idsList)
+        return Either.Value(idsList)
     }
 
-    override fun findAll(ownerId: Long): UserMalfunctionsDao.Result {
+    override fun findAll(ownerId: Long):Either<SQLException, List<Long>> {
         val idsList = arrayListOf<Long>()
 
         try {
@@ -71,17 +68,13 @@ class UserMalfunctionsDaoImpl : UserMalfunctionsDao {
                 }
             }
         } catch (e: SQLException) {
-            return UserMalfunctionsDao.Result.DbError(e)
+            return Either.Error(e)
         }
 
-        if (idsList.isEmpty()) {
-            return UserMalfunctionsDao.Result.NotFound()
-        }
-
-        return UserMalfunctionsDao.Result.FoundMany(idsList)
+        return Either.Value(idsList)
     }
 
-    override fun deleteOne(ownerId: Long, malfunctionId: Long): UserMalfunctionsDao.Result {
+    override fun deleteOne(ownerId: Long, malfunctionId: Long): Either<SQLException, Boolean> {
         try {
             hikariCP.connection.use { connection ->
                 connection.prepareStatement("UPDATE public.user_malfunctions SET deleted_on = NOW() WHERE owner_id = ? AND malfunction_id = ?").use { ps ->
@@ -91,13 +84,13 @@ class UserMalfunctionsDaoImpl : UserMalfunctionsDao {
                 }
             }
         } catch (e: SQLException) {
-            return UserMalfunctionsDao.Result.DbError(e)
+            return Either.Error(e)
         }
 
-        return UserMalfunctionsDao.Result.Deleted()
+        return Either.Value(true)
     }
 
-    override fun deleteOnePermanently(ownerId: Long, malfunctionId: Long): UserMalfunctionsDao.Result {
+    override fun deleteOnePermanently(ownerId: Long, malfunctionId: Long): Either<SQLException, Boolean> {
         try {
             hikariCP.connection.use { connection ->
                 connection.prepareStatement("DELETE FROM public.user_malfunctions WHERE owner_id = ? AND malfunction_id = ? LIMIT 1").use { ps ->
@@ -107,9 +100,9 @@ class UserMalfunctionsDaoImpl : UserMalfunctionsDao {
                 }
             }
         } catch (e: SQLException) {
-            return UserMalfunctionsDao.Result.DbError(e)
+            return Either.Error(e)
         }
 
-        return UserMalfunctionsDao.Result.Deleted()
+        return Either.Value(true)
     }
 }

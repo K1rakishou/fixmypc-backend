@@ -1,5 +1,6 @@
 package com.kirakishou.backend.fixmypc.model.repository
 
+import com.kirakishou.backend.fixmypc.core.Either
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.repository.hazelcast.UserMalfunctionsStore
 import com.kirakishou.backend.fixmypc.model.repository.postgresql.UserMalfunctionsDao
@@ -21,9 +22,11 @@ class UserMalfunctionsRepositoryImpl : UserMalfunctionsRepository {
 
     override fun saveOne(ownerId: Long, malfunctionId: Long): Boolean {
         val daoResult = userMalfunctionsDao.saveOne(ownerId, malfunctionId)
-        if (daoResult !is UserMalfunctionsDao.Result.Saved) {
-            if (daoResult is UserMalfunctionsDao.Result.DbError) {
-                log.e(daoResult.e)
+        if (daoResult is Either.Error) {
+            log.e(daoResult.error)
+            return false
+        } else {
+            if (!(daoResult as Either.Value).value) {
                 return false
             }
         }
@@ -41,12 +44,16 @@ class UserMalfunctionsRepositoryImpl : UserMalfunctionsRepository {
         val remainder = count - cacheResult.size
         val daoResult = userMalfunctionsDao.findAll(ownerId)
 
-        if (daoResult !is UserMalfunctionsDao.Result.FoundMany) {
+        if (daoResult is Either.Error) {
             return cacheResult
         }
 
-        val ids = daoResult.idList
-        val filteredIds = ids.stream()
+        val daoResValue = (daoResult as Either.Value).value
+        if (daoResValue.isEmpty()) {
+            return cacheResult
+        }
+
+        val filteredIds = daoResValue.stream()
                 .skip(offset)
                 .filter { !cacheResult.contains(it) }
                 .limit(remainder)
@@ -64,9 +71,11 @@ class UserMalfunctionsRepositoryImpl : UserMalfunctionsRepository {
 
     override fun deleteOne(ownerId: Long, malfunctionId: Long): Boolean {
         val daoResult = userMalfunctionsDao.deleteOne(ownerId, malfunctionId)
-        if (daoResult !is UserMalfunctionsDao.Result.Saved) {
-            if (daoResult is UserMalfunctionsDao.Result.DbError) {
-                log.e(daoResult.e)
+        if (daoResult is Either.Error) {
+            log.e(daoResult.error)
+            return false
+        } else {
+            if (!(daoResult as Either.Value).value) {
                 return false
             }
         }
