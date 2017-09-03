@@ -1,8 +1,8 @@
 package com.kirakishou.backend.fixmypc.model.net.response
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.kirakishou.backend.fixmypc.model.AccountType
-import com.kirakishou.backend.fixmypc.model.Constant
+import com.kirakishou.backend.fixmypc.core.AccountType
+import com.kirakishou.backend.fixmypc.core.Constant
 
 class LoginResponse(@JsonProperty(Constant.SerializedNames.SESSION_ID)
                     val sessionId: String,

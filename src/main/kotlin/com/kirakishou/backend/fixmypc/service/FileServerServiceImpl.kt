@@ -1,6 +1,10 @@
 package com.kirakishou.backend.fixmypc.service
 
-import com.kirakishou.backend.fixmypc.model.*
+import com.kirakishou.backend.fixmypc.core.Constant
+import com.kirakishou.backend.fixmypc.core.FileServerErrorCode
+import com.kirakishou.backend.fixmypc.model.entity.DistributedImage
+import com.kirakishou.backend.fixmypc.model.entity.FileServerAnswer
+import com.kirakishou.backend.fixmypc.model.entity.FileServerAnswerWrapper
 import io.reactivex.Flowable
 import io.reactivex.Single
 import org.springframework.beans.factory.annotation.Autowired

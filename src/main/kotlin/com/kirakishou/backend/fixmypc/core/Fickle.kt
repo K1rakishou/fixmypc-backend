@@ -1,4 +1,4 @@
-package com.kirakishou.backend.fixmypc.model
+package com.kirakishou.backend.fixmypc.core
 
 class Fickle<out T>(private var value: T? = null) {
 

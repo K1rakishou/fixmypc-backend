@@ -1,4 +1,4 @@
-package com.kirakishou.backend.fixmypc.model
+package com.kirakishou.backend.fixmypc.core
 
 /**
  * Created by kirakishou on 7/16/2017.

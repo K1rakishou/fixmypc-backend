@@ -1,6 +1,6 @@
 package com.kirakishou.backend.fixmypc.service.user
 
-import com.kirakishou.backend.fixmypc.model.AccountType
+import com.kirakishou.backend.fixmypc.core.AccountType
 import com.kirakishou.backend.fixmypc.model.entity.User
 import com.kirakishou.backend.fixmypc.model.repository.UserRepository
 import com.kirakishou.backend.fixmypc.util.TextUtils

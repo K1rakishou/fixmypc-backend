@@ -2,9 +2,9 @@ package com.kirakishou.backend.fixmypc.controller
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.kirakishou.backend.fixmypc.FixmypcApplication
-import com.kirakishou.backend.fixmypc.model.AccountType
-import com.kirakishou.backend.fixmypc.model.Constant
-import com.kirakishou.backend.fixmypc.model.Fickle
+import com.kirakishou.backend.fixmypc.core.AccountType
+import com.kirakishou.backend.fixmypc.core.Constant
+import com.kirakishou.backend.fixmypc.core.Fickle
 import com.kirakishou.backend.fixmypc.model.entity.User
 import com.kirakishou.backend.fixmypc.model.net.request.SignupRequest
 import com.kirakishou.backend.fixmypc.model.repository.UserRepository

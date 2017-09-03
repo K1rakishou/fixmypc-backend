@@ -1,4 +1,4 @@
-package com.kirakishou.backend.fixmypc.model
+package com.kirakishou.backend.fixmypc.core
 
 enum class AccountType(val value: Int) {
     Guest(0),

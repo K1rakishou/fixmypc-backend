@@ -1,7 +1,7 @@
 package com.kirakishou.backend.fixmypc.manager
 
 import com.kirakishou.backend.fixmypc.log.FileLog
-import com.kirakishou.backend.fixmypc.model.FileServerInfo
+import com.kirakishou.backend.fixmypc.model.entity.FileServerInfo
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test

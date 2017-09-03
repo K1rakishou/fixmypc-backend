@@ -1,8 +1,9 @@
 package com.kirakishou.backend.fixmypc.model.repository
 
+import com.kirakishou.backend.fixmypc.core.Either
+import com.kirakishou.backend.fixmypc.core.Fickle
 import com.kirakishou.backend.fixmypc.log.FileLog
-import com.kirakishou.backend.fixmypc.model.Fickle
-import com.kirakishou.backend.fixmypc.model.LatLon
+import com.kirakishou.backend.fixmypc.model.entity.LatLon
 import com.kirakishou.backend.fixmypc.model.entity.Malfunction
 import com.kirakishou.backend.fixmypc.model.repository.hazelcast.MalfunctionStore
 import com.kirakishou.backend.fixmypc.model.repository.ignite.LocationStore
@@ -30,16 +31,19 @@ class MalfunctionRepositoryImpl : MalfunctionRepository {
     private lateinit var log: FileLog
 
     override fun saveOne(malfunction: Malfunction): Boolean {
-        val malfunctionDaoResult = malfunctionDao.saveOne(malfunction)
-        if (malfunctionDaoResult !is MalfunctionDao.Result.Saved) {
-            if (malfunctionDaoResult is MalfunctionDao.Result.DbError) {
-                log.e(malfunctionDaoResult.e)
-                return false
-            }
+        val daoResult = malfunctionDao.saveOne(malfunction)
+        if (daoResult is Either.Error) {
+            log.e(daoResult.error)
+            return false
         }
 
-        val userMalfunctionRepositoryResult = userMalfunctionsRepository.saveOne(malfunction.ownerId, malfunction.id)
-        if (!userMalfunctionRepositoryResult) {
+        val daoResValue = (daoResult as Either.Value).value
+        if (!daoResValue) {
+            return false
+        }
+
+        val repositoryResult = userMalfunctionsRepository.saveOne(malfunction.ownerId, malfunction.id)
+        if (!repositoryResult) {
             //couldn't store in the userMalfunctionsRepository so we need to delete it from DB as well
             malfunctionDao.deleteOnePermanently(malfunction.id)
             return false
@@ -56,15 +60,12 @@ class MalfunctionRepositoryImpl : MalfunctionRepository {
         }
 
         val daoResult = malfunctionDao.findOne(malfunctionId)
-        if (daoResult !is MalfunctionDao.Result.FoundOne) {
-            if (daoResult is MalfunctionDao.Result.DbError) {
-                log.e(daoResult.e)
-            }
-
+        if (daoResult is Either.Error) {
+            log.e(daoResult.error)
             return Fickle.empty()
         }
 
-        return Fickle.of(daoResult.malfunction)
+        return (daoResult as Either.Value).value
     }
 
     override fun findMany(ownerId: Long, offset: Long, count: Long): List<Malfunction> {
@@ -79,16 +80,12 @@ class MalfunctionRepositoryImpl : MalfunctionRepository {
         }
 
         val daoResult = malfunctionDao.findManyActive(ownerId)
-        if (daoResult !is MalfunctionDao.Result.FoundMany) {
-            when (daoResult) {
-                is MalfunctionDao.Result.DbError -> {
-                    log.e(daoResult.e)
-                    return emptyList()
-                }
-            }
+        if (daoResult is Either.Error) {
+            log.e(daoResult.error)
+            return emptyList()
         }
 
-        val malfunctionsFromDb = daoResult.malfunctions
+        val malfunctionsFromDb = (daoResult as Either.Value).value
         val remainder = count - cacheResult.size
 
         val filteredMalfunctionList = malfunctionsFromDb.stream()

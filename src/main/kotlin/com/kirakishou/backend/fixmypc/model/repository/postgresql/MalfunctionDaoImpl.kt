@@ -1,8 +1,10 @@
 package com.kirakishou.backend.fixmypc.model.repository.postgresql
 
+import com.kirakishou.backend.fixmypc.core.Constant
+import com.kirakishou.backend.fixmypc.core.Either
+import com.kirakishou.backend.fixmypc.core.Fickle
 import com.kirakishou.backend.fixmypc.extension.prepareStatementScrollable
 import com.kirakishou.backend.fixmypc.extension.transactional
-import com.kirakishou.backend.fixmypc.model.Constant
 import com.kirakishou.backend.fixmypc.model.entity.Malfunction
 import com.kirakishou.backend.fixmypc.util.TextUtils
 import org.springframework.beans.factory.annotation.Autowired
@@ -18,7 +20,7 @@ class MalfunctionDaoImpl : MalfunctionDao {
     @Autowired
     private lateinit var hikariCP: DataSource
 
-    override fun saveOne(malfunction: Malfunction): MalfunctionDao.Result {
+    override fun saveOne(malfunction: Malfunction): Either<SQLException, Boolean> {
         try {
             hikariCP.connection.transactional { connection ->
                 connection.prepareStatement("INSERT INTO public.malfunctions (owner_id, category, description, " +
@@ -57,14 +59,15 @@ class MalfunctionDaoImpl : MalfunctionDao {
                     ps.executeBatch()
                 }
             }
+
         } catch (e: SQLException) {
-            return MalfunctionDao.Result.DbError(e)
+            return Either.Error(e)
         }
 
-        return MalfunctionDao.Result.Saved()
+        return Either.Value(true)
     }
 
-    override fun findOne(id: Long): MalfunctionDao.Result {
+    override fun findOne(id: Long): Either<SQLException, Fickle<Malfunction>> {
         var malfunction: Malfunction? = null
 
         try {
@@ -95,18 +98,18 @@ class MalfunctionDaoImpl : MalfunctionDao {
                 }
             }
         } catch (e: SQLException) {
-            return MalfunctionDao.Result.DbError(e)
+            return Either.Error(e)
         }
 
         if (malfunction == null) {
-            return MalfunctionDao.Result.NotFound()
+            return Either.Value(Fickle.empty())
         }
 
-        return MalfunctionDao.Result.FoundOne(malfunction!!)
+        return Either.Value(Fickle.of(malfunction))
     }
 
     override fun findPaged(ownerId: Long, isActive: Boolean,
-                           offset: Long, count: Int): MalfunctionDao.Result {
+                           offset: Long, count: Int): Either<SQLException, List<Malfunction>> {
         val malfunctions = arrayListOf<Malfunction>()
 
         try {
@@ -143,38 +146,34 @@ class MalfunctionDaoImpl : MalfunctionDao {
                 }
             }
         } catch (e: SQLException) {
-            return MalfunctionDao.Result.DbError(e)
+            return Either.Error(e)
         }
 
-        if (malfunctions.isEmpty()) {
-            return MalfunctionDao.Result.NotFound()
-        }
-
-        return MalfunctionDao.Result.FoundMany(malfunctions)
+        return Either.Value(malfunctions)
     }
 
-    override fun findManyActive(ownerId: Long): MalfunctionDao.Result {
+    override fun findManyActive(ownerId: Long): Either<SQLException, List<Malfunction>> {
         return getMany(ownerId, true)
     }
 
-    override fun findManyInactive(ownerId: Long): MalfunctionDao.Result {
+    override fun findManyInactive(ownerId: Long): Either<SQLException, List<Malfunction>> {
         return getMany(ownerId, false)
     }
 
-    override fun deleteOne(id: Long): MalfunctionDao.Result {
+    override fun deleteOne(id: Long): Either<SQLException, Boolean> {
         try {
             hikariCP.connection.transactional { connection ->
                 deleteMalfunction(connection, id)
                 deletePhoto(connection, id)
             }
         } catch (e: SQLException) {
-            return MalfunctionDao.Result.DbError(e)
+            return Either.Error(e)
         }
 
-        return MalfunctionDao.Result.Deleted()
+        return Either.Value(true)
     }
 
-    override fun deleteOnePermanently(id: Long): MalfunctionDao.Result {
+    override fun deleteOnePermanently(id: Long): Either<SQLException, Boolean> {
         try {
             hikariCP.connection.use { connection ->
                 connection.prepareStatement("DELETE FROM public.malfunctions WHERE id = ? LIMIT 1").use { ps ->
@@ -183,13 +182,13 @@ class MalfunctionDaoImpl : MalfunctionDao {
                 }
             }
         } catch (e: SQLException) {
-            return MalfunctionDao.Result.DbError(e)
+            return Either.Error(e)
         }
 
-        return MalfunctionDao.Result.Deleted()
+        return Either.Value(true)
     }
 
-    private fun getMany(ownerId: Long, isActive: Boolean): MalfunctionDao.Result {
+    private fun getMany(ownerId: Long, isActive: Boolean): Either<SQLException, List<Malfunction>> {
         val malfunctions = arrayListOf<Malfunction>()
 
         try {
@@ -223,14 +222,10 @@ class MalfunctionDaoImpl : MalfunctionDao {
                 }
             }
         } catch (e: SQLException) {
-            return MalfunctionDao.Result.DbError(e)
+            return Either.Error(e)
         }
 
-        if (malfunctions.isEmpty()) {
-            return MalfunctionDao.Result.NotFound()
-        }
-
-        return MalfunctionDao.Result.FoundMany(malfunctions)
+        return Either.Value(malfunctions)
     }
 
     private fun getImagesByMalfunctionId(connection: Connection, malfunctions: ArrayList<Malfunction>,

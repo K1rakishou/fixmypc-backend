@@ -1,7 +1,7 @@
 package com.kirakishou.backend.fixmypc.manager
 
-import com.kirakishou.backend.fixmypc.model.Fickle
-import com.kirakishou.backend.fixmypc.model.FileServerInfo
+import com.kirakishou.backend.fixmypc.core.Fickle
+import com.kirakishou.backend.fixmypc.model.entity.FileServerInfo
 
 interface FileServersManager {
     fun init(servers: List<FileServerInfo>, serverPingIntervalMsecs: Long)

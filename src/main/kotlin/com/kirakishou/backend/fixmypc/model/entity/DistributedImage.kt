@@ -1,6 +1,7 @@
-package com.kirakishou.backend.fixmypc.model
+package com.kirakishou.backend.fixmypc.model.entity
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.kirakishou.backend.fixmypc.core.Constant
 
 data class DistributedImage(@JsonProperty(Constant.SerializedNames.IMAGE_ORIGINAL_NAME) val imageOrigName: String,
                             @JsonProperty(Constant.SerializedNames.IMAGE_TYPE) val imageType: Int,

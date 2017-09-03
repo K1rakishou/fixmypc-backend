@@ -1,9 +1,13 @@
 package com.kirakishou.backend.fixmypc.service.malfunction
 
+import com.kirakishou.backend.fixmypc.core.Constant
+import com.kirakishou.backend.fixmypc.core.FileServerErrorCode
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.manager.FileServersManager
 import com.kirakishou.backend.fixmypc.manager.FileServersManagerImpl
-import com.kirakishou.backend.fixmypc.model.*
+import com.kirakishou.backend.fixmypc.model.entity.FileServerAnswer
+import com.kirakishou.backend.fixmypc.model.entity.FileServerAnswerWrapper
+import com.kirakishou.backend.fixmypc.model.entity.FileServerInfo
 import com.kirakishou.backend.fixmypc.model.entity.Malfunction
 import com.kirakishou.backend.fixmypc.model.net.request.MalfunctionCreateRequest
 import com.kirakishou.backend.fixmypc.model.repository.MalfunctionRepository

@@ -1,6 +1,6 @@
 package com.kirakishou.backend.fixmypc.service.user
 
-import com.kirakishou.backend.fixmypc.model.AccountType
+import com.kirakishou.backend.fixmypc.core.AccountType
 
 /**
  * Created by kirakishou on 7/15/2017.

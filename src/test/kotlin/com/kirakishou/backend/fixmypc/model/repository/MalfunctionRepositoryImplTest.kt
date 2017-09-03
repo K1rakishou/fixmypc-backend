@@ -1,8 +1,9 @@
 package com.kirakishou.backend.fixmypc.model.repository
 
 import com.kirakishou.backend.fixmypc.TestUtils
+import com.kirakishou.backend.fixmypc.core.Either
+import com.kirakishou.backend.fixmypc.core.Fickle
 import com.kirakishou.backend.fixmypc.log.FileLog
-import com.kirakishou.backend.fixmypc.model.Fickle
 import com.kirakishou.backend.fixmypc.model.entity.Malfunction
 import com.kirakishou.backend.fixmypc.model.repository.hazelcast.MalfunctionStore
 import com.kirakishou.backend.fixmypc.model.repository.ignite.LocationStore
@@ -43,7 +44,7 @@ class MalfunctionRepositoryImplTest {
 
     @Test
     fun testSaveOne_ShouldSaveMalfunctionIntoDbAndCache() {
-        Mockito.`when`(malfunctionDao.saveOne(TestUtils.anyObject())).thenReturn(MalfunctionDao.Result.Saved())
+        Mockito.`when`(malfunctionDao.saveOne(TestUtils.anyObject())).thenReturn(Either.Value(true))
         Mockito.`when`(userMalfunctionsRepository.saveOne(Mockito.anyLong(), Mockito.anyLong())).thenReturn(true)
 
         val result = repository.saveOne(Malfunction())
@@ -53,7 +54,7 @@ class MalfunctionRepositoryImplTest {
 
     @Test
     fun testSaveOne_ShouldNotSaveMalfunctionIfDbThrewError() {
-        Mockito.`when`(malfunctionDao.saveOne(TestUtils.anyObject())).thenReturn(MalfunctionDao.Result.DbError(SQLException()))
+        Mockito.`when`(malfunctionDao.saveOne(TestUtils.anyObject())).thenReturn(Either.Error(SQLException()))
 
         val result = repository.saveOne(Malfunction())
 
@@ -62,7 +63,7 @@ class MalfunctionRepositoryImplTest {
 
     @Test
     fun testSaveOne_ShouldRemoveFromDbIfCouldNotSaveToCache() {
-        Mockito.`when`(malfunctionDao.saveOne(TestUtils.anyObject())).thenReturn(MalfunctionDao.Result.Saved())
+        Mockito.`when`(malfunctionDao.saveOne(TestUtils.anyObject())).thenReturn(Either.Value(true))
         Mockito.`when`(userMalfunctionsRepository.saveOne(Mockito.anyLong(), Mockito.anyLong())).thenReturn(false)
 
         val result = repository.saveOne(Malfunction())
@@ -84,7 +85,7 @@ class MalfunctionRepositoryImplTest {
     @Test
     fun testFindOne_ShouldReturnMalfunctionFromDbIfItIsNotInCache() {
         Mockito.`when`(malfunctionStore.findOne(Mockito.anyLong())).thenReturn(Fickle.empty())
-        Mockito.`when`(malfunctionDao.findOne(Mockito.anyLong())).thenReturn(MalfunctionDao.Result.FoundOne(Malfunction(1)))
+        Mockito.`when`(malfunctionDao.findOne(Mockito.anyLong())).thenReturn(Either.Value(Fickle.of(Malfunction(1))))
 
         val result = repository.findOne(1)
 
@@ -95,7 +96,7 @@ class MalfunctionRepositoryImplTest {
     @Test
     fun testFindOne_ShouldReturnEmptyIfMalfunctionIsNotInCacheOrDb() {
         Mockito.`when`(malfunctionStore.findOne(Mockito.anyLong())).thenReturn(Fickle.empty())
-        Mockito.`when`(malfunctionDao.findOne(Mockito.anyLong())).thenReturn(MalfunctionDao.Result.NotFound())
+        Mockito.`when`(malfunctionDao.findOne(Mockito.anyLong())).thenReturn(Either.Value(Fickle.empty()))
 
         val result = repository.findOne(1)
 
@@ -105,7 +106,7 @@ class MalfunctionRepositoryImplTest {
     @Test
     fun testFindOne_ShouldReturnEmptyIfDbThrewError() {
         Mockito.`when`(malfunctionStore.findOne(Mockito.anyLong())).thenReturn(Fickle.empty())
-        Mockito.`when`(malfunctionDao.findOne(Mockito.anyLong())).thenReturn(MalfunctionDao.Result.DbError(SQLException()))
+        Mockito.`when`(malfunctionDao.findOne(Mockito.anyLong())).thenReturn(Either.Error(SQLException()))
 
         val result = repository.findOne(1)
 
@@ -158,7 +159,7 @@ class MalfunctionRepositoryImplTest {
         Mockito.`when`(malfunctionStore.findMany(firstPageIds)).thenReturn(firstPageMalfunctionsFromCache)
         Mockito.`when`(malfunctionStore.findMany(secondPageIds)).thenReturn(secondPageMalfunctionsFromCache)
         Mockito.`when`(malfunctionStore.findMany(thirdPageIds)).thenReturn(thirdPageMalfunctionsFromCache)
-        Mockito.`when`(malfunctionDao.findManyActive(0)).thenReturn(MalfunctionDao.Result.FoundMany(allUserMalfunctions))
+        Mockito.`when`(malfunctionDao.findManyActive(0)).thenReturn(Either.Value(allUserMalfunctions))
 
         val result = repository.findMany(0, 0, 5)
         assertEquals(5, result.size)

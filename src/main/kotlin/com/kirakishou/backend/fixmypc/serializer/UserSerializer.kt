@@ -3,8 +3,8 @@ package com.kirakishou.backend.fixmypc.serializer
 import com.hazelcast.nio.ObjectDataInput
 import com.hazelcast.nio.ObjectDataOutput
 import com.hazelcast.nio.serialization.StreamSerializer
-import com.kirakishou.backend.fixmypc.model.AccountType
-import com.kirakishou.backend.fixmypc.model.Constant
+import com.kirakishou.backend.fixmypc.core.AccountType
+import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.model.entity.User
 import java.sql.Timestamp
 

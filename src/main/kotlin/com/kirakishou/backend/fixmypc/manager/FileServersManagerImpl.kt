@@ -3,8 +3,8 @@ package com.kirakishou.backend.fixmypc.manager
 import com.kirakishou.backend.fixmypc.extension.lockRead
 import com.kirakishou.backend.fixmypc.extension.lockReadReturn
 import com.kirakishou.backend.fixmypc.log.FileLog
-import com.kirakishou.backend.fixmypc.model.Fickle
-import com.kirakishou.backend.fixmypc.model.FileServerInfo
+import com.kirakishou.backend.fixmypc.core.Fickle
+import com.kirakishou.backend.fixmypc.model.entity.FileServerInfo
 import com.kirakishou.backend.fixmypc.util.ServerUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component

@@ -1,4 +1,4 @@
-package com.kirakishou.backend.fixmypc.model
+package com.kirakishou.backend.fixmypc.model.entity
 
 data class FileServerInfo(val host: String,
                           var isWorking: Boolean = true,

@@ -1,7 +1,7 @@
 package com.kirakishou.backend.fixmypc.util
 
-import com.kirakishou.backend.fixmypc.model.Constant
-import com.kirakishou.backend.fixmypc.model.ExtractedImageInfo
+import com.kirakishou.backend.fixmypc.core.Constant
+import com.kirakishou.backend.fixmypc.model.entity.ExtractedImageInfo
 
 /**
  * Created by kirakishou on 7/16/2017.

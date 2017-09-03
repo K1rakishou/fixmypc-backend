@@ -1,7 +1,7 @@
 package com.kirakishou.backend.fixmypc.model.repository.ignite
 
-import com.kirakishou.backend.fixmypc.model.Constant
-import com.kirakishou.backend.fixmypc.model.LatLon
+import com.kirakishou.backend.fixmypc.core.Constant
+import com.kirakishou.backend.fixmypc.model.entity.LatLon
 import com.vividsolutions.jts.geom.Geometry
 import com.vividsolutions.jts.io.WKTReader
 import org.apache.ignite.Ignite

@@ -1,6 +1,6 @@
 package com.kirakishou.backend.fixmypc.model.entity
 
-import com.kirakishou.backend.fixmypc.model.AccountType
+import com.kirakishou.backend.fixmypc.core.AccountType
 import java.io.Serializable
 import java.sql.Timestamp
 

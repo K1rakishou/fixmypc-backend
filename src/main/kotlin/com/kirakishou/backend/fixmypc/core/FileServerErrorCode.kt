@@ -1,4 +1,4 @@
-package com.kirakishou.backend.fixmypc.model
+package com.kirakishou.backend.fixmypc.core
 
 enum class FileServerErrorCode(val value: Int) {
     OK(0),
