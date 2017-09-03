@@ -133,7 +133,9 @@ class MalfunctionStoreImplTest {
 
         val result = store.findMany(listOf(1, 13, 2, 5, 6, 4, 3))
 
-        println(result)
+        assertEquals(7, result.size)
+        assertEquals(1, result.first().id)
+        assertEquals(13, result.last().id)
     }
 
     @Test

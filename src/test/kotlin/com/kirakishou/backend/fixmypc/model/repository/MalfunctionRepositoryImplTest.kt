@@ -176,6 +176,11 @@ class MalfunctionRepositoryImplTest {
         assertEquals(10, result3[0].id)
         assertEquals(14, result3[4].id)
     }
+
+    @Test
+    fun testFindMany_Reversed() {
+
+    }
 }
 
 
