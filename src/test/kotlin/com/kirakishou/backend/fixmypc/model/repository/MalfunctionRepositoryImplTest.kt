@@ -178,8 +178,44 @@ class MalfunctionRepositoryImplTest {
     }
 
     @Test
-    fun testFindMany_Reversed() {
+    fun testFindMany_WithIdsCachedAtRandom() {
+        val malfunctionIdList = listOf<Long>(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14)
+        val allUserMalfunctions = listOf(Malfunction(0), Malfunction(1), Malfunction(2), Malfunction(3), Malfunction(4),
+                Malfunction(5), Malfunction(6), Malfunction(7), Malfunction(8), Malfunction(9),
+                Malfunction(10), Malfunction(11), Malfunction(12), Malfunction(13), Malfunction(14))
 
+        val firstPageIds = malfunctionIdList.subList(0, 5)
+        val secondPageIds = malfunctionIdList.subList(5, 10)
+        val thirdPageIds = malfunctionIdList.subList(10, 15)
+
+        val firstPageMalfunctionsFromCache = listOf(Malfunction(1), Malfunction(3), Malfunction(4)) //0..4
+        val secondPageMalfunctionsFromCache = listOf(Malfunction(6), Malfunction(8))                //5..10
+        val thirdPageMalfunctionsFromCache = listOf(Malfunction(12), Malfunction(14))               //10..15
+
+        Mockito.`when`(userMalfunctionsRepository.findMany(Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong()))
+                .thenReturn(firstPageIds)
+                .thenReturn(secondPageIds)
+                .thenReturn(thirdPageIds)
+
+        Mockito.`when`(malfunctionStore.findMany(firstPageIds)).thenReturn(firstPageMalfunctionsFromCache)
+        Mockito.`when`(malfunctionStore.findMany(secondPageIds)).thenReturn(secondPageMalfunctionsFromCache)
+        Mockito.`when`(malfunctionStore.findMany(thirdPageIds)).thenReturn(thirdPageMalfunctionsFromCache)
+        Mockito.`when`(malfunctionDao.findManyActive(0)).thenReturn(Either.Value(allUserMalfunctions))
+
+        val result = repository.findMany(0, 0, 5)
+        assertEquals(5, result.size)
+        assertEquals(0, result[0].id)
+        assertEquals(4, result[4].id)
+
+        val result2 = repository.findMany(0, 5, 5)
+        assertEquals(5, result2.size)
+        assertEquals(5, result2[0].id)
+        assertEquals(9, result2[4].id)
+
+        val result3 = repository.findMany(0, 10, 5)
+        assertEquals(5, result3.size)
+        assertEquals(10, result3[0].id)
+        assertEquals(14, result3[4].id)
     }
 }
 

@@ -74,8 +74,9 @@ class MalfunctionRepositoryImpl : MalfunctionRepository {
         }
 
         val cacheResult = malfunctionStore.findMany(malfunctionIdList)
+
         if (cacheResult.size == count.toInt()) {
-            return cacheResult
+            return sort(cacheResult)
         }
 
         val daoResult = malfunctionDao.findManyActive(ownerId)
@@ -94,13 +95,13 @@ class MalfunctionRepositoryImpl : MalfunctionRepository {
                 .collect(Collectors.toList())
 
         if (filteredMalfunctionList.isEmpty()) {
-            return cacheResult
+            return sort(cacheResult)
         }
 
         malfunctionStore.saveMany(filteredMalfunctionList)
         filteredMalfunctionList.addAll(0, cacheResult)
 
-        return filteredMalfunctionList
+        return sort(filteredMalfunctionList)
     }
 
     override fun deleteOne(ownerId: Long, malfunctionId: Long): Boolean {
@@ -123,6 +124,22 @@ class MalfunctionRepositoryImpl : MalfunctionRepository {
         }
 
         return false
+    }
+
+    private fun sort(malfunctionList: List<Malfunction>): List<Malfunction> {
+        return malfunctionList.stream()
+                .sorted { mf1, mf2 -> comparator(mf1, mf2) }
+                .collect(Collectors.toList())
+    }
+
+    private fun comparator(mf1: Malfunction, mf2: Malfunction): Int {
+        if (mf1.id < mf2.id) {
+            return -1
+        } else if (mf1.id > mf2.id) {
+            return 1
+        }
+
+        return 0
     }
 
     private fun contains(id: Long, malfunctionsList: List<Malfunction>): Boolean {
