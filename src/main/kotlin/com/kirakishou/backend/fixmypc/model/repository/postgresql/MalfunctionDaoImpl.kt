@@ -101,10 +101,6 @@ class MalfunctionDaoImpl : MalfunctionDao {
             return Either.Error(e)
         }
 
-        if (malfunction == null) {
-            return Either.Value(Fickle.empty())
-        }
-
         return Either.Value(Fickle.of(malfunction))
     }
 

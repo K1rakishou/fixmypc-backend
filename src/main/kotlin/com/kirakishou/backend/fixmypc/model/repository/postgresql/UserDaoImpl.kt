@@ -1,8 +1,10 @@
 package com.kirakishou.backend.fixmypc.model.repository.postgresql
 
+import com.kirakishou.backend.fixmypc.core.AccountType
+import com.kirakishou.backend.fixmypc.core.Either
+import com.kirakishou.backend.fixmypc.core.Fickle
 import com.kirakishou.backend.fixmypc.extension.prepareStatementScrollable
 import com.kirakishou.backend.fixmypc.extension.transactional
-import com.kirakishou.backend.fixmypc.core.AccountType
 import com.kirakishou.backend.fixmypc.model.entity.User
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Repository
@@ -19,7 +21,26 @@ class UserDaoImpl : UserDao {
     @Autowired
     private lateinit var hikariCP: DataSource
 
-    override fun findOne(login: String): UserDao.Result {
+    override fun saveOne(user: User): Either<SQLException, Boolean> {
+        try {
+            hikariCP.connection.transactional { connection ->
+                connection.prepareStatement("INSERT INTO public.users (login, password, account_type, created_on, deleted_on) " +
+                        "VALUES (?, ?, ?, NOW(), NULL)").use { ps ->
+
+                    ps.setString(1, user.login)
+                    ps.setString(2, user.password)
+                    ps.setInt(3, user.accountType.value)
+                    ps.executeUpdate()
+                }
+            }
+        } catch (e: SQLException) {
+            return Either.Error(e)
+        }
+
+        return Either.Value(true)
+    }
+
+    override fun findOne(login: String): Either<SQLException, Fickle<User>> {
         var user: User? = null
 
         try {
@@ -39,37 +60,14 @@ class UserDaoImpl : UserDao {
                 }
             }
         } catch (e: SQLException) {
-            return UserDao.Result.DbError(e)
+            return Either.Error(e)
         }
 
-        if (user == null) {
-            return UserDao.Result.NotFound()
-        }
-
-        return UserDao.Result.Found(user!!)
-    }
-
-    override fun saveOne(user: User): UserDao.Result {
-        try {
-            hikariCP.connection.transactional { connection ->
-                connection.prepareStatement("INSERT INTO public.users (login, password, account_type, created_on, deleted_on) " +
-                        "VALUES (?, ?, ?, NOW(), NULL)").use { ps ->
-
-                    ps.setString(1, user.login)
-                    ps.setString(2, user.password)
-                    ps.setInt(3, user.accountType.value)
-                    ps.executeUpdate()
-                }
-            }
-        } catch (e: SQLException) {
-            return UserDao.Result.DbError(e)
-        }
-
-        return UserDao.Result.Saved()
+        return Either.Value(Fickle.of(user))
     }
 
     //for tests only!!!
-    override fun deleteOne(login: String): UserDao.Result {
+    override fun deleteOne(login: String): Either<SQLException, Boolean> {
         try {
             hikariCP.connection.use { connection ->
                 connection.prepareStatement("DELETE FROM public.users WHERE login = ?").use { ps ->
@@ -78,9 +76,9 @@ class UserDaoImpl : UserDao {
                 }
             }
         } catch (e: SQLException) {
-            return UserDao.Result.DbError(e)
+            return Either.Error(e)
         }
 
-        return UserDao.Result.Deleted()
+        return Either.Value(true)
     }
 }
