@@ -35,7 +35,7 @@ class LoginController {
 
                     when (result) {
                         is LoginService.Result.Ok -> {
-                            return@map ResponseEntity(LoginResponse(result.sessionId, AccountType.Client.value,
+                            return@map ResponseEntity(LoginResponse(result.sessionId, result.accountType.value,
                                     ServerErrorCode.SEC_OK.value), HttpStatus.OK)
                         }
 

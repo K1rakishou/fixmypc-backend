@@ -42,7 +42,7 @@ object Constant {
 
     //in seconds
     object HazelcastTTL {
-        val USER_ENTRY_TTL = 15
+        val USER_ENTRY_TTL = 1500
         val MALFUNCTION_ENTRY_TTL = 14400
         val USER_MALFUNCTION_ENTRY_TTL = 0
     }

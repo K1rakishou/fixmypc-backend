@@ -101,6 +101,42 @@ class MalfunctionStoreImplTest {
     }
 
     @Test
+    fun testFindMany() {
+        store.clear()
+
+        store.saveMany(listOf(
+                Malfunction(13, 0, createdOn = Timestamp(Date().time)),
+                Malfunction(14, 0, createdOn = Timestamp(Date().time)),
+                Malfunction(15, 0, createdOn = Timestamp(Date().time)),
+                Malfunction(16, 0, createdOn = Timestamp(Date().time))))
+
+        store.saveMany(listOf(
+                Malfunction(9, 0, createdOn = Timestamp(Date().time)),
+                Malfunction(10, 0, createdOn = Timestamp(Date().time)),
+                Malfunction(11, 0, createdOn = Timestamp(Date().time)),
+                Malfunction(12, 0, createdOn = Timestamp(Date().time))))
+
+        store.saveMany(listOf(
+                Malfunction(7, 0, createdOn = Timestamp(Date().time)),
+                Malfunction(7, 0, createdOn = Timestamp(Date().time)),
+                Malfunction(8, 0, createdOn = Timestamp(Date().time))))
+
+        store.saveMany(listOf(Malfunction(6, 0, createdOn = Timestamp(Date().time))))
+
+        store.saveMany(listOf(
+                Malfunction(1, 0, createdOn = Timestamp(Date().time)),
+                Malfunction(2, 0, createdOn = Timestamp(Date().time)),
+                Malfunction(3, 0, createdOn = Timestamp(Date().time)),
+                Malfunction(4, 0, createdOn = Timestamp(Date().time)),
+                Malfunction(5, 0, createdOn = Timestamp(Date().time))))
+
+
+        val result = store.findMany(listOf(1, 13, 2, 5, 6, 4, 3))
+
+        println(result)
+    }
+
+    @Test
     fun testDeleteOne() {
         store.clear()
         val malfunction = Malfunction(0, 0, true, "436erydfyu", 0, "test description", 55.6, 44.2, Timestamp(Date().time), arrayListOf())

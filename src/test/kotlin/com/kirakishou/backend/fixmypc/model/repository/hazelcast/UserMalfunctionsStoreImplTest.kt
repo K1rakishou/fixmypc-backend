@@ -96,6 +96,28 @@ class UserMalfunctionsStoreImplTest {
     }
 
     @Test
+    fun testFindMany2() {
+        store.clear()
+
+        store.saveMany(0, listOf(12, 13, 14, 15, 16))
+        store.saveMany(0, listOf(7, 8, 9, 10, 11))
+        store.saveMany(0, listOf(4, 5, 6))
+        store.saveMany(0, listOf(1, 2, 3))
+
+        val firstFive = store.findMany(0, 0, 5)
+        assertEquals(5, firstFive.size)
+        assertEquals(1, firstFive[0])
+
+        val secondFive = store.findMany(0, 5, 5)
+        assertEquals(5, secondFive.size)
+        assertEquals(6, secondFive[0])
+
+        val thirdSix = store.findMany(0, 10, 6)
+        assertEquals(6, thirdSix.size)
+        assertEquals(11, thirdSix[0])
+    }
+
+    @Test
     fun testFindAll() {
         store.clear()
 

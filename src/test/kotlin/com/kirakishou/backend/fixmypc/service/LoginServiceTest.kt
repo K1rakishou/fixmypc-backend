@@ -48,7 +48,7 @@ class LoginServiceTest {
     @Test
     fun shouldLoginIfCredentialsAreGood() {
         val status = service.doLogin(GOOD_LOGIN, GOOD_PASSWORD)
-        assertEquals(LoginService.Result.Ok(GOOD_SESSION_ID), status)
+        assertEquals(LoginService.Result.Ok(GOOD_SESSION_ID, AccountType.Guest), status)
     }
 
     private val BAD_LOGIN: String = "badlogin@gmail.com"

@@ -75,7 +75,7 @@ class LoginControllerTest {
                 .webAppContextSetup(webApplicationContext)
                 .build()
 
-        Mockito.`when`(service.doLogin(GOOD_LOGIN, GOOD_PASSWORD)).thenReturn(LoginService.Result.Ok(SESSION_ID))
+        Mockito.`when`(service.doLogin(GOOD_LOGIN, GOOD_PASSWORD)).thenReturn(LoginService.Result.Ok(SESSION_ID, AccountType.Guest))
         Mockito.`when`(service.doLogin(BAD_LOGIN, BAD_PASSWORD)).thenReturn(LoginService.Result.WrongLoginOrPassword(BAD_LOGIN))
         Mockito.`when`(userRepository.findOne(Mockito.anyString())).thenReturn(Fickle.empty())
         Mockito.`when`(generator.generateSessionId()).thenReturn(SESSION_ID)

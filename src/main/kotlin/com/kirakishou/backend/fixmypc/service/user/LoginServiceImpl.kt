@@ -19,21 +19,21 @@ class LoginServiceImpl: LoginService {
     lateinit var generator: Generator
 
     override fun doLogin(login: String, password: String): LoginService.Result {
-        val newUserFickle = userRepository.findOne(login)
-        if (!newUserFickle.isPresent()) {
+        val userFickle = userRepository.findOne(login)
+        if (!userFickle.isPresent()) {
             return LoginService.Result.WrongLoginOrPassword(login)
         }
 
-        val newUser = newUserFickle.get()
-        if (newUser.password != password) {
+        val user = userFickle.get()
+        if (user.password != password) {
             return LoginService.Result.WrongLoginOrPassword(login)
         }
 
         val sessionId = generator.generateSessionId()
 
-        newUser.sessionId = sessionId
-        userRepository.saveOneToStore(sessionId, newUser)
+        user.sessionId = sessionId
+        userRepository.saveOneToStore(sessionId, user)
 
-        return LoginService.Result.Ok(sessionId)
+        return LoginService.Result.Ok(sessionId, user.accountType)
     }
 }

@@ -37,8 +37,7 @@ class MalfunctionStoreImpl : MalfunctionStore {
     }
 
     override fun findOne(malfunctionId: Long): Fickle<Malfunction> {
-        val malfunction = malfunctionStore[malfunctionId] ?: return Fickle.empty()
-        return Fickle.of(malfunction)
+        return Fickle.of(malfunctionStore[malfunctionId])
     }
 
     override fun findMany(malfunctionIdList: List<Long>): List<Malfunction> {
