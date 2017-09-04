@@ -9,6 +9,7 @@ import com.hazelcast.core.IMap
 import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.model.entity.Malfunction
 import com.kirakishou.backend.fixmypc.model.entity.User
+import com.kirakishou.backend.fixmypc.model.repository.ignite.MalfunctionStoreImpl
 import com.kirakishou.backend.fixmypc.serializer.MalfunctionSerializer
 import com.kirakishou.backend.fixmypc.serializer.UserSerializer
 import org.junit.After
@@ -52,14 +53,8 @@ class MalfunctionStoreImplTest {
         malfunctionCacheConfig.backupCount = 1
         malfunctionCacheConfig.asyncBackupCount = 0
 
-        val userMalfunctionStoreConfig = MapConfig(Constant.HazelcastNames.USER_MALFUNCTION_KEY)
-        malfunctionCacheConfig.timeToLiveSeconds = Constant.HazelcastTTL.USER_MALFUNCTION_ENTRY_TTL
-        malfunctionCacheConfig.backupCount = 2
-        malfunctionCacheConfig.asyncBackupCount = 0
-
         instance.config.mapConfigs.put(Constant.HazelcastNames.USER_CACHE_KEY, userCacheConfig)
         instance.config.mapConfigs.put(Constant.HazelcastNames.MALFUNCTION_CACHE_KEY, malfunctionCacheConfig)
-        instance.config.mapConfigs.put(Constant.HazelcastNames.USER_MALFUNCTION_KEY, userMalfunctionStoreConfig)
 
         return instance
     }

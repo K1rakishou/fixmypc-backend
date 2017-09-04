@@ -6,9 +6,9 @@ import com.hazelcast.config.MapConfig
 import com.hazelcast.config.SerializerConfig
 import com.hazelcast.core.Hazelcast
 import com.hazelcast.core.HazelcastInstance
+import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.log.FileLogImpl
-import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.model.entity.Malfunction
 import com.kirakishou.backend.fixmypc.model.entity.User
 import com.kirakishou.backend.fixmypc.serializer.MalfunctionSerializer
@@ -66,14 +66,8 @@ class AppConfig {
         malfunctionCacheConfig.backupCount = 1
         malfunctionCacheConfig.asyncBackupCount = 0
 
-        val userMalfunctionStoreConfig = MapConfig(Constant.HazelcastNames.USER_MALFUNCTION_KEY)
-        malfunctionCacheConfig.timeToLiveSeconds = Constant.HazelcastTTL.USER_MALFUNCTION_ENTRY_TTL
-        malfunctionCacheConfig.backupCount = 2
-        malfunctionCacheConfig.asyncBackupCount = 0
-
         instance.config.mapConfigs.put(Constant.HazelcastNames.USER_CACHE_KEY, userCacheConfig)
         instance.config.mapConfigs.put(Constant.HazelcastNames.MALFUNCTION_CACHE_KEY, malfunctionCacheConfig)
-        instance.config.mapConfigs.put(Constant.HazelcastNames.USER_MALFUNCTION_KEY, userMalfunctionStoreConfig)
 
         return instance
     }
@@ -90,6 +84,7 @@ class AppConfig {
         igniteConfiguration.discoverySpi = discoSpi
         igniteConfiguration.deploymentMode = DeploymentMode.SHARED
 
+        Ignition.setClientMode(true)
         return Ignition.start()
     }
 

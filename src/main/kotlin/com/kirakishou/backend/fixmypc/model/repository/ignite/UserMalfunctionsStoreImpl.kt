@@ -28,7 +28,7 @@ class UserMalfunctionsStoreImpl : UserMalfunctionsStore {
     fun init() {
         val cacheConfig = CacheConfiguration<Long, SortedSet<Long>>()
         cacheConfig.backups = 0
-        cacheConfig.name = Constant.HazelcastNames.USER_MALFUNCTION_KEY
+        cacheConfig.name = Constant.IgniteNames.USER_MALFUNCTION_KEY
         cacheConfig.cacheMode = CacheMode.PARTITIONED
         cacheConfig.atomicityMode = CacheAtomicityMode.TRANSACTIONAL
         cacheConfig.setExpiryPolicyFactory(MyExpiryPolicyFactory(Duration.ONE_MINUTE, Duration.ONE_MINUTE, Duration.ONE_MINUTE))

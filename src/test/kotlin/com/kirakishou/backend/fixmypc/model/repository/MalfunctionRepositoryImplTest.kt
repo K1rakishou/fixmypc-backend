@@ -5,7 +5,7 @@ import com.kirakishou.backend.fixmypc.core.Either
 import com.kirakishou.backend.fixmypc.core.Fickle
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.entity.Malfunction
-import com.kirakishou.backend.fixmypc.model.repository.hazelcast.MalfunctionStore
+import com.kirakishou.backend.fixmypc.model.repository.ignite.MalfunctionStore
 import com.kirakishou.backend.fixmypc.model.repository.ignite.LocationStore
 import com.kirakishou.backend.fixmypc.model.repository.postgresql.MalfunctionDao
 import org.junit.Assert.assertEquals

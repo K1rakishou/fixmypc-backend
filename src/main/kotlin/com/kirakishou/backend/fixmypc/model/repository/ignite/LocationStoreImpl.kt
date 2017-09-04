@@ -25,7 +25,7 @@ class LocationStoreImpl : LocationStore {
     @PostConstruct
     fun init() {
         val cacheConfig = CacheConfiguration<Long, MapLocation>()
-        cacheConfig.backups = 3
+        cacheConfig.backups = 0
         cacheConfig.name = Constant.IgniteNames.LOCATION_STORE_NAME
         cacheConfig.cacheMode = CacheMode.PARTITIONED
 

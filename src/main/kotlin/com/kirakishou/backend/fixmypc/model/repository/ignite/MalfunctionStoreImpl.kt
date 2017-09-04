@@ -1,10 +1,12 @@
-package com.kirakishou.backend.fixmypc.model.repository.hazelcast
+package com.kirakishou.backend.fixmypc.model.repository.ignite
 
-import com.hazelcast.core.HazelcastInstance
-import com.hazelcast.core.IMap
 import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.core.Fickle
 import com.kirakishou.backend.fixmypc.model.entity.Malfunction
+import org.apache.ignite.Ignite
+import org.apache.ignite.IgniteCache
+import org.apache.ignite.cache.CacheMode
+import org.apache.ignite.configuration.CacheConfiguration
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import javax.annotation.PostConstruct
@@ -13,13 +15,18 @@ import javax.annotation.PostConstruct
 class MalfunctionStoreImpl : MalfunctionStore {
 
     @Autowired
-    private lateinit var hazelcast: HazelcastInstance
+    lateinit var ignite: Ignite
 
-    private lateinit var malfunctionStore: IMap<Long, Malfunction>
+    lateinit var malfunctionStore: IgniteCache<Long, Malfunction>
 
     @PostConstruct
     fun init() {
-        malfunctionStore = hazelcast.getMap<Long, Malfunction>(Constant.HazelcastNames.MALFUNCTION_CACHE_KEY)
+        val cacheConfig = CacheConfiguration<Long, Malfunction>()
+        cacheConfig.backups = 0
+        cacheConfig.name = Constant.IgniteNames.LOCATION_STORE_NAME
+        cacheConfig.cacheMode = CacheMode.PARTITIONED
+
+        malfunctionStore = ignite.createCache(cacheConfig)
     }
 
     override fun saveOne(malfunction: Malfunction) {
@@ -50,9 +57,7 @@ class MalfunctionStoreImpl : MalfunctionStore {
     }
 
     override fun deleteMany(malfunctionIdList: List<Long>) {
-        malfunctionIdList.forEach {
-            malfunctionStore.remove(it)
-        }
+        malfunctionStore.removeAll(malfunctionIdList.toSet())
     }
 
     override fun clear() {
