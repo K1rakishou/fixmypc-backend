@@ -8,7 +8,7 @@ import com.kirakishou.backend.fixmypc.manager.FileServersManagerImpl
 import com.kirakishou.backend.fixmypc.model.entity.FileServerAnswer
 import com.kirakishou.backend.fixmypc.model.entity.FileServerAnswerWrapper
 import com.kirakishou.backend.fixmypc.model.entity.FileServerInfo
-import com.kirakishou.backend.fixmypc.model.entity.Malfunction
+import com.kirakishou.backend.fixmypc.model.entity.DamageClaim
 import com.kirakishou.backend.fixmypc.model.net.request.MalfunctionCreateRequest
 import com.kirakishou.backend.fixmypc.model.repository.MalfunctionRepository
 import com.kirakishou.backend.fixmypc.model.repository.ignite.UserStore
@@ -165,14 +165,14 @@ class CreateMalfunctionRequestServiceImpl : CreateMalfunctionRequestService {
                     .map { it }
                     .collect(Collectors.toList())
 
-            val malfunction = Malfunction(
+            val malfunction = DamageClaim(
                     ownerId = ownerId,
                     category = request.category,
                     description = request.description,
                     lat = request.lat,
                     lon = request.lon,
                     isActive = true,
-                    malfunctionRequestId = malfunctionRequestId,
+                    damageClaimRequestId = malfunctionRequestId,
                     createdOn = Timestamp(ServerUtils.getTimeFast()),
                     imageNamesList = imageNamesList)
 

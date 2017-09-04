@@ -5,7 +5,7 @@ import com.kirakishou.backend.fixmypc.core.Either
 import com.kirakishou.backend.fixmypc.core.Fickle
 import com.kirakishou.backend.fixmypc.extension.prepareStatementScrollable
 import com.kirakishou.backend.fixmypc.extension.transactional
-import com.kirakishou.backend.fixmypc.model.entity.Malfunction
+import com.kirakishou.backend.fixmypc.model.entity.DamageClaim
 import com.kirakishou.backend.fixmypc.util.TextUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Repository
@@ -20,26 +20,26 @@ class MalfunctionDaoImpl : MalfunctionDao {
     @Autowired
     private lateinit var hikariCP: DataSource
 
-    override fun saveOne(malfunction: Malfunction): Either<SQLException, Boolean> {
+    override fun saveOne(damageClaim: DamageClaim): Either<SQLException, Boolean> {
         try {
             hikariCP.connection.transactional { connection ->
-                connection.prepareStatement("INSERT INTO public.malfunctions (owner_id, category, description, " +
+                connection.prepareStatement("INSERT INTO public.damageClaims (owner_id, category, description, " +
                         "malfunction_request_id, lat, lon, is_active, created_on, deleted_on) " +
                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL)", Statement.RETURN_GENERATED_KEYS).use { ps ->
 
-                    ps.setLong(1, malfunction.ownerId)
-                    ps.setInt(2, malfunction.category)
-                    ps.setString(3, malfunction.description)
-                    ps.setString(4, malfunction.malfunctionRequestId)
-                    ps.setDouble(5, malfunction.lat)
-                    ps.setDouble(6, malfunction.lon)
-                    ps.setBoolean(7, malfunction.isActive)
-                    ps.setTimestamp(8, malfunction.createdOn)
+                    ps.setLong(1, damageClaim.ownerId)
+                    ps.setInt(2, damageClaim.category)
+                    ps.setString(3, damageClaim.description)
+                    ps.setString(4, damageClaim.damageClaimRequestId)
+                    ps.setDouble(5, damageClaim.lat)
+                    ps.setDouble(6, damageClaim.lon)
+                    ps.setBoolean(7, damageClaim.isActive)
+                    ps.setTimestamp(8, damageClaim.createdOn)
                     ps.executeUpdate()
 
                     ps.generatedKeys.use {
                         if (it.next()) {
-                            malfunction.id = it.getLong(1)
+                            damageClaim.id = it.getLong(1)
                         }
                     }
                 }
@@ -48,8 +48,8 @@ class MalfunctionDaoImpl : MalfunctionDao {
                         "image_name, image_type, deleted_on) " +
                         "VALUES (?, ?, ?, NULL)").use { ps ->
 
-                    for (imageName in malfunction.imageNamesList) {
-                        ps.setLong(1, malfunction.id)
+                    for (imageName in damageClaim.imageNamesList) {
+                        ps.setLong(1, damageClaim.id)
                         ps.setString(2, imageName)
                         ps.setInt(3, Constant.ImageTypes.IMAGE_TYPE_MALFUNCTION_PHOTO)
 
@@ -67,19 +67,19 @@ class MalfunctionDaoImpl : MalfunctionDao {
         return Either.Value(true)
     }
 
-    override fun findOne(id: Long): Either<SQLException, Fickle<Malfunction>> {
-        var malfunction: Malfunction? = null
+    override fun findOne(id: Long): Either<SQLException, Fickle<DamageClaim>> {
+        var damageClaim: DamageClaim? = null
 
         try {
             hikariCP.connection.use { connection ->
-                connection.prepareStatementScrollable("SELECT * FROM public.malfunctions WHERE id = ? AND" +
+                connection.prepareStatementScrollable("SELECT * FROM public.damageClaims WHERE id = ? AND" +
                         " deleted_on IS NULL AND is_active = true LIMIT 1").use { ps ->
 
                     ps.setLong(1, id)
 
                     ps.executeQuery().use { rs ->
                         if (rs.first()) {
-                            malfunction = Malfunction(
+                            damageClaim = DamageClaim(
                                     rs.getLong("id"),
                                     rs.getLong("owner_id"),
                                     true,
@@ -92,7 +92,7 @@ class MalfunctionDaoImpl : MalfunctionDao {
                         }
                     }
 
-                    malfunction?.let { mf ->
+                    damageClaim?.let { mf ->
                         getImagesByMalfunctionId(connection, arrayListOf(mf), listOf(mf.id))
                     }
                 }
@@ -101,17 +101,17 @@ class MalfunctionDaoImpl : MalfunctionDao {
             return Either.Error(e)
         }
 
-        return Either.Value(Fickle.of(malfunction))
+        return Either.Value(Fickle.of(damageClaim))
     }
 
     override fun findPaged(ownerId: Long, isActive: Boolean,
-                           offset: Long, count: Int): Either<SQLException, List<Malfunction>> {
-        val malfunctions = arrayListOf<Malfunction>()
+                           offset: Long, count: Int): Either<SQLException, List<DamageClaim>> {
+        val malfunctions = arrayListOf<DamageClaim>()
 
         try {
             hikariCP.connection.use { connection ->
                 connection.prepareStatement("SELECT id, category, description, created_on, malfunction_request_id, " +
-                        "lat, lon FROM public.malfunctions WHERE owner_id = ? AND is_active = ? AND " +
+                        "lat, lon FROM public.damageClaims WHERE owner_id = ? AND is_active = ? AND " +
                         "deleted_on IS NULL ORDER BY id ASC OFFSET ? LIMIT ?").use { ps ->
 
                     ps.setLong(1, ownerId)
@@ -122,7 +122,7 @@ class MalfunctionDaoImpl : MalfunctionDao {
 
                     ps.executeQuery().use { rs ->
                         while (rs.next()) {
-                            val malfunction = Malfunction(
+                            val malfunction = DamageClaim(
                                     rs.getLong("id"),
                                     ownerId,
                                     isActive,
@@ -148,11 +148,11 @@ class MalfunctionDaoImpl : MalfunctionDao {
         return Either.Value(malfunctions)
     }
 
-    override fun findManyActive(ownerId: Long): Either<SQLException, List<Malfunction>> {
+    override fun findManyActive(ownerId: Long): Either<SQLException, List<DamageClaim>> {
         return getMany(ownerId, true)
     }
 
-    override fun findManyInactive(ownerId: Long): Either<SQLException, List<Malfunction>> {
+    override fun findManyInactive(ownerId: Long): Either<SQLException, List<DamageClaim>> {
         return getMany(ownerId, false)
     }
 
@@ -172,7 +172,7 @@ class MalfunctionDaoImpl : MalfunctionDao {
     override fun deleteOnePermanently(id: Long): Either<SQLException, Boolean> {
         try {
             hikariCP.connection.use { connection ->
-                connection.prepareStatement("DELETE FROM public.malfunctions WHERE id = ? LIMIT 1").use { ps ->
+                connection.prepareStatement("DELETE FROM public.damageClaims WHERE id = ? LIMIT 1").use { ps ->
                     ps.setLong(1, id)
                     ps.executeUpdate()
                 }
@@ -184,13 +184,13 @@ class MalfunctionDaoImpl : MalfunctionDao {
         return Either.Value(true)
     }
 
-    private fun getMany(ownerId: Long, isActive: Boolean): Either<SQLException, List<Malfunction>> {
-        val malfunctions = arrayListOf<Malfunction>()
+    private fun getMany(ownerId: Long, isActive: Boolean): Either<SQLException, List<DamageClaim>> {
+        val malfunctions = arrayListOf<DamageClaim>()
 
         try {
             hikariCP.connection.use { connection ->
                 connection.prepareStatement("SELECT id, category, description, created_on, malfunction_request_id, lat, lon " +
-                        "FROM public.malfunctions WHERE owner_id = ? AND is_active = ? AND deleted_on IS NULL ORDER BY id ASC").use { ps ->
+                        "FROM public.damageClaims WHERE owner_id = ? AND is_active = ? AND deleted_on IS NULL ORDER BY id ASC").use { ps ->
 
                     ps.setLong(1, ownerId)
                     ps.setBoolean(2, isActive)
@@ -198,7 +198,7 @@ class MalfunctionDaoImpl : MalfunctionDao {
 
                     ps.executeQuery().use { rs ->
                         while (rs.next()) {
-                            val malfunction = Malfunction(
+                            val malfunction = DamageClaim(
                                     rs.getLong("id"),
                                     ownerId,
                                     isActive,
@@ -224,7 +224,7 @@ class MalfunctionDaoImpl : MalfunctionDao {
         return Either.Value(malfunctions)
     }
 
-    private fun getImagesByMalfunctionId(connection: Connection, malfunctions: ArrayList<Malfunction>,
+    private fun getImagesByMalfunctionId(connection: Connection, damageClaims: ArrayList<DamageClaim>,
                                          malfunctionIdList: List<Long>) {
         val malfunctionIdsCount = malfunctionIdList.size
         val idsToSearch = TextUtils.createStatementForList(malfunctionIdsCount)
@@ -242,7 +242,7 @@ class MalfunctionDaoImpl : MalfunctionDao {
                     val id = rs.getLong("malfunction_id")
                     val imageName = rs.getString("image_name")
 
-                    val malfunction = malfunctions.firstOrNull { it.id == id }
+                    val malfunction = damageClaims.firstOrNull { it.id == id }
                     if (malfunction == null) {
                         throw NullPointerException("MalfunctionIdList does not contain this id: $id")
                     }
@@ -261,7 +261,7 @@ class MalfunctionDaoImpl : MalfunctionDao {
     }
 
     private fun deleteMalfunction(connection: Connection, id: Long) {
-        connection.prepareStatement("UPDATE public.malfunctions SET deleted_on = NOW() WHERE id = ?").use { ps ->
+        connection.prepareStatement("UPDATE public.damageClaims SET deleted_on = NOW() WHERE id = ?").use { ps ->
             ps.setLong(1, id)
             ps.executeUpdate()
         }

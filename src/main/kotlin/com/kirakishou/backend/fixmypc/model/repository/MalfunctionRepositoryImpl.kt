@@ -4,7 +4,7 @@ import com.kirakishou.backend.fixmypc.core.Either
 import com.kirakishou.backend.fixmypc.core.Fickle
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.entity.LatLon
-import com.kirakishou.backend.fixmypc.model.entity.Malfunction
+import com.kirakishou.backend.fixmypc.model.entity.DamageClaim
 import com.kirakishou.backend.fixmypc.model.repository.ignite.LocationStore
 import com.kirakishou.backend.fixmypc.model.repository.ignite.MalfunctionStore
 import com.kirakishou.backend.fixmypc.model.repository.postgresql.MalfunctionDao
@@ -30,8 +30,8 @@ class MalfunctionRepositoryImpl : MalfunctionRepository {
     @Autowired
     private lateinit var log: FileLog
 
-    override fun saveOne(malfunction: Malfunction): Boolean {
-        val daoResult = malfunctionDao.saveOne(malfunction)
+    override fun saveOne(damageClaim: DamageClaim): Boolean {
+        val daoResult = malfunctionDao.saveOne(damageClaim)
         if (daoResult is Either.Error) {
             log.e(daoResult.error)
             return false
@@ -41,18 +41,18 @@ class MalfunctionRepositoryImpl : MalfunctionRepository {
             }
         }
 
-        val repositoryResult = userMalfunctionsRepository.saveOne(malfunction.ownerId, malfunction.id)
+        val repositoryResult = userMalfunctionsRepository.saveOne(damageClaim.ownerId, damageClaim.id)
         if (!repositoryResult) {
             //couldn't store in the userMalfunctionsRepository so we need to delete it from DB as well
-            malfunctionDao.deleteOnePermanently(malfunction.id)
+            malfunctionDao.deleteOnePermanently(damageClaim.id)
             return false
         }
 
-        locationStore.saveOne(LatLon(malfunction.lat, malfunction.lon), malfunction.id)
+        locationStore.saveOne(LatLon(damageClaim.lat, damageClaim.lon), damageClaim.id)
         return true
     }
 
-    override fun findOne(malfunctionId: Long): Fickle<Malfunction> {
+    override fun findOne(malfunctionId: Long): Fickle<DamageClaim> {
         val storeResult = malfunctionStore.findOne(malfunctionId)
         if (storeResult.isPresent()) {
             return storeResult
@@ -67,7 +67,7 @@ class MalfunctionRepositoryImpl : MalfunctionRepository {
         return (daoResult as Either.Value).value
     }
 
-    override fun findMany(ownerId: Long, offset: Long, count: Long): List<Malfunction> {
+    override fun findMany(ownerId: Long, offset: Long, count: Long): List<DamageClaim> {
         val malfunctionIdList = userMalfunctionsRepository.findMany(ownerId, offset, count)
         if (malfunctionIdList.isEmpty()) {
             log.d("MalfunctionRepository No ids found in id repository. Returning emptyList")
@@ -134,13 +134,13 @@ class MalfunctionRepositoryImpl : MalfunctionRepository {
         return false
     }
 
-    private fun sort(malfunctionList: List<Malfunction>): List<Malfunction> {
-        return malfunctionList.stream()
+    private fun sort(damageClaimList: List<DamageClaim>): List<DamageClaim> {
+        return damageClaimList.stream()
                 .sorted { mf1, mf2 -> comparator(mf1, mf2) }
                 .collect(Collectors.toList())
     }
 
-    private fun comparator(mf1: Malfunction, mf2: Malfunction): Int {
+    private fun comparator(mf1: DamageClaim, mf2: DamageClaim): Int {
         if (mf1.id < mf2.id) {
             return -1
         } else if (mf1.id > mf2.id) {
@@ -150,7 +150,7 @@ class MalfunctionRepositoryImpl : MalfunctionRepository {
         return 0
     }
 
-    private fun contains(id: Long, malfunctionsList: List<Malfunction>): Boolean {
+    private fun contains(id: Long, malfunctionsList: List<DamageClaim>): Boolean {
         for (malfunction in malfunctionsList) {
             if (malfunction.id == id) {
                 return true

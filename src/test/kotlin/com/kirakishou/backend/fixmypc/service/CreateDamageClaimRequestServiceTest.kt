@@ -34,7 +34,7 @@ import java.sql.SQLException
 import java.util.concurrent.TimeUnit
 import javax.imageio.ImageIO
 
-class CreateMalfunctionRequestServiceTest {
+class CreateDamageClaimRequestServiceTest {
 
     @InjectMocks
     val service = CreateMalfunctionRequestServiceImpl()

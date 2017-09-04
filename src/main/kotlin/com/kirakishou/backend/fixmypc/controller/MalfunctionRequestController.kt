@@ -1,10 +1,10 @@
 package com.kirakishou.backend.fixmypc.controller
 
-import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.core.Constant
+import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.net.ServerErrorCode
 import com.kirakishou.backend.fixmypc.model.net.request.MalfunctionCreateRequest
-import com.kirakishou.backend.fixmypc.model.net.response.GetMalfunctionResponse
+import com.kirakishou.backend.fixmypc.model.net.response.DamageClaimsResponse
 import com.kirakishou.backend.fixmypc.model.net.response.MalfunctionCreateResponse
 import com.kirakishou.backend.fixmypc.service.malfunction.CreateMalfunctionRequestService
 import com.kirakishou.backend.fixmypc.service.malfunction.GetUserMalfunctionRequestListService
@@ -101,17 +101,17 @@ class MalfunctionRequestController {
     @RequestMapping(path = arrayOf("${Constant.Paths.MALFUNCTION_REQUEST_CONTROLLER_PATH}/{offset}"),
             method = arrayOf(RequestMethod.GET))
     fun getUserMalfunctionRequestList(@RequestHeader("session_id") sessionId: String,
-                                      @PathVariable("offset") offset: Long): Single<ResponseEntity<GetMalfunctionResponse>> {
+                                      @PathVariable("offset") offset: Long): Single<ResponseEntity<DamageClaimsResponse>> {
 
         return mGetUserMalfunctionRequestListService.getUserMalfunctionRequestList(sessionId, Math.abs(offset))
                 .map { result ->
                     when (result) {
                         is GetUserMalfunctionRequestListService.Get.Result.Ok -> {
-                            return@map ResponseEntity(GetMalfunctionResponse(result.malfunctionList, ServerErrorCode.SEC_OK.value), HttpStatus.OK)
+                            return@map ResponseEntity(DamageClaimsResponse(result.damageClaimList, ServerErrorCode.SEC_OK.value), HttpStatus.OK)
                         }
 
                         is GetUserMalfunctionRequestListService.Get.Result.SessionIdExpired -> {
-                            return@map ResponseEntity(GetMalfunctionResponse(emptyList(), ServerErrorCode.SEC_SESSION_ID_EXPIRED.value), HttpStatus.UNAUTHORIZED)
+                            return@map ResponseEntity(DamageClaimsResponse(emptyList(), ServerErrorCode.SEC_SESSION_ID_EXPIRED.value), HttpStatus.UNAUTHORIZED)
                         }
 
                         else -> throw IllegalArgumentException("Unknown result")

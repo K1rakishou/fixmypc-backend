@@ -2,7 +2,7 @@ package com.kirakishou.backend.fixmypc.model.repository.ignite
 
 import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.core.Fickle
-import com.kirakishou.backend.fixmypc.model.entity.Malfunction
+import com.kirakishou.backend.fixmypc.model.entity.DamageClaim
 import org.apache.ignite.Ignite
 import org.apache.ignite.IgniteCache
 import org.apache.ignite.cache.CacheMode
@@ -17,50 +17,50 @@ class MalfunctionStoreImpl : MalfunctionStore {
     @Autowired
     lateinit var ignite: Ignite
 
-    lateinit var malfunctionStore: IgniteCache<Long, Malfunction>
+    lateinit var damageClaimStore: IgniteCache<Long, DamageClaim>
 
     @PostConstruct
     fun init() {
-        val cacheConfig = CacheConfiguration<Long, Malfunction>()
+        val cacheConfig = CacheConfiguration<Long, DamageClaim>()
         cacheConfig.backups = 0
         cacheConfig.name = Constant.IgniteNames.MALFUNCTION_CACHE_NAME
         cacheConfig.cacheMode = CacheMode.PARTITIONED
 
-        malfunctionStore = ignite.createCache(cacheConfig)
+        damageClaimStore = ignite.createCache(cacheConfig)
     }
 
-    override fun saveOne(malfunction: Malfunction) {
-        malfunctionStore.put(malfunction.id, malfunction)
+    override fun saveOne(damageClaim: DamageClaim) {
+        damageClaimStore.put(damageClaim.id, damageClaim)
     }
 
-    override fun saveMany(malfunctionList: List<Malfunction>) {
-        val malfunctionMap = hashMapOf<Long, Malfunction>()
+    override fun saveMany(damageClaimList: List<DamageClaim>) {
+        val malfunctionMap = hashMapOf<Long, DamageClaim>()
 
-        for (malfunction in malfunctionList) {
+        for (malfunction in damageClaimList) {
             malfunctionMap.put(malfunction.id, malfunction)
         }
 
-        malfunctionStore.putAll(malfunctionMap)
+        damageClaimStore.putAll(malfunctionMap)
     }
 
-    override fun findOne(malfunctionId: Long): Fickle<Malfunction> {
-        return Fickle.of(malfunctionStore[malfunctionId])
+    override fun findOne(malfunctionId: Long): Fickle<DamageClaim> {
+        return Fickle.of(damageClaimStore[malfunctionId])
     }
 
-    override fun findMany(malfunctionIdList: List<Long>): List<Malfunction> {
+    override fun findMany(malfunctionIdList: List<Long>): List<DamageClaim> {
         val set = malfunctionIdList.toSet()
-        return ArrayList(malfunctionStore.getAll(set).values)
+        return ArrayList(damageClaimStore.getAll(set).values)
     }
 
     override fun deleteOne(malfunctionId: Long) {
-        malfunctionStore.remove(malfunctionId)
+        damageClaimStore.remove(malfunctionId)
     }
 
     override fun deleteMany(malfunctionIdList: List<Long>) {
-        malfunctionStore.removeAll(malfunctionIdList.toSet())
+        damageClaimStore.removeAll(malfunctionIdList.toSet())
     }
 
     override fun clear() {
-        malfunctionStore.clear()
+        damageClaimStore.clear()
     }
 }

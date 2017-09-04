@@ -4,7 +4,7 @@ import com.kirakishou.backend.fixmypc.TestUtils
 import com.kirakishou.backend.fixmypc.core.Either
 import com.kirakishou.backend.fixmypc.core.Fickle
 import com.kirakishou.backend.fixmypc.log.FileLog
-import com.kirakishou.backend.fixmypc.model.entity.Malfunction
+import com.kirakishou.backend.fixmypc.model.entity.DamageClaim
 import com.kirakishou.backend.fixmypc.model.repository.ignite.MalfunctionStore
 import com.kirakishou.backend.fixmypc.model.repository.ignite.LocationStore
 import com.kirakishou.backend.fixmypc.model.repository.postgresql.MalfunctionDao
@@ -17,7 +17,7 @@ import org.mockito.Mockito
 import org.mockito.MockitoAnnotations
 import java.sql.SQLException
 
-class MalfunctionRepositoryImplTest {
+class DamageClaimRepositoryImplTest {
 
     @InjectMocks
     val repository = MalfunctionRepositoryImpl()
@@ -47,7 +47,7 @@ class MalfunctionRepositoryImplTest {
         Mockito.`when`(malfunctionDao.saveOne(TestUtils.anyObject())).thenReturn(Either.Value(true))
         Mockito.`when`(userMalfunctionsRepository.saveOne(Mockito.anyLong(), Mockito.anyLong())).thenReturn(true)
 
-        val result = repository.saveOne(Malfunction())
+        val result = repository.saveOne(DamageClaim())
 
         assertEquals(true, result)
     }
@@ -56,7 +56,7 @@ class MalfunctionRepositoryImplTest {
     fun testSaveOne_ShouldNotSaveMalfunctionIfDbThrewError() {
         Mockito.`when`(malfunctionDao.saveOne(TestUtils.anyObject())).thenReturn(Either.Error(SQLException()))
 
-        val result = repository.saveOne(Malfunction())
+        val result = repository.saveOne(DamageClaim())
 
         assertEquals(false, result)
     }
@@ -66,7 +66,7 @@ class MalfunctionRepositoryImplTest {
         Mockito.`when`(malfunctionDao.saveOne(TestUtils.anyObject())).thenReturn(Either.Value(true))
         Mockito.`when`(userMalfunctionsRepository.saveOne(Mockito.anyLong(), Mockito.anyLong())).thenReturn(false)
 
-        val result = repository.saveOne(Malfunction())
+        val result = repository.saveOne(DamageClaim())
 
         assertEquals(false, result)
         Mockito.verify(malfunctionDao, Mockito.times(1)).deleteOnePermanently(Mockito.anyLong())
@@ -74,7 +74,7 @@ class MalfunctionRepositoryImplTest {
 
     @Test
     fun testFindOne_ShouldReturnMalfunctionIfItIsInCache() {
-        Mockito.`when`(malfunctionStore.findOne(Mockito.anyLong())).thenReturn(Fickle.of(Malfunction(1L)))
+        Mockito.`when`(malfunctionStore.findOne(Mockito.anyLong())).thenReturn(Fickle.of(DamageClaim(1L)))
 
         val result = repository.findOne(1)
 
@@ -85,7 +85,7 @@ class MalfunctionRepositoryImplTest {
     @Test
     fun testFindOne_ShouldReturnMalfunctionFromDbIfItIsNotInCache() {
         Mockito.`when`(malfunctionStore.findOne(Mockito.anyLong())).thenReturn(Fickle.empty())
-        Mockito.`when`(malfunctionDao.findOne(Mockito.anyLong())).thenReturn(Either.Value(Fickle.of(Malfunction(1))))
+        Mockito.`when`(malfunctionDao.findOne(Mockito.anyLong())).thenReturn(Either.Value(Fickle.of(DamageClaim(1))))
 
         val result = repository.findOne(1)
 
@@ -125,7 +125,7 @@ class MalfunctionRepositoryImplTest {
     @Test
     fun testFindMany_ShouldReturnMalfunctionListIfMalfunctionStoreReturnedEnoughEntries() {
         val malfunctionIdList = listOf<Long>(0, 1, 2, 3, 4)
-        val malfunctionList = listOf(Malfunction(), Malfunction(), Malfunction(), Malfunction(), Malfunction())
+        val malfunctionList = listOf(DamageClaim(), DamageClaim(), DamageClaim(), DamageClaim(), DamageClaim())
         val count = 5L
 
         Mockito.`when`(userMalfunctionsRepository.findMany(Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong())).thenReturn(malfunctionIdList)
@@ -139,17 +139,17 @@ class MalfunctionRepositoryImplTest {
     @Test
     fun testFindMany_shouldReturnOnePage() {
         val malfunctionIdList = listOf<Long>(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14)
-        val allUserMalfunctions = listOf(Malfunction(0), Malfunction(1), Malfunction(2), Malfunction(3), Malfunction(4),
-                Malfunction(5), Malfunction(6), Malfunction(7), Malfunction(8), Malfunction(9),
-                Malfunction(10), Malfunction(11), Malfunction(12), Malfunction(13), Malfunction(14))
+        val allUserMalfunctions = listOf(DamageClaim(0), DamageClaim(1), DamageClaim(2), DamageClaim(3), DamageClaim(4),
+                DamageClaim(5), DamageClaim(6), DamageClaim(7), DamageClaim(8), DamageClaim(9),
+                DamageClaim(10), DamageClaim(11), DamageClaim(12), DamageClaim(13), DamageClaim(14))
 
         val firstPageIds = malfunctionIdList.subList(0, 5)
         val secondPageIds = malfunctionIdList.subList(5, 10)
         val thirdPageIds = malfunctionIdList.subList(10, 15)
 
-        val firstPageMalfunctionsFromCache = listOf(Malfunction(0), Malfunction(1), Malfunction(2))
-        val secondPageMalfunctionsFromCache = listOf(Malfunction(5), Malfunction(6))
-        val thirdPageMalfunctionsFromCache = listOf<Malfunction>()
+        val firstPageMalfunctionsFromCache = listOf(DamageClaim(0), DamageClaim(1), DamageClaim(2))
+        val secondPageMalfunctionsFromCache = listOf(DamageClaim(5), DamageClaim(6))
+        val thirdPageMalfunctionsFromCache = listOf<DamageClaim>()
 
         Mockito.`when`(userMalfunctionsRepository.findMany(Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong()))
                 .thenReturn(firstPageIds)
@@ -180,17 +180,17 @@ class MalfunctionRepositoryImplTest {
     @Test
     fun testFindMany_WithIdsCachedAtRandom() {
         val malfunctionIdList = listOf<Long>(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14)
-        val allUserMalfunctions = listOf(Malfunction(0), Malfunction(1), Malfunction(2), Malfunction(3), Malfunction(4),
-                Malfunction(5), Malfunction(6), Malfunction(7), Malfunction(8), Malfunction(9),
-                Malfunction(10), Malfunction(11), Malfunction(12), Malfunction(13), Malfunction(14))
+        val allUserMalfunctions = listOf(DamageClaim(0), DamageClaim(1), DamageClaim(2), DamageClaim(3), DamageClaim(4),
+                DamageClaim(5), DamageClaim(6), DamageClaim(7), DamageClaim(8), DamageClaim(9),
+                DamageClaim(10), DamageClaim(11), DamageClaim(12), DamageClaim(13), DamageClaim(14))
 
         val firstPageIds = malfunctionIdList.subList(0, 5)
         val secondPageIds = malfunctionIdList.subList(5, 10)
         val thirdPageIds = malfunctionIdList.subList(10, 15)
 
-        val firstPageMalfunctionsFromCache = listOf(Malfunction(1), Malfunction(3), Malfunction(4)) //0..4
-        val secondPageMalfunctionsFromCache = listOf(Malfunction(6), Malfunction(8))                //5..10
-        val thirdPageMalfunctionsFromCache = listOf(Malfunction(12), Malfunction(14))               //10..15
+        val firstPageMalfunctionsFromCache = listOf(DamageClaim(1), DamageClaim(3), DamageClaim(4)) //0..4
+        val secondPageMalfunctionsFromCache = listOf(DamageClaim(6), DamageClaim(8))                //5..10
+        val thirdPageMalfunctionsFromCache = listOf(DamageClaim(12), DamageClaim(14))               //10..15
 
         Mockito.`when`(userMalfunctionsRepository.findMany(Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong()))
                 .thenReturn(firstPageIds)
