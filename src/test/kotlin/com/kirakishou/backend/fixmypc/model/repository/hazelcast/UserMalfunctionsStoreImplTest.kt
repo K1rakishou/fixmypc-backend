@@ -2,6 +2,7 @@ package com.kirakishou.backend.fixmypc.model.repository.hazelcast
 
 import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.core.MyExpiryPolicyFactory
+import com.kirakishou.backend.fixmypc.model.repository.ignite.UserMalfunctionsStoreImpl
 import org.apache.ignite.Ignite
 import org.apache.ignite.IgniteCache
 import org.apache.ignite.Ignition

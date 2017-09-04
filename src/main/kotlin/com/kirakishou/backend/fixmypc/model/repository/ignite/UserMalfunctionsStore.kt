@@ -1,4 +1,4 @@
-package com.kirakishou.backend.fixmypc.model.repository.hazelcast
+package com.kirakishou.backend.fixmypc.model.repository.ignite
 
 interface UserMalfunctionsStore {
     fun saveOne(ownerId: Long, malfunctionId: Long)

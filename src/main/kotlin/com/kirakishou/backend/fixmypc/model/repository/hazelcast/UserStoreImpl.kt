@@ -5,6 +5,7 @@ import com.hazelcast.core.IMap
 import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.core.Fickle
 import com.kirakishou.backend.fixmypc.model.entity.User
+import com.kirakishou.backend.fixmypc.model.repository.ignite.UserMalfunctionsStore
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import javax.annotation.PostConstruct

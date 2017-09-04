@@ -2,7 +2,7 @@ package com.kirakishou.backend.fixmypc.model.repository
 
 import com.kirakishou.backend.fixmypc.core.Either
 import com.kirakishou.backend.fixmypc.log.FileLog
-import com.kirakishou.backend.fixmypc.model.repository.hazelcast.UserMalfunctionsStore
+import com.kirakishou.backend.fixmypc.model.repository.ignite.UserMalfunctionsStore
 import com.kirakishou.backend.fixmypc.model.repository.postgresql.UserMalfunctionsDao
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -53,6 +53,8 @@ class UserMalfunctionsRepositoryImpl : UserMalfunctionsRepository {
             return cacheResult
         }
 
+        userMalfunctionsStore.saveMany(ownerId, daoResValue)
+
         val filteredIds = daoResValue.stream()
                 .skip(offset)
                 .filter { !cacheResult.contains(it) }
@@ -63,9 +65,7 @@ class UserMalfunctionsRepositoryImpl : UserMalfunctionsRepository {
             return cacheResult
         }
 
-        userMalfunctionsStore.saveMany(ownerId, filteredIds)
         filteredIds.addAll(cacheResult)
-
         return filteredIds
     }
 

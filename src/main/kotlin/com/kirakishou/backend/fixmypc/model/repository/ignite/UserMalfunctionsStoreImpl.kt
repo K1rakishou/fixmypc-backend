@@ -1,4 +1,4 @@
-package com.kirakishou.backend.fixmypc.model.repository.hazelcast
+package com.kirakishou.backend.fixmypc.model.repository.ignite
 
 import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.core.MyExpiryPolicyFactory
