@@ -1,10 +1,12 @@
 package com.kirakishou.backend.fixmypc.model.repository.hazelcast
 
-import com.hazelcast.core.HazelcastInstance
-import com.hazelcast.core.IMap
 import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.core.Fickle
 import com.kirakishou.backend.fixmypc.model.entity.User
+import org.apache.ignite.Ignite
+import org.apache.ignite.IgniteCache
+import org.apache.ignite.cache.CacheMode
+import org.apache.ignite.configuration.CacheConfiguration
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import javax.annotation.PostConstruct
@@ -18,13 +20,18 @@ import javax.annotation.PostConstruct
 class UserStoreImpl : UserStore {
 
     @Autowired
-    private lateinit var hazelcast: HazelcastInstance
+    lateinit var ignite: Ignite
 
-    private lateinit var userStore: IMap<String, User>
+    lateinit var userStore: IgniteCache<String, User>
 
     @PostConstruct
     fun init() {
-        userStore = hazelcast.getMap<String, User>(Constant.HazelcastNames.USER_CACHE_KEY)
+        val cacheConfig = CacheConfiguration<String, User>()
+        cacheConfig.backups = 0
+        cacheConfig.name = Constant.IgniteNames.USER_CACHE_NAME
+        cacheConfig.cacheMode = CacheMode.PARTITIONED
+
+        userStore = ignite.createCache(cacheConfig)
     }
 
     override fun saveOne(sessionId: String, user: User) {

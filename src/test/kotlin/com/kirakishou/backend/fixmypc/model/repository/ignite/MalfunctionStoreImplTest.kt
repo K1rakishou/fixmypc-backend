@@ -1,17 +1,14 @@
-package com.kirakishou.backend.fixmypc.model.repository.hazelcast
+package com.kirakishou.backend.fixmypc.model.repository.ignite
 
-import com.hazelcast.config.Config
-import com.hazelcast.config.MapConfig
-import com.hazelcast.config.SerializerConfig
-import com.hazelcast.core.Hazelcast
-import com.hazelcast.core.HazelcastInstance
-import com.hazelcast.core.IMap
 import com.kirakishou.backend.fixmypc.core.Constant
+import com.kirakishou.backend.fixmypc.core.MyExpiryPolicyFactory
 import com.kirakishou.backend.fixmypc.model.entity.Malfunction
-import com.kirakishou.backend.fixmypc.model.entity.User
-import com.kirakishou.backend.fixmypc.model.repository.ignite.MalfunctionStoreImpl
-import com.kirakishou.backend.fixmypc.serializer.MalfunctionSerializer
-import com.kirakishou.backend.fixmypc.serializer.UserSerializer
+import org.apache.ignite.Ignite
+import org.apache.ignite.IgniteCache
+import org.apache.ignite.Ignition
+import org.apache.ignite.cache.CacheAtomicityMode
+import org.apache.ignite.cache.CacheMode
+import org.apache.ignite.configuration.CacheConfiguration
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -19,56 +16,37 @@ import org.junit.Test
 import org.springframework.test.util.ReflectionTestUtils
 import java.sql.Timestamp
 import java.util.*
+import javax.cache.expiry.Duration
 
 class MalfunctionStoreImplTest {
 
     val store = MalfunctionStoreImpl()
 
-    private lateinit var malfunctionStore: IMap<Long, Malfunction>
+    private lateinit var malfunctionStore: IgniteCache<Long, Malfunction>
 
-    fun provideHazelcast(): HazelcastInstance {
-        val clientConfig = Config()
-        clientConfig.networkConfig.publicAddress = "192.168.99.100:9229"
-
-        //config.networkConfig.addAddress("192.168.99.100:9230")
-        //clientConfig.networkConfig.addAddress("192.168.99.100:9229")
-
-        clientConfig.serializationConfig.addSerializerConfig(SerializerConfig()
-                .setImplementation(UserSerializer())
-                .setTypeClass(User::class.java))
-
-        clientConfig.serializationConfig.addSerializerConfig(SerializerConfig()
-                .setImplementation(MalfunctionSerializer())
-                .setTypeClass(Malfunction::class.java))
-
-        val instance = Hazelcast.newHazelcastInstance(clientConfig)
-
-        val userCacheConfig = MapConfig(Constant.HazelcastNames.USER_CACHE_KEY)
-        userCacheConfig.timeToLiveSeconds = Constant.HazelcastTTL.USER_ENTRY_TTL
-        userCacheConfig.backupCount = 1
-        userCacheConfig.asyncBackupCount = 0
-
-        val malfunctionCacheConfig = MapConfig(Constant.HazelcastNames.MALFUNCTION_CACHE_KEY)
-        malfunctionCacheConfig.timeToLiveSeconds = Constant.HazelcastTTL.MALFUNCTION_ENTRY_TTL
-        malfunctionCacheConfig.backupCount = 1
-        malfunctionCacheConfig.asyncBackupCount = 0
-
-        instance.config.mapConfigs.put(Constant.HazelcastNames.USER_CACHE_KEY, userCacheConfig)
-        instance.config.mapConfigs.put(Constant.HazelcastNames.MALFUNCTION_CACHE_KEY, malfunctionCacheConfig)
-
-        return instance
+    private fun provideIgnite(): Ignite {
+        Ignition.setClientMode(false)
+        return Ignition.start()
     }
 
     @Before
     fun init() {
-        val hazelcast = provideHazelcast()
-        malfunctionStore = hazelcast.getMap<Long, Malfunction>(Constant.HazelcastNames.MALFUNCTION_CACHE_KEY)
+        val ignite = provideIgnite()
+
+        val cacheConfig = CacheConfiguration<Long, Malfunction>()
+        cacheConfig.backups = 0
+        cacheConfig.name = Constant.IgniteNames.USER_MALFUNCTION_NAME
+        cacheConfig.cacheMode = CacheMode.PARTITIONED
+        cacheConfig.atomicityMode = CacheAtomicityMode.TRANSACTIONAL
+        cacheConfig.setExpiryPolicyFactory(MyExpiryPolicyFactory(Duration.ONE_MINUTE, Duration.ONE_MINUTE, Duration.ONE_MINUTE))
+
+        malfunctionStore = ignite.createCache(cacheConfig)
         ReflectionTestUtils.setField(store, "malfunctionStore", malfunctionStore)
     }
 
     @After
     fun tearDown() {
-        store.clear()
+        Ignition.stopAll(true)
     }
 
     @Test

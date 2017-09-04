@@ -23,7 +23,7 @@ class MalfunctionStoreImpl : MalfunctionStore {
     fun init() {
         val cacheConfig = CacheConfiguration<Long, Malfunction>()
         cacheConfig.backups = 0
-        cacheConfig.name = Constant.IgniteNames.LOCATION_STORE_NAME
+        cacheConfig.name = Constant.IgniteNames.MALFUNCTION_CACHE_NAME
         cacheConfig.cacheMode = CacheMode.PARTITIONED
 
         malfunctionStore = ignite.createCache(cacheConfig)

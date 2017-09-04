@@ -8,10 +8,6 @@ import org.apache.ignite.Ignition
 import org.apache.ignite.cache.CacheAtomicityMode
 import org.apache.ignite.cache.CacheMode
 import org.apache.ignite.configuration.CacheConfiguration
-import org.apache.ignite.configuration.DeploymentMode
-import org.apache.ignite.configuration.IgniteConfiguration
-import org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi
-import org.apache.ignite.spi.discovery.tcp.ipfinder.vm.TcpDiscoveryVmIpFinder
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -27,18 +23,7 @@ class UserMalfunctionsStoreImplTest {
     private var userMalfunctionStore: IgniteCache<Long, SortedSet<Long>>? = null
 
     private fun provideIgnite(): Ignite {
-        val ipFinder = TcpDiscoveryVmIpFinder()
-        ipFinder.setAddresses(arrayListOf("192.168.99.100:9339"))
-
-        val discoSpi = TcpDiscoverySpi()
-        discoSpi.ipFinder = ipFinder
-
-        val igniteConfiguration = IgniteConfiguration()
-        igniteConfiguration.discoverySpi = discoSpi
-        igniteConfiguration.deploymentMode = DeploymentMode.SHARED
-
-        //Ignition.setClientMode(false)
-
+        Ignition.setClientMode(false)
         return Ignition.start()
     }
 
@@ -48,14 +33,13 @@ class UserMalfunctionsStoreImplTest {
 
         val cacheConfig = CacheConfiguration<Long, SortedSet<Long>>()
         cacheConfig.backups = 0
-        cacheConfig.name = Constant.IgniteNames.USER_MALFUNCTION_KEY
+        cacheConfig.name = Constant.IgniteNames.USER_MALFUNCTION_NAME
         cacheConfig.cacheMode = CacheMode.PARTITIONED
         cacheConfig.atomicityMode = CacheAtomicityMode.TRANSACTIONAL
         cacheConfig.setExpiryPolicyFactory(MyExpiryPolicyFactory(Duration.ONE_MINUTE, Duration.ONE_MINUTE, Duration.ONE_MINUTE))
 
         userMalfunctionStore = ignite.createCache(cacheConfig)
 
-        ReflectionTestUtils.setField(store, "ignite", ignite)
         ReflectionTestUtils.setField(store, "userMalfunctionStore", userMalfunctionStore)
     }
 

@@ -34,11 +34,6 @@ object Constant {
         const val MALFUNCTION_REQUEST_ID = "m_request_id"
     }
 
-    object HazelcastNames {
-        val USER_CACHE_KEY = "user_cache"
-        val MALFUNCTION_CACHE_KEY = "malfunction_cache"
-    }
-
     //in seconds
     object HazelcastTTL {
         val USER_ENTRY_TTL = 1500
@@ -48,7 +43,9 @@ object Constant {
 
     object IgniteNames {
         val LOCATION_STORE_NAME = "malfunction_location_store"
-        val USER_MALFUNCTION_KEY = "user_malfunction"
+        val USER_MALFUNCTION_NAME = "user_malfunction"
+        val MALFUNCTION_CACHE_NAME = "malfunction_cache"
+        val USER_CACHE_NAME = "user_cache"
     }
 
     object HazelcastType {
