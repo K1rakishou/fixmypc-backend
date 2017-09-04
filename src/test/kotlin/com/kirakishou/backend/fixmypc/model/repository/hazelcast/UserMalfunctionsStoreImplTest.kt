@@ -1,85 +1,71 @@
 package com.kirakishou.backend.fixmypc.model.repository.hazelcast
 
-import com.hazelcast.config.Config
-import com.hazelcast.config.MapConfig
-import com.hazelcast.config.SerializerConfig
-import com.hazelcast.core.Hazelcast
-import com.hazelcast.core.HazelcastInstance
-import com.hazelcast.core.MultiMap
 import com.kirakishou.backend.fixmypc.core.Constant
-import com.kirakishou.backend.fixmypc.model.entity.Malfunction
-import com.kirakishou.backend.fixmypc.model.entity.User
-import com.kirakishou.backend.fixmypc.serializer.MalfunctionSerializer
-import com.kirakishou.backend.fixmypc.serializer.UserSerializer
+import com.kirakishou.backend.fixmypc.core.MyExpiryPolicyFactory
+import org.apache.ignite.Ignite
+import org.apache.ignite.IgniteCache
+import org.apache.ignite.Ignition
+import org.apache.ignite.cache.CacheAtomicityMode
+import org.apache.ignite.cache.CacheMode
+import org.apache.ignite.configuration.CacheConfiguration
+import org.apache.ignite.configuration.DeploymentMode
+import org.apache.ignite.configuration.IgniteConfiguration
+import org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi
+import org.apache.ignite.spi.discovery.tcp.ipfinder.vm.TcpDiscoveryVmIpFinder
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.springframework.test.util.ReflectionTestUtils
+import java.util.*
+import javax.cache.expiry.Duration
 
 class UserMalfunctionsStoreImplTest {
 
     val store = UserMalfunctionsStoreImpl()
 
-    private lateinit var userMalfunctionStore: MultiMap<Long, Long>
+    private var userMalfunctionStore: IgniteCache<Long, SortedSet<Long>>? = null
 
-    fun provideHazelcast(): HazelcastInstance {
-        val config = Config()
-        config.networkConfig.publicAddress = "192.168.99.100:9229"
+    private fun provideIgnite(): Ignite {
+        val ipFinder = TcpDiscoveryVmIpFinder()
+        ipFinder.setAddresses(arrayListOf("192.168.99.100:9339"))
 
-        //config.networkConfig.addAddress("192.168.99.100:9230")
-        //clientConfig.networkConfig.addAddress("192.168.99.100:9229")
+        val discoSpi = TcpDiscoverySpi()
+        discoSpi.ipFinder = ipFinder
 
-        config.serializationConfig.addSerializerConfig(SerializerConfig()
-                .setImplementation(UserSerializer())
-                .setTypeClass(User::class.java))
+        val igniteConfiguration = IgniteConfiguration()
+        igniteConfiguration.discoverySpi = discoSpi
+        igniteConfiguration.deploymentMode = DeploymentMode.SHARED
 
-        config.serializationConfig.addSerializerConfig(SerializerConfig()
-                .setImplementation(MalfunctionSerializer())
-                .setTypeClass(Malfunction::class.java))
+        //Ignition.setClientMode(false)
 
-        val instance = Hazelcast.newHazelcastInstance(config)
-
-        val userCacheConfig = MapConfig(Constant.HazelcastNames.USER_CACHE_KEY)
-        userCacheConfig.timeToLiveSeconds = Constant.HazelcastTTL.USER_ENTRY_TTL
-        userCacheConfig.backupCount = 1
-        userCacheConfig.asyncBackupCount = 0
-
-        val malfunctionCacheConfig = MapConfig(Constant.HazelcastNames.MALFUNCTION_CACHE_KEY)
-        malfunctionCacheConfig.timeToLiveSeconds = Constant.HazelcastTTL.MALFUNCTION_ENTRY_TTL
-        malfunctionCacheConfig.backupCount = 1
-        malfunctionCacheConfig.asyncBackupCount = 0
-
-        val userMalfunctionStoreConfig = MapConfig(Constant.HazelcastNames.USER_MALFUNCTION_KEY)
-        malfunctionCacheConfig.timeToLiveSeconds = Constant.HazelcastTTL.USER_MALFUNCTION_ENTRY_TTL
-        malfunctionCacheConfig.backupCount = 2
-        malfunctionCacheConfig.asyncBackupCount = 0
-
-        instance.config.mapConfigs.put(Constant.HazelcastNames.USER_CACHE_KEY, userCacheConfig)
-        instance.config.mapConfigs.put(Constant.HazelcastNames.MALFUNCTION_CACHE_KEY, malfunctionCacheConfig)
-        instance.config.mapConfigs.put(Constant.HazelcastNames.USER_MALFUNCTION_KEY, userMalfunctionStoreConfig)
-
-        return instance
+        return Ignition.start()
     }
 
     @Before
     fun init() {
-        val hazelcast = provideHazelcast()
-        userMalfunctionStore = hazelcast.getMultiMap<Long, Long>(Constant.HazelcastNames.USER_MALFUNCTION_KEY)
+        val ignite = provideIgnite()
 
-        ReflectionTestUtils.setField(store, "hazelcast", hazelcast)
+        val cacheConfig = CacheConfiguration<Long, SortedSet<Long>>()
+        cacheConfig.backups = 0
+        cacheConfig.name = Constant.HazelcastNames.USER_MALFUNCTION_KEY
+        cacheConfig.cacheMode = CacheMode.PARTITIONED
+        cacheConfig.atomicityMode = CacheAtomicityMode.TRANSACTIONAL
+        cacheConfig.setExpiryPolicyFactory(MyExpiryPolicyFactory(Duration.ONE_MINUTE, Duration.ONE_MINUTE, Duration.ONE_MINUTE))
+
+        userMalfunctionStore = ignite.createCache(cacheConfig)
+
+        ReflectionTestUtils.setField(store, "ignite", ignite)
         ReflectionTestUtils.setField(store, "userMalfunctionStore", userMalfunctionStore)
     }
 
     @After
     fun tearDown() {
-        store.clear()
+        Ignition.stopAll(true)
     }
 
     @Test
     fun testFindMany() {
-        store.clear()
-
         store.saveMany(0, listOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16))
 
         val firstFive = store.findMany(0, 0, 5)
@@ -97,8 +83,6 @@ class UserMalfunctionsStoreImplTest {
 
     @Test
     fun testFindMany2() {
-        store.clear()
-
         store.saveMany(0, listOf(12, 13, 14, 15, 16))
         store.saveMany(0, listOf(7, 8, 9, 10, 11))
         store.saveMany(0, listOf(4, 5, 6))
@@ -119,8 +103,6 @@ class UserMalfunctionsStoreImplTest {
 
     @Test
     fun testFindAll() {
-        store.clear()
-
         store.saveMany(0, listOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16))
 
         val values = store.findAll(0)
@@ -129,8 +111,6 @@ class UserMalfunctionsStoreImplTest {
 
     @Test
     fun testDeleteOne() {
-        store.clear()
-
         store.saveMany(0, listOf(1, 2, 3))
         store.deleteOne(0, 1)
 

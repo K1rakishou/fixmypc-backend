@@ -1,46 +1,64 @@
 package com.kirakishou.backend.fixmypc.model.repository.hazelcast
 
-import com.hazelcast.core.HazelcastInstance
-import com.hazelcast.core.MultiMap
-import com.kirakishou.backend.fixmypc.extension.doInTransaction
 import com.kirakishou.backend.fixmypc.core.Constant
+import com.kirakishou.backend.fixmypc.core.MyExpiryPolicyFactory
+import org.apache.ignite.Ignite
+import org.apache.ignite.IgniteCache
+import org.apache.ignite.cache.CacheAtomicityMode
+import org.apache.ignite.cache.CacheMode
+import org.apache.ignite.configuration.CacheConfiguration
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
+import java.util.SortedSet
+import java.util.TreeSet
 import java.util.stream.Collectors
 import javax.annotation.PostConstruct
+import javax.cache.expiry.Duration
+import kotlin.collections.ArrayList
 
 @Component
 class UserMalfunctionsStoreImpl : UserMalfunctionsStore {
 
     @Autowired
-    private lateinit var hazelcast: HazelcastInstance
+    lateinit var ignite: Ignite
 
-    private lateinit var userMalfunctionStore: MultiMap<Long, Long>
+    lateinit var userMalfunctionStore: IgniteCache<Long, SortedSet<Long>>
 
     @PostConstruct
     fun init() {
-        userMalfunctionStore = hazelcast.getMultiMap<Long, Long>(Constant.HazelcastNames.USER_MALFUNCTION_KEY)
+        val cacheConfig = CacheConfiguration<Long, SortedSet<Long>>()
+        cacheConfig.backups = 0
+        cacheConfig.name = Constant.HazelcastNames.USER_MALFUNCTION_KEY
+        cacheConfig.cacheMode = CacheMode.PARTITIONED
+        cacheConfig.atomicityMode = CacheAtomicityMode.TRANSACTIONAL
+        cacheConfig.setExpiryPolicyFactory(MyExpiryPolicyFactory(Duration.ONE_MINUTE, Duration.ONE_MINUTE, Duration.ONE_MINUTE))
+
+        userMalfunctionStore = ignite.createCache(cacheConfig)
     }
 
     override fun saveOne(ownerId: Long, malfunctionId: Long) {
-        userMalfunctionStore.lock(ownerId)
+        val lock = userMalfunctionStore.lock(ownerId)
+        lock.lock()
 
         try {
-            if (!userMalfunctionStore.containsEntry(ownerId, malfunctionId)) {
-                userMalfunctionStore.put(ownerId, malfunctionId)
-            }
+            val userMalfunctions = get(ownerId)
+            userMalfunctions.add(malfunctionId)
+            userMalfunctionStore.put(ownerId, userMalfunctions)
         } finally {
-            userMalfunctionStore.unlock(ownerId)
+            lock.unlock()
         }
     }
 
     override fun saveMany(ownerId: Long, malfunctionIdList: List<Long>) {
-        hazelcast.doInTransaction {
-            for (id in malfunctionIdList) {
-                if (!userMalfunctionStore.containsEntry(ownerId, id)) {
-                    userMalfunctionStore.put(ownerId, id)
-                }
-            }
+        val lock = userMalfunctionStore.lock(ownerId)
+        lock.lock()
+
+        try {
+            val userMalfunctions = get(ownerId)
+            userMalfunctions.addAll(malfunctionIdList)
+            userMalfunctionStore.put(ownerId, userMalfunctions)
+        } finally {
+            lock.unlock()
         }
     }
 
@@ -48,7 +66,6 @@ class UserMalfunctionsStoreImpl : UserMalfunctionsStore {
         val userAllMalfunctions = userMalfunctionStore.get(ownerId) ?: return emptyList()
 
         return userAllMalfunctions.stream()
-                .sorted { id1, id2 -> comparator(id1, id2) }
                 .skip(offset)
                 .limit(count)
                 .collect(Collectors.toList())
@@ -60,7 +77,16 @@ class UserMalfunctionsStoreImpl : UserMalfunctionsStore {
     }
 
     override fun deleteOne(ownerId: Long, malfunctionId: Long) {
-        userMalfunctionStore.remove(ownerId, malfunctionId)
+        val lock = userMalfunctionStore.lock(ownerId)
+        lock.lock()
+
+        try {
+            val userMalfunctions = get(ownerId)
+            userMalfunctions.remove(malfunctionId)
+            userMalfunctionStore.put(ownerId, userMalfunctions)
+        } finally {
+            lock.unlock()
+        }
     }
 
     override fun deleteAll(ownerId: Long) {
@@ -71,13 +97,23 @@ class UserMalfunctionsStoreImpl : UserMalfunctionsStore {
         userMalfunctionStore.clear()
     }
 
-    private fun comparator(id1: Long, id2: Long): Int {
-        if (id1 < id2) {
-            return -1
-        } else if (id1 > id2) {
-            return 1
+    private fun get(ownerId: Long): SortedSet<Long> {
+        var userMalfunctions = userMalfunctionStore.get(ownerId)
+        if (userMalfunctions == null) {
+            userMalfunctions = TreeSet(IdComparator())
         }
+        return userMalfunctions
+    }
 
-        return 0
+    private class IdComparator : Comparator<Long> {
+        override fun compare(id1: Long, id2: Long): Int {
+            if (id1 < id2) {
+                return -1
+            } else if (id1 > id2) {
+                return 1
+            }
+
+            return 0
+        }
     }
 }

@@ -78,7 +78,6 @@ class MalfunctionStoreImplTest {
 
     @Test
     fun testSaveOne() {
-        store.clear()
         val malfunction = Malfunction(0, 0, true, "436erydfyu", 0, "test description", 55.6, 44.2, Timestamp(Date().time), arrayListOf())
 
         store.saveOne(malfunction)
@@ -90,7 +89,6 @@ class MalfunctionStoreImplTest {
 
     @Test
     fun testSaveMany() {
-        store.clear()
         val malfunction = Malfunction(0, 0, true, "436erydfyu", 0, "test description", 55.6, 44.2, Timestamp(Date().time), arrayListOf())
         val malfunction2 = Malfunction(1, 0, true, "436erydfawryu", 0, "test description2", 55.6, 44.2, Timestamp(Date().time), arrayListOf())
 
@@ -102,8 +100,6 @@ class MalfunctionStoreImplTest {
 
     @Test
     fun testFindMany() {
-        store.clear()
-
         store.saveMany(listOf(
                 Malfunction(13, 0, createdOn = Timestamp(Date().time)),
                 Malfunction(14, 0, createdOn = Timestamp(Date().time)),
@@ -140,7 +136,6 @@ class MalfunctionStoreImplTest {
 
     @Test
     fun testDeleteOne() {
-        store.clear()
         val malfunction = Malfunction(0, 0, true, "436erydfyu", 0, "test description", 55.6, 44.2, Timestamp(Date().time), arrayListOf())
 
         store.saveOne(malfunction)
@@ -157,7 +152,6 @@ class MalfunctionStoreImplTest {
 
     @Test
     fun testDeleteMany() {
-        store.clear()
         val malfunction = Malfunction(0, 0, true, "436erydfyu", 0, "test description", 55.6, 44.2, Timestamp(Date().time), arrayListOf())
         val malfunction2 = Malfunction(1, 0, true, "436erydfawryu", 0, "test description2", 55.6, 44.2, Timestamp(Date().time), arrayListOf())
 
