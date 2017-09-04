@@ -5,8 +5,8 @@ import com.kirakishou.backend.fixmypc.core.Fickle
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.entity.LatLon
 import com.kirakishou.backend.fixmypc.model.entity.Malfunction
-import com.kirakishou.backend.fixmypc.model.repository.ignite.MalfunctionStore
 import com.kirakishou.backend.fixmypc.model.repository.ignite.LocationStore
+import com.kirakishou.backend.fixmypc.model.repository.ignite.MalfunctionStore
 import com.kirakishou.backend.fixmypc.model.repository.postgresql.MalfunctionDao
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -70,15 +70,19 @@ class MalfunctionRepositoryImpl : MalfunctionRepository {
     override fun findMany(ownerId: Long, offset: Long, count: Long): List<Malfunction> {
         val malfunctionIdList = userMalfunctionsRepository.findMany(ownerId, offset, count)
         if (malfunctionIdList.isEmpty()) {
+            log.d("MalfunctionRepository No ids found in id repository. Returning emptyList")
             return emptyList()
         }
 
+        log.d("MalfunctionRepository Found ${malfunctionIdList.size} out of $count ids in the repository")
         val cacheResult = malfunctionStore.findMany(malfunctionIdList)
 
         if (cacheResult.size == count.toInt()) {
+            log.d("MalfunctionRepository That's enough, returning them")
             return sort(cacheResult)
         }
 
+        log.d("MalfunctionRepository Found ${cacheResult.size} out of $count items in the cache. Searching the rest in the DB")
         val daoResult = malfunctionDao.findManyActive(ownerId)
         if (daoResult is Either.Error) {
             log.e(daoResult.error)
@@ -87,6 +91,7 @@ class MalfunctionRepositoryImpl : MalfunctionRepository {
 
         val malfunctionsFromDb = (daoResult as Either.Value).value
         val remainder = count - cacheResult.size
+        log.d("MalfunctionRepository Found ${malfunctionsFromDb.size} items in the DB")
 
         val filteredMalfunctionList = malfunctionsFromDb.stream()
                 .skip(offset)
@@ -95,12 +100,15 @@ class MalfunctionRepositoryImpl : MalfunctionRepository {
                 .collect(Collectors.toList())
 
         if (filteredMalfunctionList.isEmpty()) {
+            log.d("MalfunctionRepository Nothing left after filtering DB items, returning cached items")
             return sort(cacheResult)
         }
 
+        log.d("MalfunctionRepository Caching DB items")
         malfunctionStore.saveMany(filteredMalfunctionList)
         filteredMalfunctionList.addAll(0, cacheResult)
 
+        log.d("MalfunctionRepository Total items returned ${filteredMalfunctionList.size}")
         return sort(filteredMalfunctionList)
     }
 

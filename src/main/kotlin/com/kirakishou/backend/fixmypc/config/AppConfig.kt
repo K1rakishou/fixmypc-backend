@@ -40,7 +40,6 @@ class AppConfig {
         igniteConfiguration.discoverySpi = discoSpi
         igniteConfiguration.deploymentMode = DeploymentMode.SHARED
 
-        Ignition.setClientMode(true)
         return Ignition.start()
     }
 

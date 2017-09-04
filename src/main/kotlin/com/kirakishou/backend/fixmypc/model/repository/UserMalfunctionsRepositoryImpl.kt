@@ -38,21 +38,26 @@ class UserMalfunctionsRepositoryImpl : UserMalfunctionsRepository {
     override fun findMany(ownerId: Long, offset: Long, count: Long): List<Long> {
         val cacheResult = userMalfunctionsStore.findMany(ownerId, offset, count)
         if (cacheResult.size == count.toInt()) {
+            log.d("UserMalfunctionsRepository Found enough ids in the cache")
             return cacheResult
         }
 
         val remainder = count - cacheResult.size
-        val daoResult = userMalfunctionsDao.findAll(ownerId)
+        log.d("UserMalfunctionsRepository Found ${cacheResult.size} out of $count ids in the cache. Searching for the rest in the DB")
 
+        val daoResult = userMalfunctionsDao.findAll(ownerId)
         if (daoResult is Either.Error) {
+            log.d("UserMalfunctionsRepository DB threw error ${daoResult.error}")
             return cacheResult
         }
 
         val daoResValue = (daoResult as Either.Value).value
         if (daoResValue.isEmpty()) {
+            log.d("UserMalfunctionsRepository Found no ids in the DB")
             return cacheResult
         }
 
+        log.d("UserMalfunctionsRepository Found ${daoResValue.size} ids in the DB. Caching them.")
         userMalfunctionsStore.saveMany(ownerId, daoResValue)
 
         val filteredIds = daoResValue.stream()
@@ -62,10 +67,13 @@ class UserMalfunctionsRepositoryImpl : UserMalfunctionsRepository {
                 .collect(Collectors.toList())
 
         if (filteredIds.isEmpty()) {
+            log.d("UserMalfunctionsRepository No ids left after filtering. Returning ${cacheResult.size} ids from the cache")
             return cacheResult
         }
 
         filteredIds.addAll(cacheResult)
+        log.d("UserMalfunctionsRepository Returning total ${filteredIds.size} ids")
+
         return filteredIds
     }
 
