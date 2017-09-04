@@ -5,7 +5,7 @@ import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.model.repository.MalfunctionRepository
 import com.kirakishou.backend.fixmypc.model.repository.ignite.MalfunctionStore
 import com.kirakishou.backend.fixmypc.model.repository.ignite.UserMalfunctionsStore
-import com.kirakishou.backend.fixmypc.model.repository.hazelcast.UserStore
+import com.kirakishou.backend.fixmypc.model.repository.ignite.UserStore
 import io.reactivex.Single
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component

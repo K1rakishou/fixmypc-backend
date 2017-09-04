@@ -11,7 +11,7 @@ import com.kirakishou.backend.fixmypc.model.entity.FileServerInfo
 import com.kirakishou.backend.fixmypc.model.entity.Malfunction
 import com.kirakishou.backend.fixmypc.model.net.request.MalfunctionCreateRequest
 import com.kirakishou.backend.fixmypc.model.repository.MalfunctionRepository
-import com.kirakishou.backend.fixmypc.model.repository.hazelcast.UserStore
+import com.kirakishou.backend.fixmypc.model.repository.ignite.UserStore
 import com.kirakishou.backend.fixmypc.model.repository.postgresql.MalfunctionDao
 import com.kirakishou.backend.fixmypc.service.FileServerService
 import com.kirakishou.backend.fixmypc.service.Generator

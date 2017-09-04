@@ -4,7 +4,7 @@ import com.kirakishou.backend.fixmypc.core.Either
 import com.kirakishou.backend.fixmypc.core.Fickle
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.entity.User
-import com.kirakishou.backend.fixmypc.model.repository.hazelcast.UserStore
+import com.kirakishou.backend.fixmypc.model.repository.ignite.UserStore
 import com.kirakishou.backend.fixmypc.model.repository.postgresql.UserDao
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
