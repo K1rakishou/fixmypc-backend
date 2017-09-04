@@ -1,8 +1,7 @@
-package com.kirakishou.backend.fixmypc.model.repository.hazelcast
+package com.kirakishou.backend.fixmypc.model.repository.ignite
 
 import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.core.MyExpiryPolicyFactory
-import com.kirakishou.backend.fixmypc.model.repository.ignite.UserMalfunctionsStoreImpl
 import org.apache.ignite.Ignite
 import org.apache.ignite.IgniteCache
 import org.apache.ignite.Ignition
@@ -100,6 +99,22 @@ class UserMalfunctionsStoreImplTest {
         val thirdSix = store.findMany(0, 10, 6)
         assertEquals(6, thirdSix.size)
         assertEquals(11, thirdSix[0])
+    }
+
+    @Test
+    fun testFindMany3() {
+        store.saveOne(0, 6)
+        store.saveOne(0, 5)
+        store.saveOne(0, 4)
+        store.saveOne(0, 3)
+        store.saveOne(0, 2)
+        store.saveOne(0, 1)
+        store.saveOne(0, 0)
+
+        val firstFive = store.findMany(0, 0, 5)
+        assertEquals(5, firstFive.size)
+        assertEquals(0, firstFive[0])
+        assertEquals(4, firstFive[4])
     }
 
     @Test
