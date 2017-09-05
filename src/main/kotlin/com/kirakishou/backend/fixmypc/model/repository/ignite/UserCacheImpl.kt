@@ -17,7 +17,7 @@ import javax.annotation.PostConstruct
  */
 
 @Component
-class UserStoreImpl : UserStore {
+class UserCacheImpl : UserCache {
 
     @Autowired
     lateinit var ignite: Ignite

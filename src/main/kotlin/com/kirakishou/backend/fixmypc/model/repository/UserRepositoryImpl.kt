@@ -4,7 +4,7 @@ import com.kirakishou.backend.fixmypc.core.Either
 import com.kirakishou.backend.fixmypc.core.Fickle
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.entity.User
-import com.kirakishou.backend.fixmypc.model.repository.ignite.UserStore
+import com.kirakishou.backend.fixmypc.model.repository.ignite.UserCache
 import com.kirakishou.backend.fixmypc.model.repository.postgresql.UserDao
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -16,7 +16,7 @@ class UserRepositoryImpl : UserRepository {
     private lateinit var userDao: UserDao
 
     @Autowired
-    private lateinit var userStore: UserStore
+    private lateinit var userCache: UserCache
 
     @Autowired
     private lateinit var log: FileLog
@@ -46,7 +46,7 @@ class UserRepositoryImpl : UserRepository {
     }
 
     override fun saveOneToStore(sessionId: String, user: User) {
-        userStore.saveOne(sessionId, user)
+        userCache.saveOne(sessionId, user)
     }
 
     override fun deleteOneFromDao(login: String): Boolean {
@@ -65,6 +65,6 @@ class UserRepositoryImpl : UserRepository {
     }
 
     override fun deleteOneFromStore(sessionId: String) {
-        userStore.deleteOne(sessionId)
+        userCache.deleteOne(sessionId)
     }
 }

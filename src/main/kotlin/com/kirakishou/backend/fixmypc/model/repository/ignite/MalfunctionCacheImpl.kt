@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component
 import javax.annotation.PostConstruct
 
 @Component
-class MalfunctionStoreImpl : MalfunctionStore {
+class MalfunctionCacheImpl : MalfunctionCache {
 
     @Autowired
     lateinit var ignite: Ignite

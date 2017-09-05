@@ -5,8 +5,8 @@ import com.kirakishou.backend.fixmypc.core.Fickle
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.entity.LatLon
 import com.kirakishou.backend.fixmypc.model.entity.DamageClaim
-import com.kirakishou.backend.fixmypc.model.repository.ignite.LocationStore
-import com.kirakishou.backend.fixmypc.model.repository.ignite.MalfunctionStore
+import com.kirakishou.backend.fixmypc.model.repository.ignite.LocationCache
+import com.kirakishou.backend.fixmypc.model.repository.ignite.MalfunctionCache
 import com.kirakishou.backend.fixmypc.model.repository.postgresql.MalfunctionDao
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -16,13 +16,13 @@ import java.util.stream.Collectors
 class MalfunctionRepositoryImpl : MalfunctionRepository {
 
     @Autowired
-    private lateinit var malfunctionStore: MalfunctionStore
+    private lateinit var malfunctionCache: MalfunctionCache
 
     @Autowired
     private lateinit var malfunctionDao: MalfunctionDao
 
     @Autowired
-    private lateinit var locationStore: LocationStore
+    private lateinit var locationCache: LocationCache
 
     @Autowired
     private lateinit var userMalfunctionsRepository: UserMalfunctionsRepository
@@ -48,12 +48,12 @@ class MalfunctionRepositoryImpl : MalfunctionRepository {
             return false
         }
 
-        locationStore.saveOne(LatLon(damageClaim.lat, damageClaim.lon), damageClaim.id)
+        locationCache.saveOne(LatLon(damageClaim.lat, damageClaim.lon), damageClaim.id)
         return true
     }
 
     override fun findOne(malfunctionId: Long): Fickle<DamageClaim> {
-        val storeResult = malfunctionStore.findOne(malfunctionId)
+        val storeResult = malfunctionCache.findOne(malfunctionId)
         if (storeResult.isPresent()) {
             return storeResult
         }
@@ -75,7 +75,7 @@ class MalfunctionRepositoryImpl : MalfunctionRepository {
         }
 
         log.d("MalfunctionRepository Found ${malfunctionIdList.size} out of $count ids in the repository")
-        val cacheResult = malfunctionStore.findMany(malfunctionIdList)
+        val cacheResult = malfunctionCache.findMany(malfunctionIdList)
 
         if (cacheResult.size == count.toInt()) {
             log.d("MalfunctionRepository That's enough, returning them")
@@ -105,7 +105,7 @@ class MalfunctionRepositoryImpl : MalfunctionRepository {
         }
 
         log.d("MalfunctionRepository Caching DB items")
-        malfunctionStore.saveMany(filteredMalfunctionList)
+        malfunctionCache.saveMany(filteredMalfunctionList)
         filteredMalfunctionList.addAll(0, cacheResult)
 
         log.d("MalfunctionRepository Total items returned ${filteredMalfunctionList.size}")
@@ -124,7 +124,7 @@ class MalfunctionRepositoryImpl : MalfunctionRepository {
             }
 
             userMalfunctionsRepository.deleteOne(ownerId, malfunctionId)
-            locationStore.deleteOne(malfunctionId)
+            locationCache.deleteOne(malfunctionId)
 
             return true
         } catch (e: Exception) {

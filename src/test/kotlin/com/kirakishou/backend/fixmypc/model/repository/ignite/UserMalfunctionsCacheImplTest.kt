@@ -16,9 +16,9 @@ import org.springframework.test.util.ReflectionTestUtils
 import java.util.*
 import javax.cache.expiry.Duration
 
-class UserMalfunctionsStoreImplTest {
+class UserMalfunctionsCacheImplTest {
 
-    val store = UserMalfunctionsStoreImpl()
+    val store = UserMalfunctionsCacheImpl()
 
     private var userMalfunctionStore: IgniteCache<Long, SortedSet<Long>>? = null
 

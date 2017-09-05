@@ -67,23 +67,30 @@
 			<scope>runtime</scope>
 		</dependency>
 
+		<!-- https://mvnrepository.com/artifact/com.vividsolutions/jts -->
+		<dependency>
+			<groupId>com.vividsolutions</groupId>
+			<artifactId>jts</artifactId>
+			<version>1.13</version>
+		</dependency>
+
 		<!-- Apache Ignite -->
 		<dependency>
 			<groupId>org.apache.ignite</groupId>
 			<artifactId>ignite-core</artifactId>
-			<version>2.1.0</version>
+			<version>2.1.4</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.ignite</groupId>
 			<artifactId>ignite-spring</artifactId>
-			<version>2.1.0</version>
+			<version>2.1.4</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.apache.ignite</groupId>
 			<artifactId>ignite-geospatial</artifactId>
-			<version>1.2.0-incubating</version>
+			<version>2.1.4</version>
 		</dependency>
 
 		<!-- jackson -->
@@ -119,11 +126,13 @@
 			<version>2.6.1</version>
 			<scope>compile</scope>
 		</dependency>
+
         <dependency>
             <groupId>javax.cache</groupId>
             <artifactId>cache-api</artifactId>
             <version>1.0.0</version>
         </dependency>
+
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>

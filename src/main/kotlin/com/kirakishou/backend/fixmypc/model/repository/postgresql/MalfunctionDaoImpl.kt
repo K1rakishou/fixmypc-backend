@@ -5,7 +5,9 @@ import com.kirakishou.backend.fixmypc.core.Either
 import com.kirakishou.backend.fixmypc.core.Fickle
 import com.kirakishou.backend.fixmypc.extension.prepareStatementScrollable
 import com.kirakishou.backend.fixmypc.extension.transactional
+import com.kirakishou.backend.fixmypc.model.dto.DamageClaimIdLocationDTO
 import com.kirakishou.backend.fixmypc.model.entity.DamageClaim
+import com.kirakishou.backend.fixmypc.model.entity.LatLon
 import com.kirakishou.backend.fixmypc.util.TextUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Repository
@@ -23,7 +25,7 @@ class MalfunctionDaoImpl : MalfunctionDao {
     override fun saveOne(damageClaim: DamageClaim): Either<SQLException, Boolean> {
         try {
             hikariCP.connection.transactional { connection ->
-                connection.prepareStatement("INSERT INTO public.damageClaims (owner_id, category, description, " +
+                connection.prepareStatement("INSERT INTO public.malfunction_photos (owner_id, category, description, " +
                         "malfunction_request_id, lat, lon, is_active, created_on, deleted_on) " +
                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL)", Statement.RETURN_GENERATED_KEYS).use { ps ->
 
@@ -72,7 +74,7 @@ class MalfunctionDaoImpl : MalfunctionDao {
 
         try {
             hikariCP.connection.use { connection ->
-                connection.prepareStatementScrollable("SELECT * FROM public.damageClaims WHERE id = ? AND" +
+                connection.prepareStatementScrollable("SELECT * FROM public.malfunction_photos WHERE id = ? AND" +
                         " deleted_on IS NULL AND is_active = true LIMIT 1").use { ps ->
 
                     ps.setLong(1, id)
@@ -111,7 +113,7 @@ class MalfunctionDaoImpl : MalfunctionDao {
         try {
             hikariCP.connection.use { connection ->
                 connection.prepareStatement("SELECT id, category, description, created_on, malfunction_request_id, " +
-                        "lat, lon FROM public.damageClaims WHERE owner_id = ? AND is_active = ? AND " +
+                        "lat, lon FROM public.malfunction_photos WHERE owner_id = ? AND is_active = ? AND " +
                         "deleted_on IS NULL ORDER BY id ASC OFFSET ? LIMIT ?").use { ps ->
 
                     ps.setLong(1, ownerId)
@@ -156,6 +158,30 @@ class MalfunctionDaoImpl : MalfunctionDao {
         return getMany(ownerId, false)
     }
 
+    override fun findAllIdsWithLocations(offset: Long, count: Long): List<DamageClaimIdLocationDTO> {
+        val items = arrayListOf<DamageClaimIdLocationDTO>()
+
+        hikariCP.connection.use { connection ->
+            connection.prepareStatement("SELECT id, lat, lon FROM public.malfunctions WHERE deleted_on IS NULL OFFSET ? LIMIT ?").use { ps ->
+                ps.setLong(1, offset)
+                ps.setLong(2, count)
+
+                ps.executeQuery().use { rs ->
+                    while (rs.next()) {
+                        val item =  DamageClaimIdLocationDTO(
+                                rs.getLong("id"),
+                                LatLon(rs.getDouble("lat"),
+                                        rs.getDouble("lon")))
+
+                        items.add(item)
+                    }
+                }
+            }
+        }
+
+        return items
+    }
+
     override fun deleteOne(id: Long): Either<SQLException, Boolean> {
         try {
             hikariCP.connection.transactional { connection ->
@@ -172,7 +198,7 @@ class MalfunctionDaoImpl : MalfunctionDao {
     override fun deleteOnePermanently(id: Long): Either<SQLException, Boolean> {
         try {
             hikariCP.connection.use { connection ->
-                connection.prepareStatement("DELETE FROM public.damageClaims WHERE id = ? LIMIT 1").use { ps ->
+                connection.prepareStatement("DELETE FROM public.malfunction_photos WHERE id = ? LIMIT 1").use { ps ->
                     ps.setLong(1, id)
                     ps.executeUpdate()
                 }
@@ -190,7 +216,7 @@ class MalfunctionDaoImpl : MalfunctionDao {
         try {
             hikariCP.connection.use { connection ->
                 connection.prepareStatement("SELECT id, category, description, created_on, malfunction_request_id, lat, lon " +
-                        "FROM public.damageClaims WHERE owner_id = ? AND is_active = ? AND deleted_on IS NULL ORDER BY id ASC").use { ps ->
+                        "FROM public.malfunction_photos WHERE owner_id = ? AND is_active = ? AND deleted_on IS NULL ORDER BY id ASC").use { ps ->
 
                     ps.setLong(1, ownerId)
                     ps.setBoolean(2, isActive)
@@ -261,7 +287,7 @@ class MalfunctionDaoImpl : MalfunctionDao {
     }
 
     private fun deleteMalfunction(connection: Connection, id: Long) {
-        connection.prepareStatement("UPDATE public.damageClaims SET deleted_on = NOW() WHERE id = ?").use { ps ->
+        connection.prepareStatement("UPDATE public.malfunction_photos SET deleted_on = NOW() WHERE id = ?").use { ps ->
             ps.setLong(1, id)
             ps.executeUpdate()
         }

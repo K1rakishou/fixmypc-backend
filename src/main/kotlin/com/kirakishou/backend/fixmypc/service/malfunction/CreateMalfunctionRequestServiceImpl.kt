@@ -11,7 +11,7 @@ import com.kirakishou.backend.fixmypc.model.entity.FileServerInfo
 import com.kirakishou.backend.fixmypc.model.entity.DamageClaim
 import com.kirakishou.backend.fixmypc.model.net.request.MalfunctionCreateRequest
 import com.kirakishou.backend.fixmypc.model.repository.MalfunctionRepository
-import com.kirakishou.backend.fixmypc.model.repository.ignite.UserStore
+import com.kirakishou.backend.fixmypc.model.repository.ignite.UserCache
 import com.kirakishou.backend.fixmypc.model.repository.postgresql.MalfunctionDao
 import com.kirakishou.backend.fixmypc.service.FileServerService
 import com.kirakishou.backend.fixmypc.service.Generator
@@ -68,7 +68,7 @@ class CreateMalfunctionRequestServiceImpl : CreateMalfunctionRequestService {
     private lateinit var malfunctionRepository: MalfunctionRepository
 
     @Autowired
-    private lateinit var userStore: UserStore
+    private lateinit var userCache: UserCache
 
     private val FILE_SERVER_REQUEST_TIMEOUT: Long = 7L
 
@@ -87,7 +87,7 @@ class CreateMalfunctionRequestServiceImpl : CreateMalfunctionRequestService {
                                           request: MalfunctionCreateRequest, sessionId: String): Single<CreateMalfunctionRequestService.Post.Result> {
 
         //user must re login if sessionId was removed from the cache
-        val userFickle = userStore.findOne(sessionId)
+        val userFickle = userCache.findOne(sessionId)
         if (!userFickle.isPresent()) {
             log.d("sessionId $sessionId was not found in the cache")
             return Single.just(CreateMalfunctionRequestService.Post.Result.SessionIdExpired())

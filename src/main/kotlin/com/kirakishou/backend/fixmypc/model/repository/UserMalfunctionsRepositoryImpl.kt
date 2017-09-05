@@ -2,7 +2,7 @@ package com.kirakishou.backend.fixmypc.model.repository
 
 import com.kirakishou.backend.fixmypc.core.Either
 import com.kirakishou.backend.fixmypc.log.FileLog
-import com.kirakishou.backend.fixmypc.model.repository.ignite.UserMalfunctionsStore
+import com.kirakishou.backend.fixmypc.model.repository.ignite.UserMalfunctionsCache
 import com.kirakishou.backend.fixmypc.model.repository.postgresql.UserMalfunctionsDao
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -15,7 +15,7 @@ class UserMalfunctionsRepositoryImpl : UserMalfunctionsRepository {
     private lateinit var userMalfunctionsDao: UserMalfunctionsDao
     
     @Autowired
-    private lateinit var userMalfunctionsStore: UserMalfunctionsStore
+    private lateinit var userMalfunctionsCache: UserMalfunctionsCache
     
     @Autowired
     private lateinit var log: FileLog
@@ -31,12 +31,12 @@ class UserMalfunctionsRepositoryImpl : UserMalfunctionsRepository {
             }
         }
 
-        userMalfunctionsStore.saveOne(ownerId, malfunctionId)
+        userMalfunctionsCache.saveOne(ownerId, malfunctionId)
         return true
     }
 
     override fun findMany(ownerId: Long, offset: Long, count: Long): List<Long> {
-        val cacheResult = userMalfunctionsStore.findMany(ownerId, offset, count)
+        val cacheResult = userMalfunctionsCache.findMany(ownerId, offset, count)
         if (cacheResult.size == count.toInt()) {
             log.d("UserMalfunctionsRepository Found enough ids in the cache")
             return cacheResult
@@ -58,7 +58,7 @@ class UserMalfunctionsRepositoryImpl : UserMalfunctionsRepository {
         }
 
         log.d("UserMalfunctionsRepository Found ${daoResValue.size} ids in the DB. Caching them.")
-        userMalfunctionsStore.saveMany(ownerId, daoResValue)
+        userMalfunctionsCache.saveMany(ownerId, daoResValue)
 
         val filteredIds = daoResValue.stream()
                 .skip(offset)
@@ -88,7 +88,7 @@ class UserMalfunctionsRepositoryImpl : UserMalfunctionsRepository {
             }
         }
 
-        userMalfunctionsStore.deleteOne(ownerId, malfunctionId)
+        userMalfunctionsCache.deleteOne(ownerId, malfunctionId)
         return true
     }
 }
