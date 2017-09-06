@@ -17,7 +17,7 @@ import java.sql.Statement
 import javax.sql.DataSource
 
 @Repository
-class MalfunctionDaoImpl : MalfunctionDao {
+class DamageClaimDaoImpl : DamageClaimDao {
 
     @Autowired
     private lateinit var hikariCP: DataSource
@@ -148,6 +148,10 @@ class MalfunctionDaoImpl : MalfunctionDao {
         }
 
         return Either.Value(malfunctions)
+    }
+
+    override fun findManyActive(idsToSearch: List<Long>): Either<SQLException, List<DamageClaim>> {
+        TODO()
     }
 
     override fun findManyActive(ownerId: Long): Either<SQLException, List<DamageClaim>> {

@@ -10,9 +10,9 @@ import com.kirakishou.backend.fixmypc.model.entity.FileServerAnswerWrapper
 import com.kirakishou.backend.fixmypc.model.entity.FileServerInfo
 import com.kirakishou.backend.fixmypc.model.entity.DamageClaim
 import com.kirakishou.backend.fixmypc.model.net.request.MalfunctionCreateRequest
-import com.kirakishou.backend.fixmypc.model.repository.MalfunctionRepository
+import com.kirakishou.backend.fixmypc.model.repository.DamageClaimRepository
 import com.kirakishou.backend.fixmypc.model.repository.ignite.UserCache
-import com.kirakishou.backend.fixmypc.model.repository.postgresql.MalfunctionDao
+import com.kirakishou.backend.fixmypc.model.repository.postgresql.DamageClaimDao
 import com.kirakishou.backend.fixmypc.service.FileServerService
 import com.kirakishou.backend.fixmypc.service.Generator
 import com.kirakishou.backend.fixmypc.service.TempFilesService
@@ -62,10 +62,10 @@ class CreateMalfunctionRequestServiceImpl : CreateMalfunctionRequestService {
     private lateinit var tempFileService: TempFilesService
 
     @Autowired
-    private lateinit var malfunctionDao: MalfunctionDao
+    private lateinit var damageClaimDao: DamageClaimDao
 
     @Autowired
-    private lateinit var malfunctionRepository: MalfunctionRepository
+    private lateinit var damageClaimRepository: DamageClaimRepository
 
     @Autowired
     private lateinit var userCache: UserCache
@@ -176,7 +176,7 @@ class CreateMalfunctionRequestServiceImpl : CreateMalfunctionRequestService {
                     createdOn = Timestamp(ServerUtils.getTimeFast()),
                     imageNamesList = imageNamesList)
 
-            if (!malfunctionRepository.saveOne(malfunction)) {
+            if (!damageClaimRepository.saveOne(malfunction)) {
                 log.d("Failed to create malfunction (Repository error)")
 
                 //we failed to save malfunction request in the repository, so we have to notify file servers to delete images related to the request

@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component
 import javax.annotation.PostConstruct
 
 @Component
-class MalfunctionCacheImpl : MalfunctionCache {
+class DamageClaimCacheImpl : DamageClaimCache {
 
     @Autowired
     lateinit var ignite: Ignite

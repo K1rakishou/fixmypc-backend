@@ -7,7 +7,7 @@ import com.kirakishou.backend.fixmypc.model.net.request.MalfunctionCreateRequest
 import com.kirakishou.backend.fixmypc.model.net.response.DamageClaimsResponse
 import com.kirakishou.backend.fixmypc.model.net.response.MalfunctionCreateResponse
 import com.kirakishou.backend.fixmypc.service.malfunction.CreateMalfunctionRequestService
-import com.kirakishou.backend.fixmypc.service.malfunction.GetUserMalfunctionRequestListService
+import com.kirakishou.backend.fixmypc.service.malfunction.GetUserDamageClaimListService
 import io.reactivex.Single
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
@@ -24,7 +24,7 @@ class MalfunctionRequestController {
     lateinit var mCreateMalfunctionRequestService: CreateMalfunctionRequestService
 
     @Autowired
-    lateinit var mGetUserMalfunctionRequestListService: GetUserMalfunctionRequestListService
+    lateinit var mGetUserDamageClaimListService: GetUserDamageClaimListService
 
     @Autowired
     lateinit var log: FileLog
@@ -100,17 +100,19 @@ class MalfunctionRequestController {
 
     @RequestMapping(path = arrayOf("${Constant.Paths.MALFUNCTION_REQUEST_CONTROLLER_PATH}/{offset}"),
             method = arrayOf(RequestMethod.GET))
-    fun getUserMalfunctionRequestList(@RequestHeader("session_id") sessionId: String,
-                                      @PathVariable("offset") offset: Long): Single<ResponseEntity<DamageClaimsResponse>> {
+    fun getUserMalfunctionRequestList(@PathVariable("lat") lat: Double,
+                                      @PathVariable("lon") lon: Double,
+                                      @PathVariable("radius") radius: Double,
+                                      @PathVariable("page") page: Long): Single<ResponseEntity<DamageClaimsResponse>> {
 
-        return mGetUserMalfunctionRequestListService.getUserMalfunctionRequestList(sessionId, Math.abs(offset))
+        return mGetUserDamageClaimListService.getDamageClaimsWithinRadiusPaged(lat, lon, radius, Math.abs(page))
                 .map { result ->
                     when (result) {
-                        is GetUserMalfunctionRequestListService.Get.Result.Ok -> {
+                        is GetUserDamageClaimListService.Get.Result.Ok -> {
                             return@map ResponseEntity(DamageClaimsResponse(result.damageClaimList, ServerErrorCode.SEC_OK.value), HttpStatus.OK)
                         }
 
-                        is GetUserMalfunctionRequestListService.Get.Result.SessionIdExpired -> {
+                        is GetUserDamageClaimListService.Get.Result.SessionIdExpired -> {
                             return@map ResponseEntity(DamageClaimsResponse(emptyList(), ServerErrorCode.SEC_SESSION_ID_EXPIRED.value), HttpStatus.UNAUTHORIZED)
                         }
 

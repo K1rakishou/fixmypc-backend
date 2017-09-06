@@ -33,7 +33,7 @@ class UserMalfunctionsCacheImplTest {
 
         val cacheConfig = CacheConfiguration<Long, SortedSet<Long>>()
         cacheConfig.backups = 0
-        cacheConfig.name = Constant.IgniteNames.USER_MALFUNCTION_NAME
+        cacheConfig.name = Constant.IgniteNames.USER_MALFUNCTION_CACHE_NAME
         cacheConfig.cacheMode = CacheMode.PARTITIONED
         cacheConfig.atomicityMode = CacheAtomicityMode.TRANSACTIONAL
         cacheConfig.setExpiryPolicyFactory(MyExpiryPolicyFactory(Duration.ONE_MINUTE, Duration.ONE_MINUTE, Duration.ONE_MINUTE))

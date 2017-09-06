@@ -6,9 +6,10 @@ import com.kirakishou.backend.fixmypc.model.dto.DamageClaimIdLocationDTO
 import com.kirakishou.backend.fixmypc.model.entity.DamageClaim
 import java.sql.SQLException
 
-interface MalfunctionDao {
+interface DamageClaimDao {
     fun saveOne(damageClaim: DamageClaim): Either<SQLException, Boolean>
     fun findOne(id: Long): Either<SQLException, Fickle<DamageClaim>>
+    fun findManyActive(idsToSearch: List<Long>): Either<SQLException, List<DamageClaim>>
     fun findManyActive(ownerId: Long): Either<Exception, List<DamageClaim>>
     fun findManyInactive(ownerId: Long): Either<Exception, List<DamageClaim>>
     fun findAllIdsWithLocations(offset: Long, count: Long): List<DamageClaimIdLocationDTO>

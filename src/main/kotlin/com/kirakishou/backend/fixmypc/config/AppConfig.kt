@@ -12,8 +12,12 @@ import org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi
 import org.apache.ignite.spi.discovery.tcp.ipfinder.vm.TcpDiscoveryVmIpFinder
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.data.redis.connection.jedis.JedisConnectionFactory
+import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.web.client.AsyncRestTemplate
 import javax.sql.DataSource
+
+
 
 
 
@@ -26,7 +30,7 @@ import javax.sql.DataSource
 class AppConfig {
 
     @Bean
-    fun kotlinModule() = KotlinModule()
+    fun provideKotlinModule() = KotlinModule()
 
     @Bean
     fun provideIgnite(): Ignite {
@@ -44,7 +48,7 @@ class AppConfig {
     }
 
     @Bean
-    fun dataSource(): DataSource {
+    fun provideDataSource(): DataSource {
         val dataSource = HikariDataSource()
         dataSource.driverClassName = "org.postgresql.Driver"
         dataSource.jdbcUrl = "jdbc:postgresql://192.168.99.100:9499/postgres"
@@ -58,7 +62,19 @@ class AppConfig {
     }
 
     @Bean
-    fun restTemplate(): AsyncRestTemplate {
+    fun provideJedisConnectionFactory(): JedisConnectionFactory {
+        return JedisConnectionFactory()
+    }
+
+    @Bean
+    fun provideRedisTemplate(): RedisTemplate<String, Long> {
+        val template = RedisTemplate<String, Long>()
+        template.connectionFactory = provideJedisConnectionFactory()
+        return template
+    }
+
+    @Bean
+    fun provideRestTemplate(): AsyncRestTemplate {
         return AsyncRestTemplate()
     }
 
