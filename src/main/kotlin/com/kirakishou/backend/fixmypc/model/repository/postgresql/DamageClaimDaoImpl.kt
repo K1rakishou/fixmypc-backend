@@ -25,8 +25,8 @@ class DamageClaimDaoImpl : DamageClaimDao {
     override fun saveOne(damageClaim: DamageClaim): Either<SQLException, Boolean> {
         try {
             hikariCP.connection.transactional { connection ->
-                connection.prepareStatement("INSERT INTO public.malfunction_photos (owner_id, category, description, " +
-                        "malfunction_request_id, lat, lon, is_active, created_on, deleted_on) " +
+                connection.prepareStatement("INSERT INTO public.damage_claims (owner_id, category, description, " +
+                        "folder_name, lat, lon, is_active, created_on, deleted_on) " +
                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL)", Statement.RETURN_GENERATED_KEYS).use { ps ->
 
                     ps.setLong(1, damageClaim.ownerId)
@@ -46,8 +46,8 @@ class DamageClaimDaoImpl : DamageClaimDao {
                     }
                 }
 
-                connection.prepareStatement("INSERT INTO public.malfunction_photos (malfunction_id, " +
-                        "image_name, image_type, deleted_on) " +
+                connection.prepareStatement("INSERT INTO public.damage_claims_photos (malfunction_id, " +
+                        "photo_name, photo_type, deleted_on) " +
                         "VALUES (?, ?, ?, NULL)").use { ps ->
 
                     for (imageName in damageClaim.imageNamesList) {
@@ -74,7 +74,7 @@ class DamageClaimDaoImpl : DamageClaimDao {
 
         try {
             hikariCP.connection.use { connection ->
-                connection.prepareStatementScrollable("SELECT * FROM public.malfunction_photos WHERE id = ? AND" +
+                connection.prepareStatementScrollable("SELECT * FROM public.damage_claims WHERE id = ? AND" +
                         " deleted_on IS NULL AND is_active = true LIMIT 1").use { ps ->
 
                     ps.setLong(1, id)
@@ -85,7 +85,7 @@ class DamageClaimDaoImpl : DamageClaimDao {
                                     rs.getLong("id"),
                                     rs.getLong("owner_id"),
                                     true,
-                                    rs.getString("malfunction_request_id"),
+                                    rs.getString("folder_name"),
                                     rs.getInt("category"),
                                     rs.getString("description"),
                                     rs.getDouble("lat"),
@@ -112,8 +112,8 @@ class DamageClaimDaoImpl : DamageClaimDao {
 
         try {
             hikariCP.connection.use { connection ->
-                connection.prepareStatement("SELECT id, category, description, created_on, malfunction_request_id, " +
-                        "lat, lon FROM public.malfunction_photos WHERE owner_id = ? AND is_active = ? AND " +
+                connection.prepareStatement("SELECT id, category, description, created_on, folder_name, " +
+                        "lat, lon FROM public.damage_claims WHERE owner_id = ? AND is_active = ? AND " +
                         "deleted_on IS NULL ORDER BY id ASC OFFSET ? LIMIT ?").use { ps ->
 
                     ps.setLong(1, ownerId)
@@ -128,7 +128,7 @@ class DamageClaimDaoImpl : DamageClaimDao {
                                     rs.getLong("id"),
                                     ownerId,
                                     isActive,
-                                    rs.getString("malfunction_request_id"),
+                                    rs.getString("folder_name"),
                                     rs.getInt("category"),
                                     rs.getString("description"),
                                     rs.getDouble("lat"),
@@ -166,7 +166,7 @@ class DamageClaimDaoImpl : DamageClaimDao {
         val items = arrayListOf<DamageClaimIdLocationDTO>()
 
         hikariCP.connection.use { connection ->
-            connection.prepareStatement("SELECT id, lat, lon FROM public.malfunctions WHERE deleted_on IS NULL OFFSET ? LIMIT ?").use { ps ->
+            connection.prepareStatement("SELECT id, lat, lon FROM public.damage_claims WHERE deleted_on IS NULL OFFSET ? LIMIT ?").use { ps ->
                 ps.setLong(1, offset)
                 ps.setLong(2, count)
 
@@ -202,7 +202,7 @@ class DamageClaimDaoImpl : DamageClaimDao {
     override fun deleteOnePermanently(id: Long): Either<SQLException, Boolean> {
         try {
             hikariCP.connection.use { connection ->
-                connection.prepareStatement("DELETE FROM public.malfunction_photos WHERE id = ? LIMIT 1").use { ps ->
+                connection.prepareStatement("DELETE FROM public.damage_claims WHERE id = ? LIMIT 1").use { ps ->
                     ps.setLong(1, id)
                     ps.executeUpdate()
                 }
@@ -219,8 +219,8 @@ class DamageClaimDaoImpl : DamageClaimDao {
 
         try {
             hikariCP.connection.use { connection ->
-                connection.prepareStatement("SELECT id, category, description, created_on, malfunction_request_id, lat, lon " +
-                        "FROM public.malfunction_photos WHERE owner_id = ? AND is_active = ? AND deleted_on IS NULL ORDER BY id ASC").use { ps ->
+                connection.prepareStatement("SELECT id, category, description, created_on, folder_name, lat, lon " +
+                        "FROM public.damage_claims WHERE owner_id = ? AND is_active = ? AND deleted_on IS NULL ORDER BY id ASC").use { ps ->
 
                     ps.setLong(1, ownerId)
                     ps.setBoolean(2, isActive)
@@ -232,7 +232,7 @@ class DamageClaimDaoImpl : DamageClaimDao {
                                     rs.getLong("id"),
                                     ownerId,
                                     isActive,
-                                    rs.getString("malfunction_request_id"),
+                                    rs.getString("folder_name"),
                                     rs.getInt("category"),
                                     rs.getString("description"),
                                     rs.getDouble("lat"),
@@ -259,7 +259,7 @@ class DamageClaimDaoImpl : DamageClaimDao {
         val malfunctionIdsCount = malfunctionIdList.size
         val idsToSearch = TextUtils.createStatementForList(malfunctionIdsCount)
 
-        val sql = "SELECT malfunction_id, image_name FROM public.malfunction_photos WHERE malfunction_id IN ($idsToSearch) " +
+        val sql = "SELECT malfunction_id, photo_name FROM public.damage_claims_photos WHERE malfunction_id IN ($idsToSearch) " +
                 "AND deleted_on IS NULL"
 
         connection.prepareStatement(sql).use { ps ->
@@ -270,7 +270,7 @@ class DamageClaimDaoImpl : DamageClaimDao {
             ps.executeQuery().use { rs ->
                 while (rs.next()) {
                     val id = rs.getLong("malfunction_id")
-                    val imageName = rs.getString("image_name")
+                    val imageName = rs.getString("photo_name")
 
                     val malfunction = damageClaims.firstOrNull { it.id == id }
                     if (malfunction == null) {
@@ -284,14 +284,14 @@ class DamageClaimDaoImpl : DamageClaimDao {
     }
 
     private fun deletePhoto(connection: Connection, id: Long) {
-        connection.prepareStatement("UPDATE public.malfunction_photos SET deleted_on = NOW() WHERE id = ?").use { ps ->
+        connection.prepareStatement("UPDATE public.damage_claims_photos SET deleted_on = NOW() WHERE id = ?").use { ps ->
             ps.setLong(1, id)
             ps.executeUpdate()
         }
     }
 
     private fun deleteMalfunction(connection: Connection, id: Long) {
-        connection.prepareStatement("UPDATE public.malfunction_photos SET deleted_on = NOW() WHERE id = ?").use { ps ->
+        connection.prepareStatement("UPDATE public.damage_claims_photos SET deleted_on = NOW() WHERE id = ?").use { ps ->
             ps.setLong(1, id)
             ps.executeUpdate()
         }

@@ -17,7 +17,7 @@ import javax.cache.expiry.Duration
 import kotlin.collections.ArrayList
 
 @Component
-class UserMalfunctionsCacheImpl : UserMalfunctionsCache {
+class UserToDamageClaimKeyAffinityCacheImpl : UserToDamageClaimKeyAffinityCache {
 
     @Autowired
     lateinit var ignite: Ignite

@@ -2,8 +2,8 @@ package com.kirakishou.backend.fixmypc.model.repository
 
 import com.kirakishou.backend.fixmypc.core.Either
 import com.kirakishou.backend.fixmypc.log.FileLog
-import com.kirakishou.backend.fixmypc.model.repository.ignite.UserMalfunctionsCache
-import com.kirakishou.backend.fixmypc.model.repository.postgresql.UserMalfunctionsDao
+import com.kirakishou.backend.fixmypc.model.repository.ignite.UserToDamageClaimKeyAffinityCache
+import com.kirakishou.backend.fixmypc.model.repository.postgresql.UserToDamageClaimKeyAffinityDao
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import java.util.stream.Collectors
@@ -12,16 +12,16 @@ import java.util.stream.Collectors
 class UserToDamageClaimKeyAffinityRepositoryImpl : UserToDamageClaimKeyAffinityRepository {
 
     @Autowired
-    private lateinit var userMalfunctionsDao: UserMalfunctionsDao
+    private lateinit var userToDamageClaimKeyAffinityDao: UserToDamageClaimKeyAffinityDao
     
     @Autowired
-    private lateinit var userMalfunctionsCache: UserMalfunctionsCache
+    private lateinit var userToDamageClaimKeyAffinityCache: UserToDamageClaimKeyAffinityCache
     
     @Autowired
     private lateinit var log: FileLog
 
     override fun saveOne(ownerId: Long, malfunctionId: Long): Boolean {
-        val daoResult = userMalfunctionsDao.saveOne(ownerId, malfunctionId)
+        val daoResult = userToDamageClaimKeyAffinityDao.saveOne(ownerId, malfunctionId)
         if (daoResult is Either.Error) {
             log.e(daoResult.error)
             return false
@@ -31,19 +31,19 @@ class UserToDamageClaimKeyAffinityRepositoryImpl : UserToDamageClaimKeyAffinityR
             }
         }
 
-        userMalfunctionsCache.saveOne(ownerId, malfunctionId)
+        userToDamageClaimKeyAffinityCache.saveOne(ownerId, malfunctionId)
         return true
     }
 
     override fun findMany(ownerId: Long, offset: Long, count: Long): List<Long> {
-        val cacheResult = userMalfunctionsCache.findMany(ownerId, offset, count)
+        val cacheResult = userToDamageClaimKeyAffinityCache.findMany(ownerId, offset, count)
         if (cacheResult.size == count.toInt()) {
             return cacheResult
         }
 
         val remainder = count - cacheResult.size
 
-        val daoResult = userMalfunctionsDao.findAll(ownerId)
+        val daoResult = userToDamageClaimKeyAffinityDao.findAll(ownerId)
         if (daoResult is Either.Error) {
             return cacheResult
         }
@@ -53,7 +53,7 @@ class UserToDamageClaimKeyAffinityRepositoryImpl : UserToDamageClaimKeyAffinityR
             return cacheResult
         }
 
-        userMalfunctionsCache.saveMany(ownerId, daoResValue)
+        userToDamageClaimKeyAffinityCache.saveMany(ownerId, daoResValue)
 
         val filteredIds = daoResValue.stream()
                 .skip(offset)
@@ -71,7 +71,7 @@ class UserToDamageClaimKeyAffinityRepositoryImpl : UserToDamageClaimKeyAffinityR
     }
 
     override fun deleteOne(ownerId: Long, malfunctionId: Long): Boolean {
-        val daoResult = userMalfunctionsDao.deleteOne(ownerId, malfunctionId)
+        val daoResult = userToDamageClaimKeyAffinityDao.deleteOne(ownerId, malfunctionId)
         if (daoResult is Either.Error) {
             log.e(daoResult.error)
             return false
@@ -81,7 +81,7 @@ class UserToDamageClaimKeyAffinityRepositoryImpl : UserToDamageClaimKeyAffinityR
             }
         }
 
-        userMalfunctionsCache.deleteOne(ownerId, malfunctionId)
+        userToDamageClaimKeyAffinityCache.deleteOne(ownerId, malfunctionId)
         return true
     }
 }

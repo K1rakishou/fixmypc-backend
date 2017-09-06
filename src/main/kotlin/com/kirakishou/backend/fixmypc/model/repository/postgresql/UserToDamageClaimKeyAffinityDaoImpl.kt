@@ -9,7 +9,7 @@ import java.sql.SQLException
 import javax.sql.DataSource
 
 @Component
-class UserMalfunctionsDaoImpl : UserMalfunctionsDao {
+class UserToDamageClaimKeyAffinityDaoImpl : UserToDamageClaimKeyAffinityDao {
 
     @Autowired
     private lateinit var hikariCP: DataSource
@@ -17,7 +17,8 @@ class UserMalfunctionsDaoImpl : UserMalfunctionsDao {
     override fun saveOne(ownerId: Long, malfunctionId: Long): Either<SQLException, Boolean> {
         try {
             hikariCP.connection.transactional { connection ->
-                connection.prepareStatement("INSERT INTO public.user_malfunctions (owner_id, malfunction_id, deleted_on) VALUES (?, ?, NULL)").use { ps ->
+                connection.prepareStatement("INSERT INTO public.user_to_damage_claim_key_affinity " +
+                        "(owner_id, damage_claim_id, deleted_on) VALUES (?, ?, NULL)").use { ps ->
                     ps.setLong(1, ownerId)
                     ps.setLong(2, malfunctionId)
                     ps.executeUpdate()
@@ -34,7 +35,7 @@ class UserMalfunctionsDaoImpl : UserMalfunctionsDao {
         val idsList = arrayListOf<Long>()
 
         try {
-            hikariCP.connection.prepareStatementScrollable("SELECT malfunction_id FROM public.user_malfunctions WHERE " +
+            hikariCP.connection.prepareStatementScrollable("SELECT damage_claim_id FROM public.user_to_damage_claim_key_affinity WHERE " +
                     "owner_id = ? AND deleted_on IS NULL OFFSET ? LIMIT ? ORDER BY id ASC").use { ps ->
                 ps.setLong(1, ownerId)
                 ps.setLong(2, offset)
@@ -42,7 +43,7 @@ class UserMalfunctionsDaoImpl : UserMalfunctionsDao {
 
                 ps.executeQuery().use { rs ->
                     while (rs.next()) {
-                        idsList += rs.getLong("malfunction_id")
+                        idsList += rs.getLong("damage_claim_id")
                     }
                 }
             }
@@ -57,13 +58,13 @@ class UserMalfunctionsDaoImpl : UserMalfunctionsDao {
         val idsList = arrayListOf<Long>()
 
         try {
-            hikariCP.connection.prepareStatementScrollable("SELECT malfunction_id FROM public.user_malfunctions WHERE " +
+            hikariCP.connection.prepareStatementScrollable("SELECT damage_claim_id FROM public.user_to_damage_claim_key_affinity WHERE " +
                     "owner_id = ? AND deleted_on IS NULL ORDER BY id ASC").use { ps ->
                 ps.setLong(1, ownerId)
 
                 ps.executeQuery().use { rs ->
                     while (rs.next()) {
-                        idsList += rs.getLong("malfunction_id")
+                        idsList += rs.getLong("damage_claim_id")
                     }
                 }
             }
@@ -77,7 +78,8 @@ class UserMalfunctionsDaoImpl : UserMalfunctionsDao {
     override fun deleteOne(ownerId: Long, malfunctionId: Long): Either<SQLException, Boolean> {
         try {
             hikariCP.connection.use { connection ->
-                connection.prepareStatement("UPDATE public.user_malfunctions SET deleted_on = NOW() WHERE owner_id = ? AND malfunction_id = ?").use { ps ->
+                connection.prepareStatement("UPDATE public.user_to_damage_claim_key_affinity SET deleted_on = NOW() " +
+                        "WHERE owner_id = ? AND damage_claim_id = ?").use { ps ->
                     ps.setLong(1, ownerId)
                     ps.setLong(2, malfunctionId)
                     ps.executeUpdate()
@@ -93,7 +95,8 @@ class UserMalfunctionsDaoImpl : UserMalfunctionsDao {
     override fun deleteOnePermanently(ownerId: Long, malfunctionId: Long): Either<SQLException, Boolean> {
         try {
             hikariCP.connection.use { connection ->
-                connection.prepareStatement("DELETE FROM public.user_malfunctions WHERE owner_id = ? AND malfunction_id = ? LIMIT 1").use { ps ->
+                connection.prepareStatement("DELETE FROM public.user_to_damage_claim_key_affinity " +
+                        "WHERE owner_id = ? AND damage_claim_id = ? LIMIT 1").use { ps ->
                     ps.setLong(1, ownerId)
                     ps.setLong(2, malfunctionId)
                     ps.executeUpdate()
