@@ -9,10 +9,10 @@ import com.kirakishou.backend.fixmypc.manager.FileServersManagerImpl
 import com.kirakishou.backend.fixmypc.model.entity.FileServerAnswer
 import com.kirakishou.backend.fixmypc.model.entity.FileServerAnswerWrapper
 import com.kirakishou.backend.fixmypc.model.entity.FileServerInfo
-import com.kirakishou.backend.fixmypc.model.net.request.MalfunctionCreateRequest
+import com.kirakishou.backend.fixmypc.model.net.request.CreateDamageClaimRequest
 import com.kirakishou.backend.fixmypc.model.repository.postgresql.DamageClaimDao
-import com.kirakishou.backend.fixmypc.service.malfunction.CreateMalfunctionRequestService
-import com.kirakishou.backend.fixmypc.service.malfunction.CreateMalfunctionRequestServiceImpl
+import com.kirakishou.backend.fixmypc.service.malfunction.CreateDamageClaimService
+import com.kirakishou.backend.fixmypc.service.malfunction.CreateDamageClaimServiceImpl
 import io.reactivex.Flowable
 import io.reactivex.plugins.RxJavaPlugins
 import io.reactivex.schedulers.Schedulers
@@ -37,7 +37,7 @@ import javax.imageio.ImageIO
 class CreateDamageClaimRequestServiceTest {
 
     @InjectMocks
-    val service = CreateMalfunctionRequestServiceImpl()
+    val service = CreateDamageClaimServiceImpl()
 
     @Mock
     lateinit var log: FileLog
@@ -141,10 +141,10 @@ class CreateDamageClaimRequestServiceTest {
                 TestUtils.anyObject()))
                 .thenReturn(Flowable.just(FileServerAnswerWrapper(FileServerAnswer(FileServerErrorCode.OK.value, emptyList()), "")))
 
-        val response = service.createMalfunctionRequest(uploadingFiles, 0, MalfunctionCreateRequest(0, "test", 0.0, 0.0), sessionId)
+        val response = service.createDamageClaim(uploadingFiles, 0, CreateDamageClaimRequest(0, "test", 0.0, 0.0), sessionId)
                 .blockingGet()
 
-        assertEquals(true, response is CreateMalfunctionRequestService.Post.Result.Ok)
+        assertEquals(true, response is CreateDamageClaimService.Post.Result.Ok)
     }
 
     @Test
@@ -215,10 +215,10 @@ class CreateDamageClaimRequestServiceTest {
                 TestUtils.anyObject()))
                 .thenReturn(Flowable.just(FileServerAnswerWrapper(FileServerAnswer(FileServerErrorCode.OK.value, emptyList()), "")))
 
-        val response = service.createMalfunctionRequest(uploadingFiles, 0, MalfunctionCreateRequest(0, "test", 0.0, 0.0), sessionId)
+        val response = service.createDamageClaim(uploadingFiles, 0, CreateDamageClaimRequest(0, "test", 0.0, 0.0), sessionId)
                 .blockingGet()
 
-        assertEquals(true, response is CreateMalfunctionRequestService.Post.Result.Ok)
+        assertEquals(true, response is CreateDamageClaimService.Post.Result.Ok)
     }
 
     @Test
@@ -231,10 +231,10 @@ class CreateDamageClaimRequestServiceTest {
                 MockMultipartFile("test3", origFileName, MediaType.IMAGE_JPEG_VALUE, getBufferedImageBytes(normalImage)),
                 MockMultipartFile("test4", origFileName, MediaType.IMAGE_JPEG_VALUE, getBufferedImageBytes(normalImage)))
 
-        val response = service.createMalfunctionRequest(uploadingFiles, 0, MalfunctionCreateRequest(0, "test", 0.0, 0.0), sessionId)
+        val response = service.createDamageClaim(uploadingFiles, 0, CreateDamageClaimRequest(0, "test", 0.0, 0.0), sessionId)
                 .blockingGet()
 
-        assertEquals(true, response is CreateMalfunctionRequestService.Post.Result.FileSizeExceeded)
+        assertEquals(true, response is CreateDamageClaimService.Post.Result.FileSizeExceeded)
     }
 
     @Test
@@ -249,10 +249,10 @@ class CreateDamageClaimRequestServiceTest {
                 MockMultipartFile("test4", origFileName, MediaType.IMAGE_JPEG_VALUE, getBufferedImageBytes(normalImage)),
                 MockMultipartFile("test5", origFileName, MediaType.IMAGE_JPEG_VALUE, getBufferedImageBytes(normalImage)))
 
-        val response = service.createMalfunctionRequest(uploadingFiles, 0, MalfunctionCreateRequest(0, "test", 0.0, 0.0), sessionId)
+        val response = service.createDamageClaim(uploadingFiles, 0, CreateDamageClaimRequest(0, "test", 0.0, 0.0), sessionId)
                 .blockingGet()
 
-        assertEquals(true, response is CreateMalfunctionRequestService.Post.Result.ImagesCountExceeded)
+        assertEquals(true, response is CreateDamageClaimService.Post.Result.ImagesCountExceeded)
     }
 
     @Test
@@ -263,10 +263,10 @@ class CreateDamageClaimRequestServiceTest {
 
         Mockito.`when`(fileServerManager.isAtLeastOneServerAlive()).thenReturn(false)
 
-        val response = service.createMalfunctionRequest(uploadingFiles, 0, MalfunctionCreateRequest(0, "test", 0.0, 0.0), sessionId)
+        val response = service.createDamageClaim(uploadingFiles, 0, CreateDamageClaimRequest(0, "test", 0.0, 0.0), sessionId)
                 .blockingGet()
 
-        assertEquals(true, response is CreateMalfunctionRequestService.Post.Result.AllFileServersAreNotWorking)
+        assertEquals(true, response is CreateDamageClaimService.Post.Result.AllFileServersAreNotWorking)
     }
 
     @Test
@@ -274,10 +274,10 @@ class CreateDamageClaimRequestServiceTest {
         val uploadingFiles = arrayOf<MultipartFile>()
         val sessionId = "1234567"
 
-        val response = service.createMalfunctionRequest(uploadingFiles, 0, MalfunctionCreateRequest(0, "test", 0.0, 0.0), sessionId)
+        val response = service.createDamageClaim(uploadingFiles, 0, CreateDamageClaimRequest(0, "test", 0.0, 0.0), sessionId)
                 .blockingGet()
 
-        assertEquals(true, response is CreateMalfunctionRequestService.Post.Result.NoFilesToUpload)
+        assertEquals(true, response is CreateDamageClaimService.Post.Result.NoFilesToUpload)
     }
 
     @Test
@@ -362,10 +362,10 @@ class CreateDamageClaimRequestServiceTest {
                 TestUtils.anyObject()))
                 .thenReturn(Flowable.just(FileServerAnswerWrapper(FileServerAnswer(FileServerErrorCode.OK.value, emptyList()), "")))
 
-        val response = service.createMalfunctionRequest(uploadingFiles, 0, MalfunctionCreateRequest(0, "test", 0.0, 0.0), sessionId)
+        val response = service.createDamageClaim(uploadingFiles, 0, CreateDamageClaimRequest(0, "test", 0.0, 0.0), sessionId)
                 .blockingGet()
 
-        assertEquals(true, response is CreateMalfunctionRequestService.Post.Result.Ok)
+        assertEquals(true, response is CreateDamageClaimService.Post.Result.Ok)
     }
 
     @Test
@@ -414,10 +414,10 @@ class CreateDamageClaimRequestServiceTest {
                 .thenReturn(Flowable.just(FileServerAnswerWrapper(FileServerAnswer(FileServerErrorCode.REQUEST_TIMEOUT.value, emptyList()), ""))
                         .delay(1100, TimeUnit.MILLISECONDS))
 
-        val response = service.createMalfunctionRequest(arrayOf(file), 0, MalfunctionCreateRequest(0, "test", 0.0, 0.0), sessionId)
+        val response = service.createDamageClaim(arrayOf(file), 0, CreateDamageClaimRequest(0, "test", 0.0, 0.0), sessionId)
                 .blockingGet()
 
-        assertEquals(true, response is CreateMalfunctionRequestService.Post.Result.AllFileServersAreNotWorking)
+        assertEquals(true, response is CreateDamageClaimService.Post.Result.AllFileServersAreNotWorking)
     }
 
     @Test
@@ -439,10 +439,10 @@ class CreateDamageClaimRequestServiceTest {
         Mockito.`when`(fileServerService.saveMalfunctionRequestImage(0, host, tempFile, origFileName, 0, 0L, malfunctionRequestId))
                 .thenReturn(Flowable.just(FileServerAnswerWrapper(FileServerAnswer(FileServerErrorCode.OK.value, emptyList()), "n0_i45435346")))
 
-        val response = service.createMalfunctionRequest(uploadingFiles, 0, MalfunctionCreateRequest(0, "test", 0.0, 0.0), sessionId)
+        val response = service.createDamageClaim(uploadingFiles, 0, CreateDamageClaimRequest(0, "test", 0.0, 0.0), sessionId)
                 .blockingGet()
 
-        assertEquals(true, response is CreateMalfunctionRequestService.Post.Result.DatabaseError)
+        assertEquals(true, response is CreateDamageClaimService.Post.Result.DatabaseError)
     }
 }
 

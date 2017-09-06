@@ -1,10 +1,10 @@
 package com.kirakishou.backend.fixmypc.service.malfunction
 
-import com.kirakishou.backend.fixmypc.model.net.request.MalfunctionCreateRequest
+import com.kirakishou.backend.fixmypc.model.net.request.CreateDamageClaimRequest
 import io.reactivex.Single
 import org.springframework.web.multipart.MultipartFile
 
-interface CreateMalfunctionRequestService {
+interface CreateDamageClaimService {
 
     interface Post {
         interface Result {
@@ -21,5 +21,5 @@ interface CreateMalfunctionRequestService {
         }
     }
 
-    fun createMalfunctionRequest(uploadingFiles: Array<MultipartFile>, imageType: Int, request: MalfunctionCreateRequest, sessionId: String): Single<Post.Result>
+    fun createDamageClaim(uploadingFiles: Array<MultipartFile>, imageType: Int, request: CreateDamageClaimRequest, sessionId: String): Single<Post.Result>
 }

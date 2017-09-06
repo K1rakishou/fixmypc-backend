@@ -9,7 +9,7 @@ import com.kirakishou.backend.fixmypc.model.entity.FileServerAnswer
 import com.kirakishou.backend.fixmypc.model.entity.FileServerAnswerWrapper
 import com.kirakishou.backend.fixmypc.model.entity.FileServerInfo
 import com.kirakishou.backend.fixmypc.model.entity.DamageClaim
-import com.kirakishou.backend.fixmypc.model.net.request.MalfunctionCreateRequest
+import com.kirakishou.backend.fixmypc.model.net.request.CreateDamageClaimRequest
 import com.kirakishou.backend.fixmypc.model.repository.DamageClaimRepository
 import com.kirakishou.backend.fixmypc.model.repository.ignite.UserCache
 import com.kirakishou.backend.fixmypc.model.repository.postgresql.DamageClaimDao
@@ -32,7 +32,7 @@ import java.util.stream.Collectors
 import javax.annotation.PostConstruct
 
 @Component
-class CreateMalfunctionRequestServiceImpl : CreateMalfunctionRequestService {
+class CreateDamageClaimServiceImpl : CreateDamageClaimService {
 
     @Value("\${spring.http.multipart.max-file-size}")
     private var maxFileSize: Long = 0
@@ -83,14 +83,14 @@ class CreateMalfunctionRequestServiceImpl : CreateMalfunctionRequestService {
         fileServerManager.init(fileServerInfoList, TimeUnit.MINUTES.toMillis(pingInterval))
     }
 
-    override fun createMalfunctionRequest(uploadingFiles: Array<MultipartFile>, imageType: Int,
-                                          request: MalfunctionCreateRequest, sessionId: String): Single<CreateMalfunctionRequestService.Post.Result> {
+    override fun createDamageClaim(uploadingFiles: Array<MultipartFile>, imageType: Int,
+                                   request: CreateDamageClaimRequest, sessionId: String): Single<CreateDamageClaimService.Post.Result> {
 
         //user must re login if sessionId was removed from the cache
         val userFickle = userCache.findOne(sessionId)
         if (!userFickle.isPresent()) {
             log.d("sessionId $sessionId was not found in the cache")
-            return Single.just(CreateMalfunctionRequestService.Post.Result.SessionIdExpired())
+            return Single.just(CreateDamageClaimService.Post.Result.SessionIdExpired())
         }
 
         val user = userFickle.get()
@@ -100,24 +100,24 @@ class CreateMalfunctionRequestServiceImpl : CreateMalfunctionRequestService {
         //return error code if user somehow sent a request without any images
         if (uploadingFiles.isEmpty()) {
             log.e("No files to upload")
-            return Single.just(CreateMalfunctionRequestService.Post.Result.NoFilesToUpload())
+            return Single.just(CreateDamageClaimService.Post.Result.NoFilesToUpload())
         }
 
         //return error code if user somehow sent more than "maxImagesPerRequest" images
-        if (uploadingFiles.size > Constant.MALFUNCTION_MAX_IMAGES_PER_REQUEST) {
+        if (uploadingFiles.size > Constant.DAMAGE_CLAIM_MAX_IMAGES_PER_REQUEST) {
             log.e("Too many files to upload (uploadingFiles.size > maxImagesPerRequest)")
-            return Single.just(CreateMalfunctionRequestService.Post.Result.ImagesCountExceeded())
+            return Single.just(CreateDamageClaimService.Post.Result.ImagesCountExceeded())
         }
 
         val requestCheckResult = checkRequestCorrectness(request)
-        if (requestCheckResult !is CreateMalfunctionRequestService.Post.Result.Ok) {
+        if (requestCheckResult !is CreateDamageClaimService.Post.Result.Ok) {
             log.e("Bad malfunction request")
             return Single.just(requestCheckResult)
         }
 
         //return error code if either one of the images size is bigger than "maxFileSize" or sum of images sizes bigger than "maxRequestSize"
         val fileSizesCheckResult = checkFilesSizes(uploadingFiles)
-        if (fileSizesCheckResult !is CreateMalfunctionRequestService.Post.Result.Ok) {
+        if (fileSizesCheckResult !is CreateDamageClaimService.Post.Result.Ok) {
             log.e("Bad size of photos")
             return Single.just(fileSizesCheckResult)
         }
@@ -125,7 +125,7 @@ class CreateMalfunctionRequestServiceImpl : CreateMalfunctionRequestService {
         //return error code if there are no working file servers
         if (!fileServerManager.isAtLeastOneServerAlive()) {
             log.e("Could not get at least one file server")
-            return Single.just(CreateMalfunctionRequestService.Post.Result.AllFileServersAreNotWorking())
+            return Single.just(CreateDamageClaimService.Post.Result.AllFileServersAreNotWorking())
         }
 
         //for every image try to get a working file server
@@ -153,14 +153,14 @@ class CreateMalfunctionRequestServiceImpl : CreateMalfunctionRequestService {
 
             //check results for errors
             for (result in results) {
-                if (result !is CreateMalfunctionRequestService.Post.Result.AllImagesUploaded) {
+                if (result !is CreateDamageClaimService.Post.Result.AllImagesUploaded) {
                     //the only possible reason for this to happen is when all file servers are down
                     log.e("Error. Something went wrong")
                     return@map result
                 }
             }
 
-            val imageNamesList = (results as ArrayList<CreateMalfunctionRequestService.Post.Result.AllImagesUploaded>).stream()
+            val imageNamesList = (results as ArrayList<CreateDamageClaimService.Post.Result.AllImagesUploaded>).stream()
                     .flatMap { it.names.stream() }
                     .map { it }
                     .collect(Collectors.toList())
@@ -187,16 +187,16 @@ class CreateMalfunctionRequestServiceImpl : CreateMalfunctionRequestService {
                     fileServerService.deleteMalfunctionRequestImages(ownerId, host, malfunctionRequestId, imageName)
                 }
 
-                return@map CreateMalfunctionRequestService.Post.Result.DatabaseError()
+                return@map CreateDamageClaimService.Post.Result.DatabaseError()
             }
 
             log.d("Malfunction successfully created")
-            return@map CreateMalfunctionRequestService.Post.Result.Ok()
+            return@map CreateDamageClaimService.Post.Result.Ok()
         }
     }
 
     private fun handleFiles(imageType: Int, ownerId: Long, malfunctionRequestId: String, filesAndServers: List<Pair<MultipartFile, FileServersManagerImpl.ServerWithId>>,
-                            uploadingFiles: Array<MultipartFile>): Flowable<out CreateMalfunctionRequestService.Post.Result> {
+                            uploadingFiles: Array<MultipartFile>): Flowable<out CreateDamageClaimService.Post.Result> {
 
         val responses = arrayListOf<Flowable<FileServerAnswerWrapper>>()
 
@@ -232,7 +232,7 @@ class CreateMalfunctionRequestServiceImpl : CreateMalfunctionRequestService {
         //return good error code if all images were successfully stored (no bad responses)
         if (badResponses.isEmpty()) {
             log.d("No bad responses. Every image was successfully stored")
-            return Flowable.just(CreateMalfunctionRequestService.Post.Result.AllImagesUploaded(newImagesNames))
+            return Flowable.just(CreateDamageClaimService.Post.Result.AllImagesUploaded(newImagesNames))
         }
 
         val badFiles = arrayListOf<String>()
@@ -257,7 +257,7 @@ class CreateMalfunctionRequestServiceImpl : CreateMalfunctionRequestService {
             //if there are none - return error status
             if (!fileServerFickle.isPresent()) {
                 log.e("Could not find a working file server")
-                return Flowable.just(CreateMalfunctionRequestService.Post.Result.AllFileServersAreNotWorking())
+                return Flowable.just(CreateDamageClaimService.Post.Result.AllFileServersAreNotWorking())
             }
 
             //if there are any - try to store remaining images on to them
@@ -286,7 +286,7 @@ class CreateMalfunctionRequestServiceImpl : CreateMalfunctionRequestService {
             }
         }
 
-        return Flowable.just(CreateMalfunctionRequestService.Post.Result.AllImagesUploaded(newImagesNames))
+        return Flowable.just(CreateDamageClaimService.Post.Result.AllImagesUploaded(newImagesNames))
     }
 
     private fun storeImage(imageType: Int, ownerId: Long, malfunctionRequestId: String, server: FileServersManagerImpl.ServerWithId,
@@ -334,26 +334,26 @@ class CreateMalfunctionRequestServiceImpl : CreateMalfunctionRequestService {
         throw IllegalStateException("Could not file $name in uploadingFiles")
     }
 
-    private fun checkFilesSizes(uploadingFiles: Array<MultipartFile>): CreateMalfunctionRequestService.Post.Result {
+    private fun checkFilesSizes(uploadingFiles: Array<MultipartFile>): CreateDamageClaimService.Post.Result {
         var totalSize = 0L
 
         for (uploadingFile in uploadingFiles) {
             if (uploadingFile.size > maxFileSize) {
-                return CreateMalfunctionRequestService.Post.Result.FileSizeExceeded()
+                return CreateDamageClaimService.Post.Result.FileSizeExceeded()
             }
 
             totalSize += uploadingFile.size
         }
 
         if (totalSize > maxRequestSize) {
-            return CreateMalfunctionRequestService.Post.Result.RequestSizeExceeded()
+            return CreateDamageClaimService.Post.Result.RequestSizeExceeded()
         }
 
-        return CreateMalfunctionRequestService.Post.Result.Ok()
+        return CreateDamageClaimService.Post.Result.Ok()
     }
 
-    private fun checkRequestCorrectness(request: MalfunctionCreateRequest): CreateMalfunctionRequestService.Post.Result {
-        return CreateMalfunctionRequestService.Post.Result.Ok()
+    private fun checkRequestCorrectness(request: CreateDamageClaimRequest): CreateDamageClaimService.Post.Result {
+        return CreateDamageClaimService.Post.Result.Ok()
     }
 }
 

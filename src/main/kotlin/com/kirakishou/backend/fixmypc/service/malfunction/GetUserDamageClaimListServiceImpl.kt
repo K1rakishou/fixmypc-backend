@@ -1,5 +1,6 @@
 package com.kirakishou.backend.fixmypc.service.malfunction
 
+import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.entity.LatLon
 import com.kirakishou.backend.fixmypc.model.repository.DamageClaimRepository
@@ -29,8 +30,8 @@ class GetUserDamageClaimListServiceImpl : GetUserDamageClaimListService {
             return Single.just(checkResult)
         }
 
-        val idsList = locationCache.findWithin(page, LatLon(lat, lon), radius)
-        val damageClaimsList = damageClaimRepository.findMany(idsList)
+        val idsList = locationCache.findWithin(page, LatLon(lat, lon), radius, Constant.MAX_CLAIMS_PER_PAGE)
+        val damageClaimsList = damageClaimRepository.findMany(idsList.map { it.id })
 
         return Single.just(GetUserDamageClaimListService.Get.Result.Ok(damageClaimsList))
     }

@@ -3,10 +3,10 @@ package com.kirakishou.backend.fixmypc.controller
 import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.net.ServerErrorCode
-import com.kirakishou.backend.fixmypc.model.net.request.MalfunctionCreateRequest
+import com.kirakishou.backend.fixmypc.model.net.request.CreateDamageClaimRequest
+import com.kirakishou.backend.fixmypc.model.net.response.CreateDamageClaimResponse
 import com.kirakishou.backend.fixmypc.model.net.response.DamageClaimsResponse
-import com.kirakishou.backend.fixmypc.model.net.response.MalfunctionCreateResponse
-import com.kirakishou.backend.fixmypc.service.malfunction.CreateMalfunctionRequestService
+import com.kirakishou.backend.fixmypc.service.malfunction.CreateDamageClaimService
 import com.kirakishou.backend.fixmypc.service.malfunction.GetUserDamageClaimListService
 import io.reactivex.Single
 import org.springframework.beans.factory.annotation.Autowired
@@ -18,10 +18,10 @@ import org.springframework.web.multipart.MultipartFile
 
 @Controller
 @RequestMapping
-class MalfunctionRequestController {
+class DamageClaimRequestController {
 
     @Autowired
-    lateinit var mCreateMalfunctionRequestService: CreateMalfunctionRequestService
+    lateinit var mCreateDamageClaimService: CreateDamageClaimService
 
     @Autowired
     lateinit var mGetUserDamageClaimListService: GetUserDamageClaimListService
@@ -29,66 +29,66 @@ class MalfunctionRequestController {
     @Autowired
     lateinit var log: FileLog
 
-    @RequestMapping(path = arrayOf(Constant.Paths.MALFUNCTION_REQUEST_CONTROLLER_PATH),
+    @RequestMapping(path = arrayOf(Constant.Paths.DAMAGE_CLAIM_CONTROLLER_PATH),
             method = arrayOf(RequestMethod.POST))
-    fun createMalfunctionRequest(@RequestHeader(value = "session_id", defaultValue = "") sessionId: String,
-                                 @RequestPart("photos") uploadingFiles: Array<MultipartFile>,
-                                 @RequestPart("request") request: MalfunctionCreateRequest,
-                                 @RequestPart("images_type") imagesType: Int): Single<ResponseEntity<MalfunctionCreateResponse>> {
+    fun createDamageClaim(@RequestHeader(value = "session_id", defaultValue = "") sessionId: String,
+                          @RequestPart("photos") uploadingFiles: Array<MultipartFile>,
+                          @RequestPart("request") request: CreateDamageClaimRequest,
+                          @RequestPart("images_type") imagesType: Int): Single<ResponseEntity<CreateDamageClaimResponse>> {
 
-        return mCreateMalfunctionRequestService.createMalfunctionRequest(uploadingFiles, imagesType, request, sessionId)
+        return mCreateDamageClaimService.createDamageClaim(uploadingFiles, imagesType, request, sessionId)
                 .map { result ->
                     when (result) {
-                        is CreateMalfunctionRequestService.Post.Result.Ok -> {
-                            return@map ResponseEntity(MalfunctionCreateResponse(
+                        is CreateDamageClaimService.Post.Result.Ok -> {
+                            return@map ResponseEntity(CreateDamageClaimResponse(
                                     ServerErrorCode.SEC_OK.value),
                                     HttpStatus.OK)
                         }
 
-                        is CreateMalfunctionRequestService.Post.Result.SessionIdExpired -> {
-                            return@map ResponseEntity(MalfunctionCreateResponse(
+                        is CreateDamageClaimService.Post.Result.SessionIdExpired -> {
+                            return@map ResponseEntity(CreateDamageClaimResponse(
                                     ServerErrorCode.SEC_SESSION_ID_EXPIRED.value),
                                     HttpStatus.UNAUTHORIZED)
                         }
 
-                        is CreateMalfunctionRequestService.Post.Result.NoFilesToUpload -> {
-                            return@map ResponseEntity(MalfunctionCreateResponse(
+                        is CreateDamageClaimService.Post.Result.NoFilesToUpload -> {
+                            return@map ResponseEntity(CreateDamageClaimResponse(
                                     ServerErrorCode.SEC_NO_FILES_WERE_SELECTED_TO_UPLOAD.value),
                                     HttpStatus.BAD_REQUEST)
                         }
 
-                        is CreateMalfunctionRequestService.Post.Result.ImagesCountExceeded -> {
-                            return@map ResponseEntity(MalfunctionCreateResponse(
+                        is CreateDamageClaimService.Post.Result.ImagesCountExceeded -> {
+                            return@map ResponseEntity(CreateDamageClaimResponse(
                                     ServerErrorCode.SEC_IMAGES_COUNT_EXCEEDED.value),
                                     HttpStatus.BAD_REQUEST)
                         }
 
-                        is CreateMalfunctionRequestService.Post.Result.FileSizeExceeded -> {
-                            return@map ResponseEntity(MalfunctionCreateResponse(
+                        is CreateDamageClaimService.Post.Result.FileSizeExceeded -> {
+                            return@map ResponseEntity(CreateDamageClaimResponse(
                                     ServerErrorCode.SEC_FILE_SIZE_EXCEEDED.value),
                                     HttpStatus.BAD_REQUEST)
                         }
 
-                        is CreateMalfunctionRequestService.Post.Result.RequestSizeExceeded -> {
-                            return@map ResponseEntity(MalfunctionCreateResponse(
+                        is CreateDamageClaimService.Post.Result.RequestSizeExceeded -> {
+                            return@map ResponseEntity(CreateDamageClaimResponse(
                                     ServerErrorCode.SEC_REQUEST_SIZE_EXCEEDED.value),
                                     HttpStatus.BAD_REQUEST)
                         }
 
-                        is CreateMalfunctionRequestService.Post.Result.AllFileServersAreNotWorking -> {
-                            return@map ResponseEntity(MalfunctionCreateResponse(
+                        is CreateDamageClaimService.Post.Result.AllFileServersAreNotWorking -> {
+                            return@map ResponseEntity(CreateDamageClaimResponse(
                                     ServerErrorCode.SEC_ALL_FILE_SERVERS_ARE_NOT_WORKING.value),
                                     HttpStatus.INTERNAL_SERVER_ERROR)
                         }
 
-                        is CreateMalfunctionRequestService.Post.Result.DatabaseError -> {
-                            return@map ResponseEntity(MalfunctionCreateResponse(
+                        is CreateDamageClaimService.Post.Result.DatabaseError -> {
+                            return@map ResponseEntity(CreateDamageClaimResponse(
                                     ServerErrorCode.SEC_DATABASE_ERROR.ordinal),
                                     HttpStatus.INTERNAL_SERVER_ERROR)
                         }
 
-                        is CreateMalfunctionRequestService.Post.Result.UnknownError -> {
-                            return@map ResponseEntity(MalfunctionCreateResponse(
+                        is CreateDamageClaimService.Post.Result.UnknownError -> {
+                            return@map ResponseEntity(CreateDamageClaimResponse(
                                     ServerErrorCode.SEC_UNKNOWN_SERVER_ERROR.value),
                                     HttpStatus.INTERNAL_SERVER_ERROR)
                         }
@@ -98,12 +98,12 @@ class MalfunctionRequestController {
                 }
     }
 
-    @RequestMapping(path = arrayOf("${Constant.Paths.MALFUNCTION_REQUEST_CONTROLLER_PATH}/{offset}"),
+    @RequestMapping(path = arrayOf("${Constant.Paths.DAMAGE_CLAIM_CONTROLLER_PATH}/{offset}"),
             method = arrayOf(RequestMethod.GET))
-    fun getUserMalfunctionRequestList(@PathVariable("lat") lat: Double,
-                                      @PathVariable("lon") lon: Double,
-                                      @PathVariable("radius") radius: Double,
-                                      @PathVariable("page") page: Long): Single<ResponseEntity<DamageClaimsResponse>> {
+    fun getDamageClaimsWithinRadiusPaged(@PathVariable("lat") lat: Double,
+                                         @PathVariable("lon") lon: Double,
+                                         @PathVariable("radius") radius: Double,
+                                         @PathVariable("page") page: Long): Single<ResponseEntity<DamageClaimsResponse>> {
 
         return mGetUserDamageClaimListService.getDamageClaimsWithinRadiusPaged(lat, lon, radius, Math.abs(page))
                 .map { result ->

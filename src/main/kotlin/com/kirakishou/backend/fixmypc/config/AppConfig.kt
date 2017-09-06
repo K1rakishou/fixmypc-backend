@@ -14,7 +14,9 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory
 import org.springframework.data.redis.core.RedisTemplate
+import org.springframework.data.redis.serializer.JdkSerializationRedisSerializer
 import org.springframework.web.client.AsyncRestTemplate
+import redis.clients.jedis.JedisShardInfo
 import javax.sql.DataSource
 
 
@@ -63,13 +65,20 @@ class AppConfig {
 
     @Bean
     fun provideJedisConnectionFactory(): JedisConnectionFactory {
-        return JedisConnectionFactory()
+        val shardInfo = JedisShardInfo("192.168.99.100", 9119)
+        return JedisConnectionFactory(shardInfo)
     }
 
     @Bean
     fun provideRedisTemplate(): RedisTemplate<String, Long> {
         val template = RedisTemplate<String, Long>()
         template.connectionFactory = provideJedisConnectionFactory()
+        template.keySerializer = JdkSerializationRedisSerializer()
+        template.hashKeySerializer = JdkSerializationRedisSerializer()
+        template.valueSerializer = JdkSerializationRedisSerializer()
+        template.hashValueSerializer = JdkSerializationRedisSerializer()
+        template.afterPropertiesSet()
+
         return template
     }
 

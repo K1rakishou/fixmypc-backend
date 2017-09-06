@@ -8,8 +8,8 @@ object Constant {
     object Paths {
         const val LOGIN_CONTROLLER_PATH = "/v1/api/login"
         const val SIGNUP_CONTROLLER_PATH = "/v1/api/signup"
-        const val MALFUNCTION_REQUEST_CONTROLLER_PATH = "/v1/api/m_request"
-        const val MALFUNCTION_IMAGE_CONTROLLER_PATH = "/v1/api/malfunction_image"
+        const val DAMAGE_CLAIM_CONTROLLER_PATH = "/v1/api/damage_claim_request"
+        const val DAMAGE_CLAIM_PHOTO_CONTROLLER_PATH = "/v1/api/damage_claim_photo"
     }
 
     object SerializedNames {
@@ -18,8 +18,8 @@ object Constant {
         const val ACCOUNT_TYPE = "account_type"
         const val SESSION_ID = "session_id"
         const val SERVER_ERROR_CODE = "server_error_code"
-        const val MALFUNCTION_CATEGORY = "m_category"
-        const val MALFUNCTION_DESCRIPTION = "m_description"
+        const val DAMAGE_CATEGORY = "damage_category"
+        const val DAMAGE_DESCRIPTION = "damage_description"
 
         const val LOCATION_LAT = "lat"
         const val LOCATION_LON = "lon"
@@ -50,10 +50,10 @@ object Constant {
 
     object Url {
         //"http://$host/v1/api/upload_image"
-        val SAVE_MALFUNCTION_REQUEST_IMAGE_URL = "http://%s${Paths.MALFUNCTION_IMAGE_CONTROLLER_PATH}"
+        val SAVE_MALFUNCTION_REQUEST_IMAGE_URL = "http://%s${Paths.DAMAGE_CLAIM_PHOTO_CONTROLLER_PATH}"
 
         //"http://$host/v1/api/malfunction_image/${ownerId}/${damageClaimRequestId}"
-        val DELETE_MALFUNCTION_REQUEST_IMAGES_URL = "http://%s${Paths.MALFUNCTION_IMAGE_CONTROLLER_PATH}/%d/%s"
+        val DELETE_MALFUNCTION_REQUEST_IMAGES_URL = "http://%s${Paths.DAMAGE_CLAIM_PHOTO_CONTROLLER_PATH}/%d/%s"
     }
 
     object TextLength {
@@ -63,6 +63,6 @@ object Constant {
         val MAX_DESCRIPTION_LENGTH = 500
     }
 
-    val MALFUNCTION_MAX_IMAGES_PER_REQUEST = 4
-    val MAX_MALFUNCTIONS_PER_PAGE = 5L
+    val DAMAGE_CLAIM_MAX_IMAGES_PER_REQUEST = 4
+    val MAX_CLAIMS_PER_PAGE = 5L
 }
