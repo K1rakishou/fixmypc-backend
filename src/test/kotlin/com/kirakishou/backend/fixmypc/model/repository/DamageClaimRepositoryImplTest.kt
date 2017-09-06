@@ -159,7 +159,7 @@ class DamageClaimRepositoryImplTest {
         Mockito.`when`(damageClaimCache.findMany(firstPageIds)).thenReturn(firstPageMalfunctionsFromCache)
         Mockito.`when`(damageClaimCache.findMany(secondPageIds)).thenReturn(secondPageMalfunctionsFromCache)
         Mockito.`when`(damageClaimCache.findMany(thirdPageIds)).thenReturn(thirdPageMalfunctionsFromCache)
-        Mockito.`when`(damageClaimDao.findManyActive(0)).thenReturn(Either.Value(allUserMalfunctions))
+        Mockito.`when`(damageClaimDao.findManyActiveByOwnerId(0)).thenReturn(Either.Value(allUserMalfunctions))
 
         val result = repository.findMany(0, 0, 5)
         assertEquals(5, result.size)
@@ -200,7 +200,7 @@ class DamageClaimRepositoryImplTest {
         Mockito.`when`(damageClaimCache.findMany(firstPageIds)).thenReturn(firstPageMalfunctionsFromCache)
         Mockito.`when`(damageClaimCache.findMany(secondPageIds)).thenReturn(secondPageMalfunctionsFromCache)
         Mockito.`when`(damageClaimCache.findMany(thirdPageIds)).thenReturn(thirdPageMalfunctionsFromCache)
-        Mockito.`when`(damageClaimDao.findManyActive(0)).thenReturn(Either.Value(allUserMalfunctions))
+        Mockito.`when`(damageClaimDao.findManyActiveByOwnerId(0)).thenReturn(Either.Value(allUserMalfunctions))
 
         val result = repository.findMany(0, 0, 5)
         assertEquals(5, result.size)

@@ -10,6 +10,7 @@ import com.kirakishou.backend.fixmypc.model.repository.ignite.LocationCache
 import com.kirakishou.backend.fixmypc.model.repository.postgresql.DamageClaimDao
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
+import java.util.*
 import java.util.stream.Collectors
 
 @Component
@@ -82,7 +83,7 @@ class DamageClaimRepositoryImpl : DamageClaimRepository {
                     .collect(Collectors.toList())
         }
 
-        val daoResult = damageClaimDao.findManyActive(ownerId)
+        val daoResult = damageClaimDao.findManyActiveByOwnerId(ownerId)
         if (daoResult is Either.Error) {
             log.e(daoResult.error)
             return emptyList()
@@ -119,19 +120,18 @@ class DamageClaimRepositoryImpl : DamageClaimRepository {
             return cacheResult
         }
 
-        val remainderList = idsToSearch.filter { containsDamageClaimId(it, cacheResult) }
-        val daoResult = damageClaimDao.findManyActive(remainderList)
+        val remainderList = idsToSearch.filter { !containsDamageClaimId(it, cacheResult) }
+        val daoResult = damageClaimDao.findManyActiveByIdList(remainderList)
         if (daoResult is Either.Error) {
             log.e(daoResult.error)
             return cacheResult
         }
 
         val daoResultVal = (daoResult as Either.Value).value
+        damageClaimCache.saveMany(daoResultVal)
         cacheResult.addAll(daoResultVal)
 
-        return cacheResult.stream()
-                .sorted(DamageClaimComparator())
-                .collect(Collectors.toList())
+        return cacheResult
     }
 
     override fun deleteOne(ownerId: Long, damageClaimId: Long): Boolean {

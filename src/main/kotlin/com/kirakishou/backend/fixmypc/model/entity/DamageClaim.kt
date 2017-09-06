@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import java.sql.Timestamp
 
 data class DamageClaim(@JsonProperty("id") var id: Long = 0L,
-                       @JsonProperty("owner_id") var ownerId: Long = 0L,
+                       @JsonIgnore var ownerId: Long = 0L,
                        @JsonProperty("is_active") var isActive: Boolean = false,
                        @JsonIgnore var damageClaimRequestId: String = "",
                        @JsonProperty("category") var category: Int = 0,

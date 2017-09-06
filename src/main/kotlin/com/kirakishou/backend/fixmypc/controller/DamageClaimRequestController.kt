@@ -98,14 +98,14 @@ class DamageClaimRequestController {
                 }
     }
 
-    @RequestMapping(path = arrayOf("${Constant.Paths.DAMAGE_CLAIM_CONTROLLER_PATH}/{offset}"),
+    @RequestMapping(path = arrayOf("${Constant.Paths.DAMAGE_CLAIM_CONTROLLER_PATH}/{lat}/{lon}/{radius}/{page}"),
             method = arrayOf(RequestMethod.GET))
     fun getDamageClaimsWithinRadiusPaged(@PathVariable("lat") lat: Double,
                                          @PathVariable("lon") lon: Double,
                                          @PathVariable("radius") radius: Double,
                                          @PathVariable("page") page: Long): Single<ResponseEntity<DamageClaimsResponse>> {
 
-        return mGetUserDamageClaimListService.getDamageClaimsWithinRadiusPaged(lat, lon, radius, Math.abs(page))
+        return mGetUserDamageClaimListService.getDamageClaimsWithinRadiusPaged(lat, lon, radius, page)
                 .map { result ->
                     when (result) {
                         is GetUserDamageClaimListService.Get.Result.Ok -> {

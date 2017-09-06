@@ -31,7 +31,7 @@ class GetUserDamageClaimListServiceImpl : GetUserDamageClaimListService {
         }
 
         val idsList = locationCache.findWithin(page, LatLon(lat, lon), radius, Constant.MAX_CLAIMS_PER_PAGE)
-        val damageClaimsList = damageClaimRepository.findMany(idsList.map { it.id })
+        val damageClaimsList = damageClaimRepository.findMany(idsList)
 
         return Single.just(GetUserDamageClaimListService.Get.Result.Ok(damageClaimsList))
     }

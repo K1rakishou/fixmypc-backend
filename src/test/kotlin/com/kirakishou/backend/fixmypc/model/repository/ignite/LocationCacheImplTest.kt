@@ -1,6 +1,5 @@
 package com.kirakishou.backend.fixmypc.model.repository.ignite
 
-import com.kirakishou.backend.fixmypc.model.dto.DamageClaimIdsSortedByDistanceDTO
 import com.kirakishou.backend.fixmypc.model.entity.LatLon
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -61,7 +60,7 @@ class LocationCacheImplTest {
             locationCache.saveOne(LatLon(y, x), i.toLong())
         }
 
-        val result = arrayListOf<List<DamageClaimIdsSortedByDistanceDTO>>()
+        val result = arrayListOf<List<Long>>()
 
         result += locationCache.findWithin(0, LatLon(0.0, 0.0), 100000.0, 5)
         result += locationCache.findWithin(5, LatLon(0.0, 0.0), 100000.0, 5)
@@ -73,8 +72,8 @@ class LocationCacheImplTest {
         result += locationCache.findWithin(35, LatLon(0.0, 0.0), 100000.0, 5)
 
         for (res in result) {
-            for ((id, distance, metric) in res) {
-                println("id: $id, distance: $distance $metric")
+            for (id in res) {
+                println("id: $id")
             }
 
             println()

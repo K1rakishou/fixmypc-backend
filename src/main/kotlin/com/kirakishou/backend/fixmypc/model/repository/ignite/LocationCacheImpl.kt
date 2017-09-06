@@ -2,7 +2,6 @@ package com.kirakishou.backend.fixmypc.model.repository.ignite
 
 import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.log.FileLog
-import com.kirakishou.backend.fixmypc.model.dto.DamageClaimIdsSortedByDistanceDTO
 import com.kirakishou.backend.fixmypc.model.entity.LatLon
 import com.kirakishou.backend.fixmypc.model.repository.postgresql.DamageClaimDao
 import org.springframework.beans.factory.annotation.Autowired
@@ -37,17 +36,16 @@ class LocationCacheImpl : LocationCache {
         template.opsForGeo().geoAdd(Constant.RedisNames.LOCATION_CACHE_NAME, Point(location.lon, location.lat), malfunctionId)
     }
 
-    override fun findWithin(page: Long, centroid: LatLon, radius: Double, count: Long): List<DamageClaimIdsSortedByDistanceDTO> {
+    override fun findWithin(page: Long, centroid: LatLon, radius: Double, count: Long): List<Long> {
         return template.opsForGeo().geoRadius(Constant.RedisNames.LOCATION_CACHE_NAME,
                 Circle(Point(centroid.lon, centroid.lat), Distance(radius, RedisGeoCommands.DistanceUnit.KILOMETERS)),
                 RedisGeoCommands.GeoRadiusCommandArgs
                         .newGeoRadiusArgs()
-                        .includeDistance()
                         .sortAscending()).content
                 .stream()
                 .skip(page * count)
                 .limit(count)
-                .map { DamageClaimIdsSortedByDistanceDTO(it.content.name, it.distance.value, it.distance.metric.abbreviation) }
+                .map { it.content.name }
                 .collect(Collectors.toList())
     }
 

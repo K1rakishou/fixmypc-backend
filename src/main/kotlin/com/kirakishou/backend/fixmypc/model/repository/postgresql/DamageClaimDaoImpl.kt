@@ -150,16 +150,52 @@ class DamageClaimDaoImpl : DamageClaimDao {
         return Either.Value(malfunctions)
     }
 
-    override fun findManyActive(idsToSearch: List<Long>): Either<SQLException, List<DamageClaim>> {
-        TODO()
+    override fun findManyActiveByIdList(idsToSearch: List<Long>): Either<SQLException, List<DamageClaim>> {
+        val damageClaimsList = arrayListOf<DamageClaim>()
+        val idsStatement = TextUtils.createStatementForList(idsToSearch.size)
+        val sql = "SELECT id, category, is_active, description, created_on, folder_name, lat, lon " +
+                "FROM public.damage_claims WHERE id IN ($idsStatement) AND is_active = TRUE AND deleted_on IS NULL ORDER BY id ASC"
+
+        try {
+            hikariCP.connection.use { connection ->
+                connection.prepareStatement(sql).use { ps ->
+                    for ((i, id) in idsToSearch.withIndex()) {
+                        ps.setLong(i + 1, id)
+                    }
+
+                    ps.executeQuery().use { rs ->
+                        while (rs.next()) {
+                            val malfunction = DamageClaim(
+                                    rs.getLong("id"),
+                                    -1,
+                                    true,
+                                    rs.getString("folder_name"),
+                                    rs.getInt("category"),
+                                    rs.getString("description"),
+                                    rs.getDouble("lat"),
+                                    rs.getDouble("lon"),
+                                    rs.getTimestamp("created_on"))
+
+                            damageClaimsList.add(malfunction)
+                        }
+                    }
+
+                    getImagesByMalfunctionId(connection, damageClaimsList, idsToSearch)
+                }
+            }
+        } catch (e: SQLException) {
+            return Either.Error(e)
+        }
+
+        return Either.Value(damageClaimsList)
     }
 
-    override fun findManyActive(ownerId: Long): Either<SQLException, List<DamageClaim>> {
-        return getMany(ownerId, true)
+    override fun findManyActiveByOwnerId(ownerId: Long): Either<SQLException, List<DamageClaim>> {
+        return getManyByOwnerId(ownerId, true)
     }
 
-    override fun findManyInactive(ownerId: Long): Either<SQLException, List<DamageClaim>> {
-        return getMany(ownerId, false)
+    override fun findManyInactiveByOwnerId(ownerId: Long): Either<SQLException, List<DamageClaim>> {
+        return getManyByOwnerId(ownerId, false)
     }
 
     override fun findAllIdsWithLocations(offset: Long, count: Long): List<DamageClaimIdLocationDTO> {
@@ -172,7 +208,7 @@ class DamageClaimDaoImpl : DamageClaimDao {
 
                 ps.executeQuery().use { rs ->
                     while (rs.next()) {
-                        val item =  DamageClaimIdLocationDTO(
+                        val item = DamageClaimIdLocationDTO(
                                 rs.getLong("id"),
                                 LatLon(rs.getDouble("lat"),
                                         rs.getDouble("lon")))
@@ -189,7 +225,7 @@ class DamageClaimDaoImpl : DamageClaimDao {
     override fun deleteOne(id: Long): Either<SQLException, Boolean> {
         try {
             hikariCP.connection.transactional { connection ->
-                deleteMalfunction(connection, id)
+                deleteDamageClaim(connection, id)
                 deletePhoto(connection, id)
             }
         } catch (e: SQLException) {
@@ -214,7 +250,7 @@ class DamageClaimDaoImpl : DamageClaimDao {
         return Either.Value(true)
     }
 
-    private fun getMany(ownerId: Long, isActive: Boolean): Either<SQLException, List<DamageClaim>> {
+    private fun getManyByOwnerId(ownerId: Long, isActive: Boolean): Either<SQLException, List<DamageClaim>> {
         val malfunctions = arrayListOf<DamageClaim>()
 
         try {
@@ -290,7 +326,7 @@ class DamageClaimDaoImpl : DamageClaimDao {
         }
     }
 
-    private fun deleteMalfunction(connection: Connection, id: Long) {
+    private fun deleteDamageClaim(connection: Connection, id: Long) {
         connection.prepareStatement("UPDATE public.damage_claims_photos SET deleted_on = NOW() WHERE id = ?").use { ps ->
             ps.setLong(1, id)
             ps.executeUpdate()
