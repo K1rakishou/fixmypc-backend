@@ -8,16 +8,10 @@ object ServerUtils {
     private val MD5 = "MD5"
 
     fun md5(data: ByteArray): ByteArray {
-        var md5Instance: MessageDigest? = null
-
-        try {
-            md5Instance = MessageDigest.getInstance(MD5)
+        val md5Instance: MessageDigest = try {
+            MessageDigest.getInstance(MD5)
         } catch (e: NoSuchAlgorithmException) {
-            throw IllegalArgumentException(e)
-        }
-
-        if (md5Instance == null) {
-            throw NullPointerException("Digest cannot be null!")
+            throw e
         }
 
         return md5Instance.digest(data)

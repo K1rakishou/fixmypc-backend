@@ -3,6 +3,7 @@ package com.kirakishou.backend.fixmypc.model.repository.ignite
 import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.core.MyExpiryPolicyFactory
 import com.kirakishou.backend.fixmypc.model.entity.DamageClaim
+import com.kirakishou.backend.fixmypc.util.ServerUtils
 import org.apache.ignite.Ignite
 import org.apache.ignite.IgniteCache
 import org.apache.ignite.Ignition
@@ -14,8 +15,6 @@ import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import org.springframework.test.util.ReflectionTestUtils
-import java.sql.Timestamp
-import java.util.*
 import javax.cache.expiry.Duration
 
 class DamageClaimStoreImplTest {
@@ -51,7 +50,7 @@ class DamageClaimStoreImplTest {
 
     @Test
     fun testSaveOne() {
-        val malfunction = DamageClaim(0, 0, true, "436erydfyu", 0, "test description", 55.6, 44.2, Timestamp(Date().time), arrayListOf())
+        val malfunction = DamageClaim(0, 0, true, "436erydfyu", 0, "test description", 55.6, 44.2, ServerUtils.getTimeFast(), arrayListOf())
 
         cache.saveOne(malfunction)
         val malfunctionFromStore = cache.findOne(malfunction.id)
@@ -62,8 +61,8 @@ class DamageClaimStoreImplTest {
 
     @Test
     fun testSaveMany() {
-        val malfunction = DamageClaim(0, 0, true, "436erydfyu", 0, "test description", 55.6, 44.2, Timestamp(Date().time), arrayListOf())
-        val malfunction2 = DamageClaim(1, 0, true, "436erydfawryu", 0, "test description2", 55.6, 44.2, Timestamp(Date().time), arrayListOf())
+        val malfunction = DamageClaim(0, 0, true, "436erydfyu", 0, "test description", 55.6, 44.2, ServerUtils.getTimeFast(), arrayListOf())
+        val malfunction2 = DamageClaim(1, 0, true, "436erydfawryu", 0, "test description2", 55.6, 44.2, ServerUtils.getTimeFast(), arrayListOf())
 
         cache.saveMany(listOf(malfunction, malfunction2))
         val malfunctionsFromStore = cache.findMany(listOf(0, 1))
@@ -74,30 +73,30 @@ class DamageClaimStoreImplTest {
     @Test
     fun testFindMany() {
         cache.saveMany(listOf(
-                DamageClaim(13, 0, createdOn = Timestamp(Date().time)),
-                DamageClaim(14, 0, createdOn = Timestamp(Date().time)),
-                DamageClaim(15, 0, createdOn = Timestamp(Date().time)),
-                DamageClaim(16, 0, createdOn = Timestamp(Date().time))))
+                DamageClaim(13, 0, createdOn = ServerUtils.getTimeFast()),
+                DamageClaim(14, 0, createdOn = ServerUtils.getTimeFast()),
+                DamageClaim(15, 0, createdOn = ServerUtils.getTimeFast()),
+                DamageClaim(16, 0, createdOn = ServerUtils.getTimeFast())))
 
         cache.saveMany(listOf(
-                DamageClaim(9, 0, createdOn = Timestamp(Date().time)),
-                DamageClaim(10, 0, createdOn = Timestamp(Date().time)),
-                DamageClaim(11, 0, createdOn = Timestamp(Date().time)),
-                DamageClaim(12, 0, createdOn = Timestamp(Date().time))))
+                DamageClaim(9, 0, createdOn = ServerUtils.getTimeFast()),
+                DamageClaim(10, 0, createdOn = ServerUtils.getTimeFast()),
+                DamageClaim(11, 0, createdOn = ServerUtils.getTimeFast()),
+                DamageClaim(12, 0, createdOn = ServerUtils.getTimeFast())))
 
         cache.saveMany(listOf(
-                DamageClaim(7, 0, createdOn = Timestamp(Date().time)),
-                DamageClaim(7, 0, createdOn = Timestamp(Date().time)),
-                DamageClaim(8, 0, createdOn = Timestamp(Date().time))))
+                DamageClaim(7, 0, createdOn = ServerUtils.getTimeFast()),
+                DamageClaim(7, 0, createdOn = ServerUtils.getTimeFast()),
+                DamageClaim(8, 0, createdOn = ServerUtils.getTimeFast())))
 
-        cache.saveMany(listOf(DamageClaim(6, 0, createdOn = Timestamp(Date().time))))
+        cache.saveMany(listOf(DamageClaim(6, 0, createdOn = ServerUtils.getTimeFast())))
 
         cache.saveMany(listOf(
-                DamageClaim(1, 0, createdOn = Timestamp(Date().time)),
-                DamageClaim(2, 0, createdOn = Timestamp(Date().time)),
-                DamageClaim(3, 0, createdOn = Timestamp(Date().time)),
-                DamageClaim(4, 0, createdOn = Timestamp(Date().time)),
-                DamageClaim(5, 0, createdOn = Timestamp(Date().time))))
+                DamageClaim(1, 0, createdOn = ServerUtils.getTimeFast()),
+                DamageClaim(2, 0, createdOn = ServerUtils.getTimeFast()),
+                DamageClaim(3, 0, createdOn = ServerUtils.getTimeFast()),
+                DamageClaim(4, 0, createdOn = ServerUtils.getTimeFast()),
+                DamageClaim(5, 0, createdOn = ServerUtils.getTimeFast())))
 
 
         val result = cache.findMany(listOf(1, 13, 2, 5, 6, 4, 3))
@@ -109,7 +108,7 @@ class DamageClaimStoreImplTest {
 
     @Test
     fun testDeleteOne() {
-        val malfunction = DamageClaim(0, 0, true, "436erydfyu", 0, "test description", 55.6, 44.2, Timestamp(Date().time), arrayListOf())
+        val malfunction = DamageClaim(0, 0, true, "436erydfyu", 0, "test description", 55.6, 44.2, ServerUtils.getTimeFast(), arrayListOf())
 
         cache.saveOne(malfunction)
         val malfunctionFromStore = cache.findOne(malfunction.id)
@@ -125,8 +124,8 @@ class DamageClaimStoreImplTest {
 
     @Test
     fun testDeleteMany() {
-        val malfunction = DamageClaim(0, 0, true, "436erydfyu", 0, "test description", 55.6, 44.2, Timestamp(Date().time), arrayListOf())
-        val malfunction2 = DamageClaim(1, 0, true, "436erydfawryu", 0, "test description2", 55.6, 44.2, Timestamp(Date().time), arrayListOf())
+        val malfunction = DamageClaim(0, 0, true, "436erydfyu", 0, "test description", 55.6, 44.2, ServerUtils.getTimeFast(), arrayListOf())
+        val malfunction2 = DamageClaim(1, 0, true, "436erydfawryu", 0, "test description2", 55.6, 44.2, ServerUtils.getTimeFast(), arrayListOf())
 
         cache.saveMany(listOf(malfunction, malfunction2))
         val malfunctionsFromStore = cache.findMany(listOf(0, 1))

@@ -52,7 +52,7 @@ object Constant {
         //"http://$host/v1/api/upload_image"
         val SAVE_MALFUNCTION_REQUEST_IMAGE_URL = "http://%s${Paths.DAMAGE_CLAIM_PHOTO_CONTROLLER_PATH}"
 
-        //"http://$host/v1/api/malfunction_image/${ownerId}/${damageClaimRequestId}"
+        //"http://$host/v1/api/malfunction_image/${ownerId}/${folderName}"
         val DELETE_MALFUNCTION_REQUEST_IMAGES_URL = "http://%s${Paths.DAMAGE_CLAIM_PHOTO_CONTROLLER_PATH}/%d/%s"
     }
 

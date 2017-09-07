@@ -14,6 +14,7 @@ import org.springframework.stereotype.Repository
 import java.sql.Connection
 import java.sql.SQLException
 import java.sql.Statement
+import java.sql.Timestamp
 import javax.sql.DataSource
 
 @Repository
@@ -32,11 +33,11 @@ class DamageClaimDaoImpl : DamageClaimDao {
                     ps.setLong(1, damageClaim.ownerId)
                     ps.setInt(2, damageClaim.category)
                     ps.setString(3, damageClaim.description)
-                    ps.setString(4, damageClaim.damageClaimRequestId)
+                    ps.setString(4, damageClaim.folderName)
                     ps.setDouble(5, damageClaim.lat)
                     ps.setDouble(6, damageClaim.lon)
                     ps.setBoolean(7, damageClaim.isActive)
-                    ps.setTimestamp(8, damageClaim.createdOn)
+                    ps.setTimestamp(8, Timestamp(damageClaim.createdOn))
                     ps.executeUpdate()
 
                     ps.generatedKeys.use {
@@ -90,7 +91,7 @@ class DamageClaimDaoImpl : DamageClaimDao {
                                     rs.getString("description"),
                                     rs.getDouble("lat"),
                                     rs.getDouble("lon"),
-                                    rs.getTimestamp("created_on"))
+                                    rs.getTimestamp("created_on").time)
                         }
                     }
 
@@ -133,7 +134,7 @@ class DamageClaimDaoImpl : DamageClaimDao {
                                     rs.getString("description"),
                                     rs.getDouble("lat"),
                                     rs.getDouble("lon"),
-                                    rs.getTimestamp("created_on"))
+                                    rs.getTimestamp("created_on").time)
 
                             malfunctions.add(malfunction)
                             ids.add(malfunction.id)
@@ -174,7 +175,7 @@ class DamageClaimDaoImpl : DamageClaimDao {
                                     rs.getString("description"),
                                     rs.getDouble("lat"),
                                     rs.getDouble("lon"),
-                                    rs.getTimestamp("created_on"))
+                                    rs.getTimestamp("created_on").time)
 
                             damageClaimsList.add(malfunction)
                         }
@@ -273,7 +274,7 @@ class DamageClaimDaoImpl : DamageClaimDao {
                                     rs.getString("description"),
                                     rs.getDouble("lat"),
                                     rs.getDouble("lon"),
-                                    rs.getTimestamp("created_on"))
+                                    rs.getTimestamp("created_on").time)
 
                             malfunctions.add(malfunction)
                             ids.add(malfunction.id)

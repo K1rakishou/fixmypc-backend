@@ -5,10 +5,10 @@ import com.kirakishou.backend.fixmypc.core.FileServerErrorCode
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.manager.FileServersManager
 import com.kirakishou.backend.fixmypc.manager.FileServersManagerImpl
+import com.kirakishou.backend.fixmypc.model.entity.DamageClaim
 import com.kirakishou.backend.fixmypc.model.entity.FileServerAnswer
 import com.kirakishou.backend.fixmypc.model.entity.FileServerAnswerWrapper
 import com.kirakishou.backend.fixmypc.model.entity.FileServerInfo
-import com.kirakishou.backend.fixmypc.model.entity.DamageClaim
 import com.kirakishou.backend.fixmypc.model.net.request.CreateDamageClaimRequest
 import com.kirakishou.backend.fixmypc.model.repository.DamageClaimRepository
 import com.kirakishou.backend.fixmypc.model.repository.ignite.UserCache
@@ -25,7 +25,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import org.springframework.web.multipart.MultipartFile
-import java.sql.Timestamp
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import java.util.stream.Collectors
@@ -172,8 +171,8 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
                     lat = request.lat,
                     lon = request.lon,
                     isActive = true,
-                    damageClaimRequestId = malfunctionRequestId,
-                    createdOn = Timestamp(ServerUtils.getTimeFast()),
+                    folderName = malfunctionRequestId,
+                    createdOn = ServerUtils.getTimeFast(),
                     imageNamesList = imageNamesList)
 
             if (!damageClaimRepository.saveOne(malfunction)) {
