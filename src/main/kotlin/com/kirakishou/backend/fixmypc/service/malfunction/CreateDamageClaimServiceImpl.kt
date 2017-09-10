@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import org.springframework.web.multipart.MultipartFile
+import java.net.ConnectException
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
 import java.util.stream.Collectors
@@ -296,7 +297,7 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
                 //max request waiting time
                 .timeout(FILE_SERVER_REQUEST_TIMEOUT, TimeUnit.SECONDS)
                 .onErrorResumeNext({ error: Throwable ->
-                    if (error is TimeoutException) {
+                    if (error is TimeoutException || error.cause is ConnectException) {
                         log.d("Operation was cancelled due to timeout")
                         fileServerManager.notWorking(server.id)
 

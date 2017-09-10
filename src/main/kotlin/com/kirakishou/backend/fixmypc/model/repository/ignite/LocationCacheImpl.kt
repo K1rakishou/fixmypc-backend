@@ -29,7 +29,7 @@ class LocationCacheImpl : LocationCache {
 
     @PostConstruct
     fun init() {
-        preload()
+        warmUpCache()
     }
 
     override fun saveOne(location: LatLon, malfunctionId: Long) {
@@ -53,7 +53,7 @@ class LocationCacheImpl : LocationCache {
         template.opsForGeo().geoRemove(Constant.RedisNames.LOCATION_CACHE_NAME, malfunctionId)
     }
 
-    private fun preload() {
+    private fun warmUpCache() {
         var totalLoaded = 0L
         log.d("=== Loading damage claims' ids and locations in the cache ===")
 
