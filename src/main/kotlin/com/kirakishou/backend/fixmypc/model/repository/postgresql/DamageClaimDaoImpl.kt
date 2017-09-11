@@ -47,7 +47,7 @@ class DamageClaimDaoImpl : DamageClaimDao {
                     }
                 }
 
-                connection.prepareStatement("INSERT INTO public.damage_claims_photos (malfunction_id, " +
+                connection.prepareStatement("INSERT INTO public.damage_claims_photos (damage_claim_id, " +
                         "photo_name, photo_type, deleted_on) " +
                         "VALUES (?, ?, ?, NULL)").use { ps ->
 
@@ -96,7 +96,7 @@ class DamageClaimDaoImpl : DamageClaimDao {
                     }
 
                     damageClaim?.let { mf ->
-                        getImagesByMalfunctionId(connection, arrayListOf(mf), listOf(mf.id))
+                        getImagesByDamageClaimId(connection, arrayListOf(mf), listOf(mf.id))
                     }
                 }
             }
@@ -141,7 +141,7 @@ class DamageClaimDaoImpl : DamageClaimDao {
                         }
                     }
 
-                    getImagesByMalfunctionId(connection, malfunctions, ids)
+                    getImagesByDamageClaimId(connection, malfunctions, ids)
                 }
             }
         } catch (e: SQLException) {
@@ -181,7 +181,7 @@ class DamageClaimDaoImpl : DamageClaimDao {
                         }
                     }
 
-                    getImagesByMalfunctionId(connection, damageClaimsList, idsToSearch)
+                    getImagesByDamageClaimId(connection, damageClaimsList, idsToSearch)
                 }
             }
         } catch (e: SQLException) {
@@ -281,7 +281,7 @@ class DamageClaimDaoImpl : DamageClaimDao {
                         }
                     }
 
-                    getImagesByMalfunctionId(connection, malfunctions, ids)
+                    getImagesByDamageClaimId(connection, malfunctions, ids)
                 }
             }
         } catch (e: SQLException) {
@@ -291,22 +291,22 @@ class DamageClaimDaoImpl : DamageClaimDao {
         return Either.Value(malfunctions)
     }
 
-    private fun getImagesByMalfunctionId(connection: Connection, damageClaims: ArrayList<DamageClaim>,
-                                         malfunctionIdList: List<Long>) {
-        val malfunctionIdsCount = malfunctionIdList.size
+    private fun getImagesByDamageClaimId(connection: Connection, damageClaims: ArrayList<DamageClaim>,
+                                         damageClaimIdList: List<Long>) {
+        val malfunctionIdsCount = damageClaimIdList.size
         val idsToSearch = TextUtils.createStatementForList(malfunctionIdsCount)
 
-        val sql = "SELECT malfunction_id, photo_name FROM public.damage_claims_photos WHERE malfunction_id IN ($idsToSearch) " +
+        val sql = "SELECT damage_claim_id, photo_name FROM public.damage_claims_photos WHERE damage_claim_id IN ($idsToSearch) " +
                 "AND deleted_on IS NULL"
 
         connection.prepareStatement(sql).use { ps ->
             for (i in 0 until malfunctionIdsCount) {
-                ps.setLong(i + 1, malfunctionIdList[i])
+                ps.setLong(i + 1, damageClaimIdList[i])
             }
 
             ps.executeQuery().use { rs ->
                 while (rs.next()) {
-                    val id = rs.getLong("malfunction_id")
+                    val id = rs.getLong("damage_claim_id")
                     val imageName = rs.getString("photo_name")
 
                     val malfunction = damageClaims.firstOrNull { it.id == id }

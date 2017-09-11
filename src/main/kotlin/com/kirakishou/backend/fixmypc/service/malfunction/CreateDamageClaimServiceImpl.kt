@@ -12,7 +12,6 @@ import com.kirakishou.backend.fixmypc.model.entity.FileServerInfo
 import com.kirakishou.backend.fixmypc.model.net.request.CreateDamageClaimRequest
 import com.kirakishou.backend.fixmypc.model.repository.DamageClaimRepository
 import com.kirakishou.backend.fixmypc.model.repository.ignite.UserCache
-import com.kirakishou.backend.fixmypc.model.repository.postgresql.DamageClaimDao
 import com.kirakishou.backend.fixmypc.service.FileServerService
 import com.kirakishou.backend.fixmypc.service.Generator
 import com.kirakishou.backend.fixmypc.service.TempFilesService
@@ -62,15 +61,10 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
     private lateinit var tempFileService: TempFilesService
 
     @Autowired
-    private lateinit var damageClaimDao: DamageClaimDao
-
-    @Autowired
     private lateinit var damageClaimRepository: DamageClaimRepository
 
     @Autowired
     private lateinit var userCache: UserCache
-
-    private val FILE_SERVER_REQUEST_TIMEOUT: Long = 7L
 
     @PostConstruct
     fun init() {
@@ -142,61 +136,66 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
                 .subscribeOn(Schedulers.io())
                 //send all images
                 .flatMap { filesAndServers ->
-                    return@flatMap handleFiles(imageType, ownerId, malfunctionRequestId, filesAndServers, uploadingFiles)
+                    return@flatMap sendFiles(imageType, ownerId, malfunctionRequestId, filesAndServers, uploadingFiles)
                 }
                 //collect all responses
                 .toList()
-
-        return resultList.map { results ->
-            //whatever the responses are - do not forget to delete temp files
-            tempFileService.deleteAllTempFiles()
-
-            //check results for errors
-            for (result in results) {
-                if (result !is CreateDamageClaimService.Post.Result.AllImagesUploaded) {
-                    //the only possible reason for this to happen is when all file servers are down
-                    log.e("Error. Something went wrong")
-                    return@map result
-                }
-            }
-
-            val imageNamesList = (results as ArrayList<CreateDamageClaimService.Post.Result.AllImagesUploaded>).stream()
-                    .flatMap { it.names.stream() }
-                    .map { it }
-                    .collect(Collectors.toList())
-
-            val malfunction = DamageClaim(
-                    ownerId = ownerId,
-                    category = request.category,
-                    description = request.description,
-                    lat = request.lat,
-                    lon = request.lon,
-                    isActive = true,
-                    folderName = malfunctionRequestId,
-                    createdOn = ServerUtils.getTimeFast(),
-                    imageNamesList = imageNamesList)
-
-            if (!damageClaimRepository.saveOne(malfunction)) {
-                log.d("Failed to create malfunction (Repository error)")
-
-                //we failed to save malfunction request in the repository, so we have to notify file servers to delete images related to the request
-                for (imageName in imageNamesList) {
-                    val extractedImageInfo = TextUtils.parseImageName(imageName)
-                    val host = fileServerManager.getHostById(extractedImageInfo.serverId)
-
-                    fileServerService.deleteMalfunctionRequestImages(ownerId, host, malfunctionRequestId, imageName)
+                .map { results ->
+                    return@map handleResponses(results, ownerId, request, malfunctionRequestId)
                 }
 
-                return@map CreateDamageClaimService.Post.Result.DatabaseError()
-            }
-
-            log.d("Malfunction successfully created")
-            return@map CreateDamageClaimService.Post.Result.Ok()
-        }
+        return resultList
     }
 
-    private fun handleFiles(imageType: Int, ownerId: Long, malfunctionRequestId: String, filesAndServers: List<Pair<MultipartFile, FileServersManagerImpl.ServerWithId>>,
-                            uploadingFiles: Array<MultipartFile>): Flowable<out CreateDamageClaimService.Post.Result> {
+    private fun handleResponses(results: List<CreateDamageClaimService.Post.Result>, ownerId: Long,
+                                request: CreateDamageClaimRequest, malfunctionRequestId: String): CreateDamageClaimService.Post.Result {
+        //whatever the responses are - do not forget to delete temp files
+        tempFileService.deleteAllTempFiles()
+
+        //check results for errors
+        for (result in results) {
+            if (result !is CreateDamageClaimService.Post.Result.AllImagesUploaded) {
+                //the only possible reason for this to happen is when all file servers are down
+                return result
+            }
+        }
+
+        val imageNamesList = (results as ArrayList<CreateDamageClaimService.Post.Result.AllImagesUploaded>).stream()
+                .flatMap { it.names.stream() }
+                .map { it }
+                .collect(Collectors.toList())
+
+        val malfunction = DamageClaim(
+                ownerId = ownerId,
+                category = request.category,
+                description = request.description,
+                lat = request.lat,
+                lon = request.lon,
+                isActive = true,
+                folderName = malfunctionRequestId,
+                createdOn = ServerUtils.getTimeFast(),
+                imageNamesList = imageNamesList)
+
+        if (!damageClaimRepository.saveOne(malfunction)) {
+            log.d("Failed to create malfunction (Repository error)")
+
+            //we failed to save malfunction request in the repository, so we have to notify file servers to delete images related to the request
+            for (imageName in imageNamesList) {
+                val extractedImageInfo = TextUtils.parseImageName(imageName)
+                val host = fileServerManager.getHostById(extractedImageInfo.serverId)
+
+                fileServerService.deleteDamageClaimImages(ownerId, host, malfunctionRequestId, imageName)
+            }
+
+            return CreateDamageClaimService.Post.Result.DatabaseError()
+        }
+
+        log.d("Malfunction successfully created")
+        return CreateDamageClaimService.Post.Result.Ok()
+    }
+
+    private fun sendFiles(imageType: Int, ownerId: Long, malfunctionRequestId: String, filesAndServers: List<Pair<MultipartFile, FileServersManagerImpl.ServerWithId>>,
+                          uploadingFiles: Array<MultipartFile>): Flowable<out CreateDamageClaimService.Post.Result> {
 
         val responses = arrayListOf<Flowable<FileServerAnswerWrapper>>()
 
@@ -292,10 +291,10 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
     private fun storeImage(imageType: Int, ownerId: Long, malfunctionRequestId: String, server: FileServersManagerImpl.ServerWithId,
                            tempFile: String, uploadingFile: MultipartFile): Flowable<FileServerAnswerWrapper> {
 
-        return fileServerService.saveMalfunctionRequestImage(server.id, server.fileServerInfo.host, tempFile,
+        val responseFlowable = fileServerService.saveDamageClaimImage(server.id, server.fileServerInfo.host, tempFile,
                 uploadingFile.originalFilename, imageType, ownerId, malfunctionRequestId)
                 //max request waiting time
-                .timeout(FILE_SERVER_REQUEST_TIMEOUT, TimeUnit.SECONDS)
+                .timeout(Constant.FILE_SERVER_REQUEST_TIMEOUT, TimeUnit.SECONDS)
                 .onErrorResumeNext({ error: Throwable ->
                     if (error is TimeoutException || error.cause is ConnectException) {
                         log.d("Operation was cancelled due to timeout")
@@ -322,6 +321,8 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
                         fileServerManager.notWorking(server.id)
                     }
                 })
+
+        return responseFlowable
     }
 
     private fun getFileByOriginalName(uploadingFiles: Array<MultipartFile>, name: String): MultipartFile {

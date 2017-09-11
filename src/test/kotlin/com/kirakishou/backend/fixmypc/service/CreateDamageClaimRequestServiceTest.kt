@@ -131,7 +131,7 @@ class CreateDamageClaimRequestServiceTest {
         Mockito.`when`(fileServerManager.getServers(1)).thenReturn(listOf(FileServersManagerImpl.ServerWithId(0, FileServerInfo(host))))
         Mockito.`when`(tempFileService.fromMultipartFile(TestUtils.anyObject())).thenReturn(tempFile)
 
-        Mockito.`when`(fileServerService.saveMalfunctionRequestImage(
+        Mockito.`when`(fileServerService.saveDamageClaimImage(
                 Mockito.anyInt(),
                 TestUtils.anyObject(),
                 TestUtils.anyObject(),
@@ -175,7 +175,7 @@ class CreateDamageClaimRequestServiceTest {
         Mockito.`when`(tempFileService.fromMultipartFile(TestUtils.anyObject())).thenReturn(tempFile)
         Mockito.`when`(tempFileService.fromMultipartFile(TestUtils.anyObject())).thenReturn(tempFile)
 
-        Mockito.`when`(fileServerService.saveMalfunctionRequestImage(
+        Mockito.`when`(fileServerService.saveDamageClaimImage(
                 Mockito.anyInt(),
                 TestUtils.anyObject(),
                 TestUtils.anyObject(),
@@ -185,7 +185,7 @@ class CreateDamageClaimRequestServiceTest {
                 TestUtils.anyObject()))
                 .thenReturn(Flowable.just(FileServerAnswerWrapper(FileServerAnswer(FileServerErrorCode.OK.value, emptyList()), "")))
 
-        Mockito.`when`(fileServerService.saveMalfunctionRequestImage(
+        Mockito.`when`(fileServerService.saveDamageClaimImage(
                 Mockito.anyInt(),
                 TestUtils.anyObject(),
                 TestUtils.anyObject(),
@@ -195,7 +195,7 @@ class CreateDamageClaimRequestServiceTest {
                 TestUtils.anyObject()))
                 .thenReturn(Flowable.just(FileServerAnswerWrapper(FileServerAnswer(FileServerErrorCode.OK.value, emptyList()), "")))
 
-        Mockito.`when`(fileServerService.saveMalfunctionRequestImage(
+        Mockito.`when`(fileServerService.saveDamageClaimImage(
                 Mockito.anyInt(),
                 TestUtils.anyObject(),
                 TestUtils.anyObject(),
@@ -205,7 +205,7 @@ class CreateDamageClaimRequestServiceTest {
                 TestUtils.anyObject()))
                 .thenReturn(Flowable.just(FileServerAnswerWrapper(FileServerAnswer(FileServerErrorCode.OK.value, emptyList()), "")))
 
-        Mockito.`when`(fileServerService.saveMalfunctionRequestImage(
+        Mockito.`when`(fileServerService.saveDamageClaimImage(
                 Mockito.anyInt(),
                 TestUtils.anyObject(),
                 TestUtils.anyObject(),
@@ -311,7 +311,7 @@ class CreateDamageClaimRequestServiceTest {
         Mockito.`when`(tempFileService.fromMultipartFile(TestUtils.anyObject())).thenReturn(tempFile)
         Mockito.`when`(tempFileService.fromMultipartFile(TestUtils.anyObject())).thenReturn(tempFile)
 
-        Mockito.`when`(fileServerService.saveMalfunctionRequestImage(
+        Mockito.`when`(fileServerService.saveDamageClaimImage(
                 Mockito.anyInt(),
                 TestUtils.anyObject(),
                 TestUtils.anyObject(),
@@ -321,7 +321,7 @@ class CreateDamageClaimRequestServiceTest {
                 TestUtils.anyObject()))
                 .thenReturn(Flowable.just(FileServerAnswerWrapper(FileServerAnswer(FileServerErrorCode.OK.value, emptyList()), "")))
 
-        Mockito.`when`(fileServerService.saveMalfunctionRequestImage(
+        Mockito.`when`(fileServerService.saveDamageClaimImage(
                 Mockito.anyInt(),
                 TestUtils.anyObject(),
                 TestUtils.anyObject(),
@@ -332,7 +332,7 @@ class CreateDamageClaimRequestServiceTest {
                 .thenReturn(Flowable.just(FileServerAnswerWrapper(FileServerAnswer(FileServerErrorCode.REQUEST_TIMEOUT.value, emptyList()), ""))
                                 .delay(1100, TimeUnit.MILLISECONDS))
 
-        Mockito.`when`(fileServerService.saveMalfunctionRequestImage(
+        Mockito.`when`(fileServerService.saveDamageClaimImage(
                 Mockito.anyInt(),
                 TestUtils.anyObject(),
                 TestUtils.anyObject(),
@@ -342,7 +342,7 @@ class CreateDamageClaimRequestServiceTest {
                 TestUtils.anyObject()))
                 .thenReturn(Flowable.just(FileServerAnswerWrapper(FileServerAnswer(FileServerErrorCode.OK.value, emptyList()), "")))
 
-        Mockito.`when`(fileServerService.saveMalfunctionRequestImage(
+        Mockito.`when`(fileServerService.saveDamageClaimImage(
                 Mockito.anyInt(),
                 TestUtils.anyObject(),
                 TestUtils.anyObject(),
@@ -352,7 +352,7 @@ class CreateDamageClaimRequestServiceTest {
                 TestUtils.anyObject()))
                 .thenReturn(Flowable.just(FileServerAnswerWrapper(FileServerAnswer(FileServerErrorCode.OK.value, emptyList()), "")))
 
-        Mockito.`when`(fileServerService.saveMalfunctionRequestImage(
+        Mockito.`when`(fileServerService.saveDamageClaimImage(
                 Mockito.anyInt(),
                 TestUtils.anyObject(),
                 TestUtils.anyObject(),
@@ -392,7 +392,7 @@ class CreateDamageClaimRequestServiceTest {
                 .thenReturn(Fickle.of(fourServers[1]))
                 .thenReturn(Fickle.empty())
 
-        Mockito.`when`(fileServerService.saveMalfunctionRequestImage(
+        Mockito.`when`(fileServerService.saveDamageClaimImage(
                 Mockito.anyInt(),
                 TestUtils.anyObject(),
                 TestUtils.anyObject(),
@@ -403,7 +403,7 @@ class CreateDamageClaimRequestServiceTest {
                 .thenReturn(Flowable.just(FileServerAnswerWrapper(FileServerAnswer(FileServerErrorCode.REQUEST_TIMEOUT.value, emptyList()), ""))
                         .delay(1100, TimeUnit.MILLISECONDS))
 
-        Mockito.`when`(fileServerService.saveMalfunctionRequestImage(
+        Mockito.`when`(fileServerService.saveDamageClaimImage(
                 Mockito.anyInt(),
                 TestUtils.anyObject(),
                 TestUtils.anyObject(),
@@ -436,7 +436,7 @@ class CreateDamageClaimRequestServiceTest {
         Mockito.`when`(tempFileService.fromMultipartFile(TestUtils.anyObject())).thenReturn(tempFile)
         Mockito.`when`(damageClaimDao.saveOne(TestUtils.anyObject())).thenThrow(SQLException("DB is ded"))
 
-        Mockito.`when`(fileServerService.saveMalfunctionRequestImage(0, host, tempFile, origFileName, 0, 0L, malfunctionRequestId))
+        Mockito.`when`(fileServerService.saveDamageClaimImage(0, host, tempFile, origFileName, 0, 0L, malfunctionRequestId))
                 .thenReturn(Flowable.just(FileServerAnswerWrapper(FileServerAnswer(FileServerErrorCode.OK.value, emptyList()), "n0_i45435346")))
 
         val response = service.createDamageClaim(uploadingFiles, 0, CreateDamageClaimRequest(0, "test", 0.0, 0.0), sessionId)

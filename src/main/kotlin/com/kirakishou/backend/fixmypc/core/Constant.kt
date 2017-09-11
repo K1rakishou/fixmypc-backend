@@ -10,6 +10,7 @@ object Constant {
         const val SIGNUP_CONTROLLER_PATH = "/v1/api/signup"
         const val DAMAGE_CLAIM_CONTROLLER_PATH = "/v1/api/damage_claim_request"
         const val DAMAGE_CLAIM_PHOTO_CONTROLLER_PATH = "/v1/api/damage_claim_photo"
+        const val IMAGE_CONTROLLER_PATH = "/v1/api/image"
     }
 
     object SerializedNames {
@@ -38,6 +39,7 @@ object Constant {
         val USER_MALFUNCTION_CACHE_NAME = "user_malfunction_cache"
         val MALFUNCTION_CACHE_NAME = "malfunction_cache"
         val USER_CACHE_NAME = "user_cache"
+        val PHOTO_TO_USER_AFFINITY_CACHE = "photo_to_user_affinity_cache"
     }
 
     object RedisNames {
@@ -50,10 +52,13 @@ object Constant {
 
     object Url {
         //"http://$host/v1/api/upload_image"
-        val SAVE_MALFUNCTION_REQUEST_IMAGE_URL = "http://%s${Paths.DAMAGE_CLAIM_PHOTO_CONTROLLER_PATH}"
+        val SAVE_DAMAGE_CLAIM_IMAGE_URL = "http://%s${Paths.DAMAGE_CLAIM_PHOTO_CONTROLLER_PATH}"
 
         //"http://$host/v1/api/malfunction_image/${ownerId}/${folderName}"
-        val DELETE_MALFUNCTION_REQUEST_IMAGES_URL = "http://%s${Paths.DAMAGE_CLAIM_PHOTO_CONTROLLER_PATH}/%d/%s"
+        val DELETE_DAMAGE_CLAIM_IMAGES_URL = "http://%s${Paths.DAMAGE_CLAIM_PHOTO_CONTROLLER_PATH}/%d/%s"
+
+        //"/v1/api/damage_claim_photo/{image_type}/{owner_id}/{folder_name}/{image_name:.+}"
+        val GET_DAMAGE_CLAIM_IMAGE_URL = "http://%s${Paths.DAMAGE_CLAIM_PHOTO_CONTROLLER_PATH}/%d/%d/%s/%s/%s"
     }
 
     object TextLength {
@@ -65,4 +70,5 @@ object Constant {
 
     val DAMAGE_CLAIM_MAX_IMAGES_PER_REQUEST = 4
     val MAX_CLAIMS_PER_PAGE = 5L
+    val FILE_SERVER_REQUEST_TIMEOUT: Long = 7L
 }

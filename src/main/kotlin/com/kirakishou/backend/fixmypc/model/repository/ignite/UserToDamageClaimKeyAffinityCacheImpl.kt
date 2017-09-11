@@ -31,7 +31,7 @@ class UserToDamageClaimKeyAffinityCacheImpl : UserToDamageClaimKeyAffinityCache 
         cacheConfig.name = Constant.IgniteNames.USER_MALFUNCTION_CACHE_NAME
         cacheConfig.cacheMode = CacheMode.PARTITIONED
         cacheConfig.atomicityMode = CacheAtomicityMode.TRANSACTIONAL
-        cacheConfig.setExpiryPolicyFactory(MyExpiryPolicyFactory(Duration.ONE_MINUTE, Duration.ONE_MINUTE, Duration.ONE_MINUTE))
+        cacheConfig.setExpiryPolicyFactory(MyExpiryPolicyFactory(Duration.TEN_MINUTES, Duration.TEN_MINUTES, Duration.TEN_MINUTES))
 
         userMalfunctionStore = ignite.createCache(cacheConfig)
     }
