@@ -15,6 +15,7 @@ enum class ServerErrorCode(val value: Int) {
     SEC_DATABASE_ERROR(11),
     SEC_SESSION_ID_EXPIRED(12),
     SEC_LOGIN_IS_TOO_LONG(13),
+    SEC_BAD_ORIGINAL_FILE_NAME(22),
     SEC_UNKNOWN_SERVER_ERROR(-1);
 
     companion object {

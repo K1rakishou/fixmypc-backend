@@ -11,6 +11,7 @@ interface ServerImageService {
             class Ok(val image: ResponseEntity<Resource>) : Result
             class NotFound : Result
             class ServerIsDead : Result
+            class BadName : Result
         }
     }
 

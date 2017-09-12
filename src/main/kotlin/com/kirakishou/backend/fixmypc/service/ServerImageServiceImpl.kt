@@ -1,5 +1,6 @@
 package com.kirakishou.backend.fixmypc.service
 
+import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.manager.FileServersManager
 import com.kirakishou.backend.fixmypc.model.repository.PhotoToUserAffinityRepository
 import com.kirakishou.backend.fixmypc.util.TextUtils
@@ -21,6 +22,9 @@ class ServerImageServiceImpl : ServerImageService {
     @Autowired
     lateinit var fileServerManager: FileServersManager
 
+    @Autowired
+    lateinit var log: FileLog
+
     override fun serveImage(imageName: String, size: String): Single<ServerImageService.Get.Result> {
         val photoInfoFickle = photoInfoRepository.getOne(imageName)
         if (!photoInfoFickle.isPresent()) {
@@ -29,6 +33,11 @@ class ServerImageServiceImpl : ServerImageService {
 
         val photoInfo = photoInfoFickle.get()
         val imageNameInfo = TextUtils.parseImageName(imageName)
+        if (!imageNameInfo.isNameOk) {
+            log.d("Bad image name: $imageName")
+            return Single.just(ServerImageService.Get.Result.BadName())
+        }
+
         val host = fileServerManager.getHostById(imageNameInfo.serverId)
 
         return fileServerService.serveDamageClaimImage(photoInfo.ownerId, host, photoInfo.folderName, imageName, photoInfo.imageType, size)

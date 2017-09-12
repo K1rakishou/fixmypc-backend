@@ -116,6 +116,12 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
             return Single.just(fileSizesCheckResult)
         }
 
+        val fileNamesCheckResult = checkFileNames(uploadingFiles.map { it.originalFilename })
+        if (fileNamesCheckResult !is CreateDamageClaimService.Post.Result.Ok) {
+            log.e("Bad file name")
+            return Single.just(requestCheckResult)
+        }
+
         //return error code if there are no working file servers
         if (!fileServerManager.isAtLeastOneServerAlive()) {
             log.e("Could not get at least one file server")
@@ -333,6 +339,16 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
         }
 
         throw IllegalStateException("Could not file $name in uploadingFiles")
+    }
+
+    private fun checkFileNames(originalNames: List<String>): CreateDamageClaimService.Post.Result {
+        for (name in originalNames) {
+            if (!name.endsWith(".jpg") && !name.endsWith(".png") && !name.endsWith(".jpeg")) {
+                return CreateDamageClaimService.Post.Result.BadFileOriginalName()
+            }
+        }
+
+        return CreateDamageClaimService.Post.Result.Ok()
     }
 
     private fun checkFilesSizes(uploadingFiles: Array<MultipartFile>): CreateDamageClaimService.Post.Result {

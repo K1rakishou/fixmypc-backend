@@ -1,6 +1,7 @@
 package com.kirakishou.backend.fixmypc.controller
 
 import com.kirakishou.backend.fixmypc.core.Constant
+import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.service.ServerImageService
 import io.reactivex.Single
 import org.springframework.beans.factory.annotation.Autowired
@@ -21,6 +22,9 @@ class ServerImageController {
     @Autowired
     lateinit var serverImageService: ServerImageService
 
+    @Autowired
+    lateinit var log: FileLog
+
     @RequestMapping(path = arrayOf("${Constant.Paths.IMAGE_CONTROLLER_PATH}/{image_name:.+}/{size}"),
             method = arrayOf(RequestMethod.GET),
             produces = arrayOf(MediaType.IMAGE_PNG_VALUE))
@@ -35,7 +39,12 @@ class ServerImageController {
                         }
 
                         is ServerImageService.Get.Result.ServerIsDead -> {
+                            log.e("File servers are dead")
                             return@map ResponseEntity<Resource>(HttpStatus.INTERNAL_SERVER_ERROR)
+                        }
+
+                        is ServerImageService.Get.Result.BadName -> {
+                            return@map ResponseEntity<Resource>(HttpStatus.UNPROCESSABLE_ENTITY)
                         }
 
                         is ServerImageService.Get.Result.NotFound -> {

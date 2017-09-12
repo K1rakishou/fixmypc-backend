@@ -10,6 +10,7 @@ import org.apache.ignite.configuration.DeploymentMode
 import org.apache.ignite.configuration.IgniteConfiguration
 import org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi
 import org.apache.ignite.spi.discovery.tcp.ipfinder.vm.TcpDiscoveryVmIpFinder
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory
@@ -32,6 +33,9 @@ import javax.sql.DataSource
 
 @Configuration
 class AppConfig {
+
+    @Value("\${fixmypc.backend.log.print_log_in_console}")
+    private val printLog: Boolean = true
 
     @Bean
     fun provideKotlinModule() = KotlinModule()
@@ -91,6 +95,6 @@ class AppConfig {
 
     @Bean
     fun provideFileLog(): FileLog {
-        return FileLogImpl()
+        return FileLogImpl(printLog)
     }
 }

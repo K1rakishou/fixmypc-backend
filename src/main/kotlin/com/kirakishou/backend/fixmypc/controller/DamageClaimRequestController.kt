@@ -51,28 +51,34 @@ class DamageClaimRequestController {
                                     HttpStatus.UNAUTHORIZED)
                         }
 
+                        is CreateDamageClaimService.Post.Result.BadFileOriginalName -> {
+                            return@map ResponseEntity(CreateDamageClaimResponse(
+                                    ServerErrorCode.SEC_BAD_ORIGINAL_FILE_NAME.value),
+                                    HttpStatus.UNPROCESSABLE_ENTITY)
+                        }
+
                         is CreateDamageClaimService.Post.Result.NoFilesToUpload -> {
                             return@map ResponseEntity(CreateDamageClaimResponse(
                                     ServerErrorCode.SEC_NO_FILES_WERE_SELECTED_TO_UPLOAD.value),
-                                    HttpStatus.BAD_REQUEST)
+                                    HttpStatus.UNPROCESSABLE_ENTITY)
                         }
 
                         is CreateDamageClaimService.Post.Result.ImagesCountExceeded -> {
                             return@map ResponseEntity(CreateDamageClaimResponse(
                                     ServerErrorCode.SEC_IMAGES_COUNT_EXCEEDED.value),
-                                    HttpStatus.BAD_REQUEST)
+                                    HttpStatus.UNPROCESSABLE_ENTITY)
                         }
 
                         is CreateDamageClaimService.Post.Result.FileSizeExceeded -> {
                             return@map ResponseEntity(CreateDamageClaimResponse(
                                     ServerErrorCode.SEC_FILE_SIZE_EXCEEDED.value),
-                                    HttpStatus.BAD_REQUEST)
+                                    HttpStatus.UNPROCESSABLE_ENTITY)
                         }
 
                         is CreateDamageClaimService.Post.Result.RequestSizeExceeded -> {
                             return@map ResponseEntity(CreateDamageClaimResponse(
                                     ServerErrorCode.SEC_REQUEST_SIZE_EXCEEDED.value),
-                                    HttpStatus.BAD_REQUEST)
+                                    HttpStatus.UNPROCESSABLE_ENTITY)
                         }
 
                         is CreateDamageClaimService.Post.Result.AllFileServersAreNotWorking -> {

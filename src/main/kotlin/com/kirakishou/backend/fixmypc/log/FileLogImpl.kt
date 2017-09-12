@@ -12,7 +12,7 @@ import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.Semaphore
 import java.util.concurrent.atomic.AtomicBoolean
 
-open class FileLogImpl : FileLog {
+open class FileLogImpl(printLog: Boolean) : FileLog {
     private val MSECS_IN_MINUTE = (1000 * 60).toLong()
     private val MSECS_IN_HOUR = MSECS_IN_MINUTE * 60
     private val MSECS_IN_DAY = MSECS_IN_HOUR * 24
@@ -24,7 +24,7 @@ open class FileLogImpl : FileLog {
     private var thread: Thread? = null
     private var lastTimeDump: Long = 0
 
-    var isDebug = AtomicBoolean(true)
+    var printLogInConsole = AtomicBoolean(printLog)
 
     init {
         try {
@@ -159,7 +159,7 @@ open class FileLogImpl : FileLog {
 
         semaphore.release()
 
-        if (!isDebug.get()) {
+        if (!printLogInConsole.get()) {
             return
         }
 
@@ -181,7 +181,7 @@ open class FileLogImpl : FileLog {
 
         semaphore.release()
 
-        if (!isDebug.get()) {
+        if (!printLogInConsole.get()) {
             return
         }
 
@@ -199,7 +199,7 @@ open class FileLogImpl : FileLog {
 
         semaphore.release()
 
-        if (!isDebug.get()) {
+        if (!printLogInConsole.get()) {
             return
         }
 
@@ -216,7 +216,7 @@ open class FileLogImpl : FileLog {
 
         semaphore.release()
 
-        if (!isDebug.get()) {
+        if (!printLogInConsole.get()) {
             return
         }
 

@@ -9,6 +9,7 @@ interface CreateDamageClaimService {
     interface Post {
         interface Result {
             class Ok : Result
+            class BadFileOriginalName : Result
             class SessionIdExpired : Result
             class NoFilesToUpload : Result
             class ImagesCountExceeded : Result

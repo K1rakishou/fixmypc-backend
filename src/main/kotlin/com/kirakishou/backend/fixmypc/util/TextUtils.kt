@@ -39,11 +39,28 @@ object TextUtils {
     }
 
     fun parseImageName(imageName: String): ExtractedImageInfo {
-        val strings = imageName.split("_")
-        val serverIdStr = strings[0].removeRange(0..0)
-        val name = strings[1].removeRange(0..0)
+        try {
+            val strings = imageName.split("_")
+            if (strings.size != 2) {
+                return ExtractedImageInfo(isNameOk = false)
+            }
 
-        return ExtractedImageInfo(serverIdStr.toInt(), name)
+            val serverIdStr = strings[0].removeRange(0..0)
+            val serverId = try {
+                serverIdStr.toInt()
+            } catch (e: NumberFormatException) {
+                return ExtractedImageInfo(isNameOk = false)
+            }
+
+            val name = strings[1].removeRange(0..0)
+            if (name.isEmpty()) {
+                return ExtractedImageInfo(isNameOk = false)
+            }
+
+            return ExtractedImageInfo(serverId, name, true)
+        } catch (e: Throwable) {
+            return ExtractedImageInfo(isNameOk = false)
+        }
     }
 
     fun createStatementForList(length: Int): String {
