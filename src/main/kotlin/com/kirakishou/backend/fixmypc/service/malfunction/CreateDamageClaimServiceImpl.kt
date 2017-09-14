@@ -66,6 +66,8 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
     @Autowired
     private lateinit var userCache: UserCache
 
+    private val allowedExtensions = listOf(".png", ".jpg", ".jpeg", ".PNG", ".JPG", ".JPEG")
+
     @PostConstruct
     fun init() {
         val fileServerInfoList = arrayListOf<FileServerInfo>()
@@ -343,7 +345,9 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
 
     private fun checkFileNames(originalNames: List<String>): CreateDamageClaimService.Post.Result {
         for (name in originalNames) {
-            if (!name.endsWith(".jpg") && !name.endsWith(".png") && !name.endsWith(".jpeg")) {
+            val extension = TextUtils.extractExtension(name)
+
+            if (extension !in allowedExtensions) {
                 return CreateDamageClaimService.Post.Result.BadFileOriginalName()
             }
         }
