@@ -70,12 +70,7 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
 
     @PostConstruct
     fun init() {
-        val fileServerInfoList = arrayListOf<FileServerInfo>()
-
-        for (host in fileServerHosts) {
-            fileServerInfoList.add(FileServerInfo(host, true))
-        }
-
+        val fileServerInfoList = fileServerHosts.map { FileServerInfo(it, true) }
         fileServerManager.init(fileServerInfoList, TimeUnit.MINUTES.toMillis(pingInterval))
     }
 

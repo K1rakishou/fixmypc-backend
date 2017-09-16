@@ -69,6 +69,6 @@ object Constant {
     }
 
     val DAMAGE_CLAIM_MAX_IMAGES_PER_REQUEST = 4
-    val MAX_CLAIMS_PER_PAGE = 5L
+    val MAX_CLAIMS_PER_PAGE = 50L
     val FILE_SERVER_REQUEST_TIMEOUT: Long = 7L
 }

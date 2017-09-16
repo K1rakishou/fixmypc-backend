@@ -21,50 +21,85 @@ class GetUserDamageClaimListServiceImpl : GetUserDamageClaimListService {
     @Autowired
     private lateinit var log: FileLog
 
-    override fun getDamageClaimsWithinRadiusPaged(lat: Double, lon: Double, radius: Double, page: Long):
+    override fun getDamageClaimsWithinRadiusPaged(latParam: Double, lonParam: Double, radiusParam: Double, pageParam: Long, countParam: Long):
             Single<GetUserDamageClaimListService.Get.Result> {
 
-        val checkResult = checkInputs(lat, lon, radius, page)
-        if (checkResult !is GetUserDamageClaimListService.Get.Result.ParamsAreOk) {
-            log.d("One of the input parameters is bad")
-            return Single.just(checkResult)
+        val lat = when {
+            latParam < -180.0 -> -180.0
+            latParam > 180.0 -> 180.0
+            else -> latParam
         }
 
-        val idsList = locationCache.findWithin(page, LatLon(lat, lon), radius, Constant.MAX_CLAIMS_PER_PAGE)
+        val lon = when {
+            lonParam < -90.0 -> -90.0
+            lonParam > 90.0 -> 90.0
+            else -> lonParam
+        }
+
+        val radius = when {
+            radiusParam < 1.0 -> 1.0
+            radiusParam > 75.0 -> 75.0
+            else -> radiusParam
+        }
+
+        val page = when {
+            pageParam < 0 -> 0
+            else -> pageParam
+        }
+
+        val count = when {
+            countParam < 0 -> 0
+            countParam > Constant.MAX_CLAIMS_PER_PAGE -> Constant.MAX_CLAIMS_PER_PAGE
+            else -> countParam
+        }
+
+        val idsList = locationCache.findWithin(page, LatLon(lat, lon), radius, count)
         val damageClaimsList = damageClaimRepository.findMany(idsList)
 
         return Single.just(GetUserDamageClaimListService.Get.Result.Ok(damageClaimsList))
     }
-
-    private fun checkInputs(lat: Double, lon: Double, radius: Double, page: Long): GetUserDamageClaimListService.Get.Result {
-        if (lat < -180.0) {
-            return GetUserDamageClaimListService.Get.Result.BadLatitude()
-        }
-
-        if (lat > 180.0) {
-            return GetUserDamageClaimListService.Get.Result.BadLatitude()
-        }
-
-        if (lon < -90.0) {
-            return GetUserDamageClaimListService.Get.Result.BadLongitude()
-        }
-
-        if (lon > 90.0) {
-            return GetUserDamageClaimListService.Get.Result.BadLongitude()
-        }
-
-        if (radius < 1.0) {
-            return GetUserDamageClaimListService.Get.Result.RadiusIsTooSmall()
-        }
-
-        if (radius > 75.0) {
-            return GetUserDamageClaimListService.Get.Result.RadiusIsTooLarge()
-        }
-
-        if (page < 0) {
-            return GetUserDamageClaimListService.Get.Result.BadPage()
-        }
-
-        return GetUserDamageClaimListService.Get.Result.ParamsAreOk()
-    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

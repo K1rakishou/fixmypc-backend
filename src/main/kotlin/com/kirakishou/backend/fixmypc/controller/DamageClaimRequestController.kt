@@ -104,22 +104,25 @@ class DamageClaimRequestController {
                 }
     }
 
-    @RequestMapping(path = arrayOf("${Constant.Paths.DAMAGE_CLAIM_CONTROLLER_PATH}/{lat}/{lon}/{radius}/{page}"),
+    @RequestMapping(path = arrayOf("${Constant.Paths.DAMAGE_CLAIM_CONTROLLER_PATH}/{lat}/{lon}/{radius}/{page}/{count}"),
             method = arrayOf(RequestMethod.GET))
     fun getDamageClaimsWithinRadiusPaged(@PathVariable("lat") lat: Double,
                                          @PathVariable("lon") lon: Double,
                                          @PathVariable("radius") radius: Double,
-                                         @PathVariable("page") page: Long): Single<ResponseEntity<DamageClaimsResponse>> {
+                                         @PathVariable("page") page: Long,
+                                         @PathVariable("count") count: Long): Single<ResponseEntity<DamageClaimsResponse>> {
 
-        return mGetUserDamageClaimListService.getDamageClaimsWithinRadiusPaged(lat, lon, radius, page)
+        return mGetUserDamageClaimListService.getDamageClaimsWithinRadiusPaged(lat, lon, radius, page, count)
                 .map { result ->
                     when (result) {
                         is GetUserDamageClaimListService.Get.Result.Ok -> {
-                            return@map ResponseEntity(DamageClaimsResponse(result.damageClaimList, ServerErrorCode.SEC_OK.value), HttpStatus.OK)
+                            return@map ResponseEntity(DamageClaimsResponse(result.damageClaimList,
+                                    ServerErrorCode.SEC_OK.value), HttpStatus.OK)
                         }
 
                         is GetUserDamageClaimListService.Get.Result.SessionIdExpired -> {
-                            return@map ResponseEntity(DamageClaimsResponse(emptyList(), ServerErrorCode.SEC_SESSION_ID_EXPIRED.value), HttpStatus.UNAUTHORIZED)
+                            return@map ResponseEntity(DamageClaimsResponse(emptyList(),
+                                    ServerErrorCode.SEC_SESSION_ID_EXPIRED.value), HttpStatus.UNAUTHORIZED)
                         }
 
                         else -> throw IllegalArgumentException("Unknown result")

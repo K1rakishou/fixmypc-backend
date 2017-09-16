@@ -9,14 +9,8 @@ interface GetUserDamageClaimListService {
         interface Result {
             class Ok(val damageClaimList: List<DamageClaim>) : Result
             class SessionIdExpired : Result
-            class BadLatitude : Result
-            class BadLongitude : Result
-            class RadiusIsTooSmall : Result
-            class RadiusIsTooLarge : Result
-            class BadPage : Result
-            class ParamsAreOk : Result
         }
     }
 
-    fun getDamageClaimsWithinRadiusPaged(lat: Double, lon: Double, radius: Double, page: Long): Single<Get.Result>
+    fun getDamageClaimsWithinRadiusPaged(latParam: Double, lonParam: Double, radiusParam: Double, pageParam: Long, countParam: Long): Single<Get.Result>
 }
