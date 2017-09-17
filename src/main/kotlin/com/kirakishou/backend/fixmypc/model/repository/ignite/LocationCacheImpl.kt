@@ -36,14 +36,14 @@ class LocationCacheImpl : LocationCache {
         template.opsForGeo().geoAdd(Constant.RedisNames.LOCATION_CACHE_NAME, Point(location.lon, location.lat), malfunctionId)
     }
 
-    override fun findWithin(page: Long, centroid: LatLon, radius: Double, count: Long): List<Long> {
-        return template.opsForGeo().geoRadius(Constant.RedisNames.LOCATION_CACHE_NAME,
+    override fun findWithin(skip: Long, centroid: LatLon, radius: Double, count: Long): List<Long> {
+        val result =  template.opsForGeo().geoRadius(Constant.RedisNames.LOCATION_CACHE_NAME,
                 Circle(Point(centroid.lon, centroid.lat), Distance(radius, RedisGeoCommands.DistanceUnit.KILOMETERS)),
-                RedisGeoCommands.GeoRadiusCommandArgs
-                        .newGeoRadiusArgs()
-                        .sortAscending()).content
+                RedisGeoCommands.GeoRadiusCommandArgs.newGeoRadiusArgs().sortAscending()).content
+
+        return result
                 .stream()
-                .skip(page * count)
+                .skip(skip)
                 .limit(count)
                 .map { it.content.name }
                 .collect(Collectors.toList())

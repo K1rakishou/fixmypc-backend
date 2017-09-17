@@ -21,7 +21,7 @@ class GetUserDamageClaimListServiceImpl : GetUserDamageClaimListService {
     @Autowired
     private lateinit var log: FileLog
 
-    override fun getDamageClaimsWithinRadiusPaged(latParam: Double, lonParam: Double, radiusParam: Double, pageParam: Long, countParam: Long):
+    override fun getDamageClaimsWithinRadiusPaged(latParam: Double, lonParam: Double, radiusParam: Double, skipParam: Long, countParam: Long):
             Single<GetUserDamageClaimListService.Get.Result> {
 
         val lat = when {
@@ -42,9 +42,9 @@ class GetUserDamageClaimListServiceImpl : GetUserDamageClaimListService {
             else -> radiusParam
         }
 
-        val page = when {
-            pageParam < 0 -> 0
-            else -> pageParam
+        val skip = when {
+            skipParam < 0 -> 0
+            else -> skipParam
         }
 
         val count = when {
@@ -53,7 +53,7 @@ class GetUserDamageClaimListServiceImpl : GetUserDamageClaimListService {
             else -> countParam
         }
 
-        val idsList = locationCache.findWithin(page, LatLon(lat, lon), radius, count)
+        val idsList = locationCache.findWithin(skip, LatLon(lat, lon), radius, count)
         val damageClaimsList = damageClaimRepository.findMany(idsList)
 
         return Single.just(GetUserDamageClaimListService.Get.Result.Ok(damageClaimsList))
