@@ -19,7 +19,7 @@ class DamageClaimCacheImpl : DamageClaimCache {
     @Autowired
     lateinit var ignite: Ignite
 
-    lateinit var damageClaimStore: IgniteCache<Long, DamageClaim>
+    lateinit var damageClaimCache: IgniteCache<Long, DamageClaim>
 
     @PostConstruct
     fun init() {
@@ -29,11 +29,11 @@ class DamageClaimCacheImpl : DamageClaimCache {
         cacheConfig.cacheMode = CacheMode.PARTITIONED
         cacheConfig.setExpiryPolicyFactory(MyExpiryPolicyFactory(Duration.TEN_MINUTES, Duration.TEN_MINUTES, Duration.TEN_MINUTES))
 
-        damageClaimStore = ignite.createCache(cacheConfig)
+        damageClaimCache = ignite.createCache(cacheConfig)
     }
 
     override fun saveOne(damageClaim: DamageClaim) {
-        damageClaimStore.put(damageClaim.id, damageClaim)
+        damageClaimCache.put(damageClaim.id, damageClaim)
     }
 
     override fun saveMany(damageClaimList: List<DamageClaim>) {
@@ -43,27 +43,27 @@ class DamageClaimCacheImpl : DamageClaimCache {
             malfunctionMap.put(malfunction.id, malfunction)
         }
 
-        damageClaimStore.putAll(malfunctionMap)
+        damageClaimCache.putAll(malfunctionMap)
     }
 
     override fun findOne(malfunctionId: Long): Fickle<DamageClaim> {
-        return Fickle.of(damageClaimStore[malfunctionId])
+        return Fickle.of(damageClaimCache[malfunctionId])
     }
 
     override fun findMany(malfunctionIdList: List<Long>): List<DamageClaim> {
         val set = malfunctionIdList.toSet()
-        return ArrayList(damageClaimStore.getAll(set).values)
+        return ArrayList(damageClaimCache.getAll(set).values)
     }
 
     override fun deleteOne(malfunctionId: Long) {
-        damageClaimStore.remove(malfunctionId)
+        damageClaimCache.remove(malfunctionId)
     }
 
     override fun deleteMany(malfunctionIdList: List<Long>) {
-        damageClaimStore.removeAll(malfunctionIdList.toSet())
+        damageClaimCache.removeAll(malfunctionIdList.toSet())
     }
 
     override fun clear() {
-        damageClaimStore.clear()
+        damageClaimCache.clear()
     }
 }

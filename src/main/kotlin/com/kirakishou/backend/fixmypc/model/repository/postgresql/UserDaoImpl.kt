@@ -4,11 +4,12 @@ import com.kirakishou.backend.fixmypc.core.AccountType
 import com.kirakishou.backend.fixmypc.core.Either
 import com.kirakishou.backend.fixmypc.core.Fickle
 import com.kirakishou.backend.fixmypc.extension.prepareStatementScrollable
-import com.kirakishou.backend.fixmypc.extension.transactional
+import com.kirakishou.backend.fixmypc.extension.transactionalUse
 import com.kirakishou.backend.fixmypc.model.entity.User
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Repository
 import java.sql.SQLException
+import java.sql.Statement
 import javax.sql.DataSource
 
 /**
@@ -21,23 +22,35 @@ class UserDaoImpl : UserDao {
     @Autowired
     private lateinit var hikariCP: DataSource
 
-    override fun saveOne(user: User): Either<SQLException, Boolean> {
+    override fun saveOne(user: User): Either<SQLException, Pair<Boolean, Long>> {
+        var userId = Fickle.empty<Long>()
+
         try {
-            hikariCP.connection.transactional { connection ->
+            hikariCP.connection.transactionalUse { connection ->
                 connection.prepareStatement("INSERT INTO public.users (login, password, account_type, created_on, deleted_on) " +
-                        "VALUES (?, ?, ?, NOW(), NULL)").use { ps ->
+                        "VALUES (?, ?, ?, NOW(), NULL)", Statement.RETURN_GENERATED_KEYS).use { ps ->
 
                     ps.setString(1, user.login)
                     ps.setString(2, user.password)
                     ps.setInt(3, user.accountType.value)
                     ps.executeUpdate()
+
+                    ps.generatedKeys.use {
+                        if (it.next()) {
+                            userId = Fickle.of(it.getLong(1))
+                        }
+                    }
                 }
             }
         } catch (e: SQLException) {
             return Either.Error(e)
         }
 
-        return Either.Value(true)
+        if (!userId.isPresent()) {
+            return Either.Value(false to 0L)
+        }
+
+        return Either.Value(true to userId.get())
     }
 
     override fun findOne(login: String): Either<SQLException, Fickle<User>> {

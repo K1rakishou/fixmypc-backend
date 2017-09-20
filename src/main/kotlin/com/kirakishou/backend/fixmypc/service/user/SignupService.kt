@@ -14,6 +14,7 @@ interface SignupService {
         class AccountTypeIsIncorrect: Result
         class LoginAlreadyExists: Result
         class LoginIsTooLong : Result
+        class UnknownError : Result
     }
 
     fun doSignup(login: String, password: String, accountType: AccountType): Result

@@ -4,7 +4,7 @@ import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.core.Either
 import com.kirakishou.backend.fixmypc.core.Fickle
 import com.kirakishou.backend.fixmypc.extension.prepareStatementScrollable
-import com.kirakishou.backend.fixmypc.extension.transactional
+import com.kirakishou.backend.fixmypc.extension.transactionalUse
 import com.kirakishou.backend.fixmypc.model.dto.DamageClaimIdLocationDTO
 import com.kirakishou.backend.fixmypc.model.entity.DamageClaim
 import com.kirakishou.backend.fixmypc.model.entity.LatLon
@@ -25,7 +25,7 @@ class DamageClaimDaoImpl : DamageClaimDao {
 
     override fun saveOne(damageClaim: DamageClaim): Either<SQLException, Boolean> {
         try {
-            hikariCP.connection.transactional { connection ->
+            hikariCP.connection.transactionalUse { connection ->
                 connection.prepareStatement("INSERT INTO public.damage_claims (owner_id, category, description, " +
                         "folder_name, lat, lon, is_active, created_on, deleted_on) " +
                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL)", Statement.RETURN_GENERATED_KEYS).use { ps ->
@@ -225,7 +225,7 @@ class DamageClaimDaoImpl : DamageClaimDao {
 
     override fun deleteOne(id: Long): Either<SQLException, Boolean> {
         try {
-            hikariCP.connection.transactional { connection ->
+            hikariCP.connection.transactionalUse { connection ->
                 deleteDamageClaim(connection, id)
                 deletePhoto(connection, id)
             }

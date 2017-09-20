@@ -2,7 +2,7 @@ package com.kirakishou.backend.fixmypc.extension
 
 import java.sql.Connection
 
-fun Connection.transactional(body: (connection: Connection) -> Unit) {
+fun Connection.transactionalUse(body: (connection: Connection) -> Unit) {
     try {
         this.autoCommit = false
         body.invoke(this)

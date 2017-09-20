@@ -31,14 +31,14 @@ class UserRepositoryImpl : UserRepository {
         return (daoResult as Either.Value).value
     }
 
-    override fun saveOneToDao(user: User): Boolean {
+    override fun saveOneToDao(user: User): Pair<Boolean, Long> {
         val daoResult = userDao.saveOne(user)
         if (daoResult is Either.Error) {
             log.e(daoResult.error)
-            return false
+            return false to 0L
         } else {
-            if (!(daoResult as Either.Value).value) {
-                return false
+            if (!(daoResult as Either.Value).value.first) {
+                return false to 0L
             }
         }
 

@@ -10,7 +10,7 @@ import java.sql.SQLException
  */
 
 interface UserDao {
-    fun saveOne(user: User): Either<SQLException, Boolean>
+    fun saveOne(user: User): Either<SQLException, Pair<Boolean, Long>>
     fun findOne(login: String): Either<SQLException, Fickle<User>>
     fun deleteOne(login: String): Either<SQLException, Boolean>
 }

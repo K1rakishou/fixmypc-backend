@@ -40,6 +40,7 @@ object Constant {
         val MALFUNCTION_CACHE_NAME = "malfunction_cache"
         val USER_CACHE_NAME = "user_cache"
         val PHOTO_TO_USER_AFFINITY_CACHE = "photo_to_user_affinity_cache"
+        val CLIENT_PROFILE_CACHE_NAME = "client_profile_cache"
     }
 
     object RedisNames {
