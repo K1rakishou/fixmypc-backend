@@ -11,6 +11,7 @@ object Constant {
         const val DAMAGE_CLAIM_CONTROLLER_PATH = "/v1/api/damage_claim_request"
         const val DAMAGE_CLAIM_PHOTO_CONTROLLER_PATH = "/v1/api/damage_claim_photo"
         const val IMAGE_CONTROLLER_PATH = "/v1/api/image"
+        const val CLIENT_PROFILE_CONTROLLER_PATH = "/v1/api/profile"
     }
 
     object SerializedNames {
@@ -33,6 +34,8 @@ object Constant {
         const val IMAGE_NAME = "image_name"
         const val OWNER_ID = "owner_id"
         const val MALFUNCTION_REQUEST_ID = "m_request_id"
+
+        const val CLIEND_PROFILE = "client_profile"
     }
 
     object IgniteNames {

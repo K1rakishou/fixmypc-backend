@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestMethod
 
 @Controller
 @RequestMapping
-class ServerImageController {
+class ImageController {
 
     @Autowired
     lateinit var serverImageService: ServerImageService

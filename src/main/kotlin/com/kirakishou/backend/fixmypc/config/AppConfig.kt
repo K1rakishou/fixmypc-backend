@@ -1,6 +1,5 @@
 package com.kirakishou.backend.fixmypc.config
 
-import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.log.FileLogImpl
 import com.zaxxer.hikari.HikariDataSource
@@ -11,19 +10,18 @@ import org.apache.ignite.configuration.IgniteConfiguration
 import org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi
 import org.apache.ignite.spi.discovery.tcp.ipfinder.vm.TcpDiscoveryVmIpFinder
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.autoconfigure.web.HttpMessageConverters
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.data.redis.serializer.JdkSerializationRedisSerializer
+import org.springframework.http.converter.HttpMessageConverter
+import org.springframework.http.converter.json.GsonHttpMessageConverter
 import org.springframework.web.client.AsyncRestTemplate
 import redis.clients.jedis.JedisShardInfo
+import java.util.*
 import javax.sql.DataSource
-
-
-
-
-
 
 
 
@@ -38,7 +36,13 @@ class AppConfig {
     private val printLog: Boolean = true
 
     @Bean
-    fun provideKotlinModule() = KotlinModule()
+    fun customConverters(): HttpMessageConverters {
+        val messageConverters = ArrayList<HttpMessageConverter<*>>()
+        val gsonHttpMessageConverter = GsonHttpMessageConverter()
+        messageConverters.add(gsonHttpMessageConverter)
+
+        return HttpMessageConverters(true, messageConverters)
+    }
 
     @Bean
     fun provideIgnite(): Ignite {

@@ -1,7 +1,7 @@
 package com.kirakishou.backend.fixmypc.model.net.response
 
-import com.fasterxml.jackson.annotation.JsonProperty
+import com.google.gson.annotations.SerializedName
 import com.kirakishou.backend.fixmypc.core.Constant
 
-open class StatusResponse(@JsonProperty(Constant.SerializedNames.SERVER_ERROR_CODE)
+open class StatusResponse(@SerializedName(Constant.SerializedNames.SERVER_ERROR_CODE)
                      val errorCode: Int)

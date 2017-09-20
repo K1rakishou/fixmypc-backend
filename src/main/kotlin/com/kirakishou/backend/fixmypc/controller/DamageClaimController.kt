@@ -18,7 +18,7 @@ import org.springframework.web.multipart.MultipartFile
 
 @Controller
 @RequestMapping
-class DamageClaimRequestController {
+class DamageClaimController {
 
     @Autowired
     lateinit var mCreateDamageClaimService: CreateDamageClaimService

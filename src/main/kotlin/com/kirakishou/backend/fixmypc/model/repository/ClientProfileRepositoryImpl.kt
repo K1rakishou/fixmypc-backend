@@ -7,7 +7,9 @@ import com.kirakishou.backend.fixmypc.model.entity.ClientProfile
 import com.kirakishou.backend.fixmypc.model.repository.ignite.ClientProfileCache
 import com.kirakishou.backend.fixmypc.model.repository.postgresql.ClientProfileDao
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
 
+@Component
 class ClientProfileRepositoryImpl : ClientProfileRepository {
 
     @Autowired
