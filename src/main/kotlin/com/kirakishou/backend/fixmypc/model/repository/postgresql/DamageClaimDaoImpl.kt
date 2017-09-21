@@ -154,7 +154,7 @@ class DamageClaimDaoImpl : DamageClaimDao {
     override fun findManyActiveByIdList(idsToSearch: List<Long>): Either<SQLException, List<DamageClaim>> {
         val damageClaimsList = arrayListOf<DamageClaim>()
         val idsStatement = TextUtils.createStatementForList(idsToSearch.size)
-        val sql = "SELECT id, category, is_active, description, created_on, folder_name, lat, lon " +
+        val sql = "SELECT id, owner_id, category, is_active, description, created_on, folder_name, lat, lon " +
                 "FROM public.damage_claims WHERE id IN ($idsStatement) AND is_active = TRUE AND deleted_on IS NULL ORDER BY id ASC"
 
         try {
@@ -168,7 +168,7 @@ class DamageClaimDaoImpl : DamageClaimDao {
                         while (rs.next()) {
                             val malfunction = DamageClaim(
                                     rs.getLong("id"),
-                                    -1,
+                                    rs.getLong("owner_id"),
                                     true,
                                     rs.getString("folder_name"),
                                     rs.getInt("category"),

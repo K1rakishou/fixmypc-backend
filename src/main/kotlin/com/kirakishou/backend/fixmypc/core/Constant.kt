@@ -35,7 +35,8 @@ object Constant {
         const val OWNER_ID = "owner_id"
         const val MALFUNCTION_REQUEST_ID = "m_request_id"
 
-        const val CLIEND_PROFILE = "client_profile"
+        const val DAMAGE_CLAIM_LIST = "damage_claim_list"
+        const val CLIENT_PROFILE = "client_profile"
     }
 
     object IgniteNames {

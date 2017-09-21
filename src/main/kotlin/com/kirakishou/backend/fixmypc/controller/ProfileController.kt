@@ -29,12 +29,14 @@ class ProfileController {
                     when (result) {
                         is ClientProfileService.Get.Result.Ok -> {
                             return@map ResponseEntity(
-                                    ClientProfileResponse(result.clientProfile, ServerErrorCode.SEC_OK.value), HttpStatus.OK)
+                                    ClientProfileResponse(result.clientProfile, ServerErrorCode.SEC_OK.value),
+                                    HttpStatus.OK)
                         }
 
                         is ClientProfileService.Get.Result.CouldNotFindProfile -> {
                             return@map ResponseEntity(
-                                    ClientProfileResponse(null, ServerErrorCode.SEC_UNKNOWN_SERVER_ERROR.value), HttpStatus.INTERNAL_SERVER_ERROR)
+                                    ClientProfileResponse(null, ServerErrorCode.SEC_UNKNOWN_SERVER_ERROR.value),
+                                    HttpStatus.INTERNAL_SERVER_ERROR)
                         }
 
                         else -> throw IllegalArgumentException("Unknown result")

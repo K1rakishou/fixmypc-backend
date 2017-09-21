@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName
 import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.model.entity.ClientProfile
 
-data class ClientProfileResponse(@SerializedName(Constant.SerializedNames.CLIEND_PROFILE)
+data class ClientProfileResponse(@SerializedName(Constant.SerializedNames.CLIENT_PROFILE)
                                  val clientProfile: ClientProfile?,
 
                                  @SerializedName(Constant.SerializedNames.SERVER_ERROR_CODE)
