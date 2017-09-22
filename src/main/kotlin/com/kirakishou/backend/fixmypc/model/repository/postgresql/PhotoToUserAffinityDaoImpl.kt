@@ -14,7 +14,7 @@ class PhotoToUserAffinityDaoImpl : PhotoToUserAffinityDao {
     @Autowired
     private lateinit var hikariCP: DataSource
 
-    override fun getOne(imageName: String): Either<Throwable, Fickle<PhotoInfoDTO>> {
+    override fun findOne(imageName: String): Either<Throwable, Fickle<PhotoInfoDTO>> {
         val photoInfo = PhotoInfoDTO()
         var damageClaimId: Long = -1
 

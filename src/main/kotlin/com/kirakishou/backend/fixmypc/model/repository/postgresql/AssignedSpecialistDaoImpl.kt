@@ -2,6 +2,7 @@ package com.kirakishou.backend.fixmypc.model.repository.postgresql
 
 import com.kirakishou.backend.fixmypc.core.Either
 import com.kirakishou.backend.fixmypc.core.Fickle
+import com.kirakishou.backend.fixmypc.extension.prepareStatementScrollable
 import com.kirakishou.backend.fixmypc.model.entity.AssignedSpecialist
 import com.kirakishou.backend.fixmypc.util.TextUtils
 import org.springframework.beans.factory.annotation.Autowired
@@ -36,7 +37,7 @@ class AssignedSpecialistDaoImpl : AssignedSpecialistDao {
 
         try {
             hikariCP.connection.use { connection ->
-                connection.prepareStatement("SELECT user_id FROM $TABLE_NAME WHERE damage_claim_id = ? AND is_active = ?").use { ps ->
+                connection.prepareStatementScrollable("SELECT user_id FROM $TABLE_NAME WHERE damage_claim_id = ? AND is_active = ?").use { ps ->
                     ps.setLong(1, damageClaimId)
                     ps.setBoolean(2, isActive)
 
@@ -64,7 +65,7 @@ class AssignedSpecialistDaoImpl : AssignedSpecialistDao {
 
         try {
             hikariCP.connection.use { connection ->
-                connection.prepareStatement(sql).use { ps ->
+                connection.prepareStatementScrollable(sql).use { ps ->
                     var index = 0
 
                     for (id in damageClaimIdList) {

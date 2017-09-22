@@ -3,7 +3,6 @@ package com.kirakishou.backend.fixmypc.model.repository.postgresql
 import com.kirakishou.backend.fixmypc.core.Either
 import com.kirakishou.backend.fixmypc.core.Fickle
 import com.kirakishou.backend.fixmypc.extension.prepareStatementScrollable
-import com.kirakishou.backend.fixmypc.extension.transactionalUse
 import com.kirakishou.backend.fixmypc.model.entity.ClientProfile
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -19,7 +18,7 @@ class ClientProfileDaoImpl : ClientProfileDao {
 
     override fun saveOne(clientProfile: ClientProfile): Either<Throwable, Boolean> {
         try {
-            hikariCP.connection.transactionalUse { connection ->
+            hikariCP.connection.use { connection ->
                 connection.prepareStatement("INSERT INTO $TABLE_NAME (user_id, name, phone, is_profile_filled_out) " +
                         "VALUES (?, ?, ?, ?) ON CONFLICT (user_id) " +
                         "DO UPDATE SET name = EXCLUDED.name, phone = EXCLUDED.phone, is_profile_filled_out = EXCLUDED.is_profile_filled_out").use { ps ->

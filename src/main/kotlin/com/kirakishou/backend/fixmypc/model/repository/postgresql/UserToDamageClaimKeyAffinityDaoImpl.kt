@@ -2,7 +2,6 @@ package com.kirakishou.backend.fixmypc.model.repository.postgresql
 
 import com.kirakishou.backend.fixmypc.core.Either
 import com.kirakishou.backend.fixmypc.extension.prepareStatementScrollable
-import com.kirakishou.backend.fixmypc.extension.transactionalUse
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import javax.sql.DataSource
@@ -15,7 +14,7 @@ class UserToDamageClaimKeyAffinityDaoImpl : UserToDamageClaimKeyAffinityDao {
 
     override fun saveOne(ownerId: Long, malfunctionId: Long): Either<Throwable, Boolean> {
         try {
-            hikariCP.connection.transactionalUse { connection ->
+            hikariCP.connection.use { connection ->
                 connection.prepareStatement("INSERT INTO public.user_to_damage_claim_key_affinity " +
                         "(owner_id, damage_claim_id, deleted_on) VALUES (?, ?, NULL)").use { ps ->
                     ps.setLong(1, ownerId)

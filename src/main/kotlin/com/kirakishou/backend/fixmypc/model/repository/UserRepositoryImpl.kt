@@ -13,16 +13,16 @@ import org.springframework.stereotype.Component
 class UserRepositoryImpl : UserRepository {
 
     @Autowired
-    private lateinit var userDao: UserDao
+    private lateinit var dao: UserDao
 
     @Autowired
-    private lateinit var userCache: UserCache
+    private lateinit var cache: UserCache
 
     @Autowired
     private lateinit var log: FileLog
 
     override fun findOne(login: String): Fickle<User> {
-        val daoResult = userDao.findOne(login)
+        val daoResult = dao.findOne(login)
         if (daoResult is Either.Error) {
             log.e(daoResult.error)
             return Fickle.empty()
@@ -32,7 +32,7 @@ class UserRepositoryImpl : UserRepository {
     }
 
     override fun saveOneToDao(user: User): Pair<Boolean, Long> {
-        val daoResult = userDao.saveOne(user)
+        val daoResult = dao.saveOne(user)
         if (daoResult is Either.Error) {
             log.e(daoResult.error)
             return false to 0L
@@ -46,11 +46,11 @@ class UserRepositoryImpl : UserRepository {
     }
 
     override fun saveOneToStore(sessionId: String, user: User) {
-        userCache.saveOne(sessionId, user)
+        cache.saveOne(sessionId, user)
     }
 
     override fun deleteOneFromDao(login: String): Boolean {
-        val daoResult = userDao.deleteOne(login)
+        val daoResult = dao.deleteOne(login)
 
         if (daoResult is Either.Error) {
             log.e(daoResult.error)
@@ -65,6 +65,6 @@ class UserRepositoryImpl : UserRepository {
     }
 
     override fun deleteOneFromStore(sessionId: String) {
-        userCache.deleteOne(sessionId)
+        cache.deleteOne(sessionId)
     }
 }

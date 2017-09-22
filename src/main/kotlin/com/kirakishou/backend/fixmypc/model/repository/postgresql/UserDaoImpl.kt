@@ -4,7 +4,6 @@ import com.kirakishou.backend.fixmypc.core.AccountType
 import com.kirakishou.backend.fixmypc.core.Either
 import com.kirakishou.backend.fixmypc.core.Fickle
 import com.kirakishou.backend.fixmypc.extension.prepareStatementScrollable
-import com.kirakishou.backend.fixmypc.extension.transactionalUse
 import com.kirakishou.backend.fixmypc.model.entity.User
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -25,7 +24,7 @@ class UserDaoImpl : UserDao {
         var userId = Fickle.empty<Long>()
 
         try {
-            hikariCP.connection.transactionalUse { connection ->
+            hikariCP.connection.use { connection ->
                 connection.prepareStatement("INSERT INTO public.users (login, password, account_type, created_on, deleted_on) " +
                         "VALUES (?, ?, ?, NOW(), NULL)", Statement.RETURN_GENERATED_KEYS).use { ps ->
 

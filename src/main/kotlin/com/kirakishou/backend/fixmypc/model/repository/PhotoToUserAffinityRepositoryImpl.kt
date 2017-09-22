@@ -13,21 +13,21 @@ import org.springframework.stereotype.Component
 class PhotoToUserAffinityRepositoryImpl : PhotoToUserAffinityRepository {
 
     @Autowired
-    lateinit var photoInfoCache: PhotoToUserAffinityCache
+    lateinit var cache: PhotoToUserAffinityCache
 
     @Autowired
-    lateinit var photoInfoDao: PhotoToUserAffinityDao
+    lateinit var dao: PhotoToUserAffinityDao
 
     @Autowired
     private lateinit var log: FileLog
 
     override fun getOne(imageName: String): Fickle<PhotoInfoDTO> {
-        val cacheResult = photoInfoCache.getOne(imageName)
+        val cacheResult = cache.getOne(imageName)
         if (cacheResult.isPresent()) {
             return cacheResult
         }
 
-        val daoResult = photoInfoDao.getOne(imageName)
+        val daoResult = dao.findOne(imageName)
         if (daoResult is Either.Error) {
             log.e(daoResult.error)
             return Fickle.empty()
@@ -37,7 +37,7 @@ class PhotoToUserAffinityRepositoryImpl : PhotoToUserAffinityRepository {
             }
         }
 
-        photoInfoCache.saveOne(imageName, daoResult.value.get())
+        cache.saveOne(imageName, daoResult.value.get())
         return daoResult.value
     }
 }

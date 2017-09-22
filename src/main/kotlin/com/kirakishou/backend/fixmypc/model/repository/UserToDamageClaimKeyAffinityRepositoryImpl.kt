@@ -12,16 +12,16 @@ import java.util.stream.Collectors
 class UserToDamageClaimKeyAffinityRepositoryImpl : UserToDamageClaimKeyAffinityRepository {
 
     @Autowired
-    private lateinit var userToDamageClaimKeyAffinityDao: UserToDamageClaimKeyAffinityDao
+    private lateinit var dao: UserToDamageClaimKeyAffinityDao
     
     @Autowired
-    private lateinit var userToDamageClaimKeyAffinityCache: UserToDamageClaimKeyAffinityCache
+    private lateinit var cache: UserToDamageClaimKeyAffinityCache
     
     @Autowired
     private lateinit var log: FileLog
 
     override fun saveOne(ownerId: Long, malfunctionId: Long): Boolean {
-        val daoResult = userToDamageClaimKeyAffinityDao.saveOne(ownerId, malfunctionId)
+        val daoResult = dao.saveOne(ownerId, malfunctionId)
         if (daoResult is Either.Error) {
             log.e(daoResult.error)
             return false
@@ -31,19 +31,19 @@ class UserToDamageClaimKeyAffinityRepositoryImpl : UserToDamageClaimKeyAffinityR
             }
         }
 
-        userToDamageClaimKeyAffinityCache.saveOne(ownerId, malfunctionId)
+        cache.saveOne(ownerId, malfunctionId)
         return true
     }
 
     override fun findMany(ownerId: Long, offset: Long, count: Long): List<Long> {
-        val cacheResult = userToDamageClaimKeyAffinityCache.findMany(ownerId, offset, count)
+        val cacheResult = cache.findMany(ownerId, offset, count)
         if (cacheResult.size == count.toInt()) {
             return cacheResult
         }
 
         val remainder = count - cacheResult.size
 
-        val daoResult = userToDamageClaimKeyAffinityDao.findAll(ownerId)
+        val daoResult = dao.findAll(ownerId)
         if (daoResult is Either.Error) {
             return cacheResult
         }
@@ -53,7 +53,7 @@ class UserToDamageClaimKeyAffinityRepositoryImpl : UserToDamageClaimKeyAffinityR
             return cacheResult
         }
 
-        userToDamageClaimKeyAffinityCache.saveMany(ownerId, daoResValue)
+        cache.saveMany(ownerId, daoResValue)
 
         val filteredIds = daoResValue.stream()
                 .skip(offset)
@@ -70,7 +70,7 @@ class UserToDamageClaimKeyAffinityRepositoryImpl : UserToDamageClaimKeyAffinityR
     }
 
     override fun deleteOne(ownerId: Long, malfunctionId: Long): Boolean {
-        val daoResult = userToDamageClaimKeyAffinityDao.deleteOne(ownerId, malfunctionId)
+        val daoResult = dao.deleteOne(ownerId, malfunctionId)
         if (daoResult is Either.Error) {
             log.e(daoResult.error)
             return false
@@ -80,7 +80,7 @@ class UserToDamageClaimKeyAffinityRepositoryImpl : UserToDamageClaimKeyAffinityR
             }
         }
 
-        userToDamageClaimKeyAffinityCache.deleteOne(ownerId, malfunctionId)
+        cache.deleteOne(ownerId, malfunctionId)
         return true
     }
 }

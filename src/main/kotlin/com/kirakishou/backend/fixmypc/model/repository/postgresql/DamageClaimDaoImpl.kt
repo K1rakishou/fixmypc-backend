@@ -24,7 +24,7 @@ class DamageClaimDaoImpl : DamageClaimDao {
 
     override fun saveOne(damageClaim: DamageClaim): Either<Throwable, Boolean> {
         try {
-            hikariCP.connection.transactionalUse { connection ->
+            hikariCP.connection.use { connection ->
                 connection.prepareStatement("INSERT INTO public.damage_claims (owner_id, category, description, " +
                         "folder_name, lat, lon, is_active, created_on, deleted_on) " +
                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL)", Statement.RETURN_GENERATED_KEYS).use { ps ->

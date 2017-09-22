@@ -12,16 +12,16 @@ import java.util.stream.Collectors
 class AssignedSpecialistRepositoryImpl : AssignedSpecialistRepository {
 
     @Autowired
-    private lateinit var assignedSpecialistDao: AssignedSpecialistDao
+    private lateinit var dao: AssignedSpecialistDao
 
     @Autowired
-    private lateinit var assignedSpecialistCache: AssignedSpecialistCache
+    private lateinit var cache: AssignedSpecialistCache
 
     @Autowired
     private lateinit var log: FileLog
 
     override fun saveOne(assignedSpecialist: AssignedSpecialist): Boolean {
-        val daoResult = assignedSpecialistDao.saveOne(assignedSpecialist)
+        val daoResult = dao.saveOne(assignedSpecialist)
         if (daoResult is Either.Error) {
             log.e(daoResult.error)
             return false
@@ -31,17 +31,17 @@ class AssignedSpecialistRepositoryImpl : AssignedSpecialistRepository {
             }
         }
 
-        assignedSpecialistCache.saveOne(assignedSpecialist)
+        cache.saveOne(assignedSpecialist)
         return true
     }
 
     override fun findOne(damageClaimId: Long, isActive: Boolean): Fickle<AssignedSpecialist> {
-        val cacheResult = assignedSpecialistCache.findOne(damageClaimId, isActive)
+        val cacheResult = cache.findOne(damageClaimId, isActive)
         if (cacheResult.isPresent()) {
             return cacheResult
         }
 
-        val daoResult = assignedSpecialistDao.findOne(damageClaimId, isActive)
+        val daoResult = dao.findOne(damageClaimId, isActive)
         if (daoResult is Either.Error) {
             log.e(daoResult.error)
             return Fickle.empty()
@@ -51,12 +51,12 @@ class AssignedSpecialistRepositoryImpl : AssignedSpecialistRepository {
             }
         }
 
-        assignedSpecialistCache.saveOne(daoResult.value.get())
+        cache.saveOne(daoResult.value.get())
         return daoResult.value
     }
 
     override fun findMany(damageClaimIdList: List<Long>, isActive: Boolean): List<AssignedSpecialist> {
-        val cacheResult = assignedSpecialistCache.findMany(damageClaimIdList, isActive)
+        val cacheResult = cache.findMany(damageClaimIdList, isActive)
         if (cacheResult.size == damageClaimIdList.size) {
             return cacheResult
         }
@@ -65,7 +65,7 @@ class AssignedSpecialistRepositoryImpl : AssignedSpecialistRepository {
                 .filter { !contains(cacheResult, it) }
                 .collect(Collectors.toList())
 
-        val daoResult = assignedSpecialistDao.findMany(notInCache, isActive)
+        val daoResult = dao.findMany(notInCache, isActive)
         if (daoResult is Either.Error) {
             log.e(daoResult.error)
             return cacheResult
@@ -75,7 +75,7 @@ class AssignedSpecialistRepositoryImpl : AssignedSpecialistRepository {
             }
         }
 
-        assignedSpecialistCache.saveMany(daoResult.value)
+        cache.saveMany(daoResult.value)
 
         val result = ArrayList<AssignedSpecialist>()
         result.ensureCapacity(cacheResult.size + daoResult.value.size)
