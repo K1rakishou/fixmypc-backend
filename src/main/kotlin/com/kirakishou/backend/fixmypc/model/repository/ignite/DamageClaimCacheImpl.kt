@@ -37,13 +37,13 @@ class DamageClaimCacheImpl : DamageClaimCache {
     }
 
     override fun saveMany(damageClaimList: List<DamageClaim>) {
-        val malfunctionMap = hashMapOf<Long, DamageClaim>()
+        val damageClaimMap = hashMapOf<Long, DamageClaim>()
 
         for (malfunction in damageClaimList) {
-            malfunctionMap.put(malfunction.id, malfunction)
+            damageClaimMap.put(malfunction.id, malfunction)
         }
 
-        damageClaimCache.putAll(malfunctionMap)
+        damageClaimCache.putAll(damageClaimMap)
     }
 
     override fun findOne(malfunctionId: Long): Fickle<DamageClaim> {

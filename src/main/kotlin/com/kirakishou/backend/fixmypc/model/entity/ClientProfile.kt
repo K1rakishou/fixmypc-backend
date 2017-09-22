@@ -1,6 +1,7 @@
 package com.kirakishou.backend.fixmypc.model.entity
 
 import com.google.gson.annotations.SerializedName
+import java.io.Serializable
 
 
 data class ClientProfile(@SerializedName("user_id")
@@ -13,4 +14,4 @@ data class ClientProfile(@SerializedName("user_id")
                          val phone: String = "",
 
                          @Transient
-                         val isFilledOut: Boolean = false)
+                         val isFilledOut: Boolean = false) : Serializable

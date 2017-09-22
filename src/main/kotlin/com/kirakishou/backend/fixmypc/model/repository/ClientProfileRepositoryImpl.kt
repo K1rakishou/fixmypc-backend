@@ -46,8 +46,50 @@ class ClientProfileRepositoryImpl : ClientProfileRepository {
         if (daoResult is Either.Error) {
             log.e(daoResult.error)
             return Fickle.empty()
+        } else {
+            if (!(daoResult as Either.Value).value.isPresent()) {
+                return Fickle.empty()
+            }
         }
 
-        return (daoResult as Either.Value).value
+        clientProfileCache.saveOne(daoResult.value.get())
+        return daoResult.value
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

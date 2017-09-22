@@ -10,20 +10,19 @@ import com.kirakishou.backend.fixmypc.model.entity.DamageClaim
 import com.kirakishou.backend.fixmypc.model.entity.LatLon
 import com.kirakishou.backend.fixmypc.util.TextUtils
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Repository
+import org.springframework.stereotype.Component
 import java.sql.Connection
-import java.sql.SQLException
 import java.sql.Statement
 import java.sql.Timestamp
 import javax.sql.DataSource
 
-@Repository
+@Component
 class DamageClaimDaoImpl : DamageClaimDao {
 
     @Autowired
     private lateinit var hikariCP: DataSource
 
-    override fun saveOne(damageClaim: DamageClaim): Either<SQLException, Boolean> {
+    override fun saveOne(damageClaim: DamageClaim): Either<Throwable, Boolean> {
         try {
             hikariCP.connection.transactionalUse { connection ->
                 connection.prepareStatement("INSERT INTO public.damage_claims (owner_id, category, description, " +
@@ -63,14 +62,14 @@ class DamageClaimDaoImpl : DamageClaimDao {
                 }
             }
 
-        } catch (e: SQLException) {
+        } catch (e: Throwable) {
             return Either.Error(e)
         }
 
         return Either.Value(true)
     }
 
-    override fun findOne(id: Long): Either<SQLException, Fickle<DamageClaim>> {
+    override fun findOne(id: Long): Either<Throwable, Fickle<DamageClaim>> {
         var damageClaim: DamageClaim? = null
 
         try {
@@ -100,7 +99,7 @@ class DamageClaimDaoImpl : DamageClaimDao {
                     }
                 }
             }
-        } catch (e: SQLException) {
+        } catch (e: Throwable) {
             return Either.Error(e)
         }
 
@@ -108,7 +107,7 @@ class DamageClaimDaoImpl : DamageClaimDao {
     }
 
     override fun findPaged(ownerId: Long, isActive: Boolean,
-                           offset: Long, count: Int): Either<SQLException, List<DamageClaim>> {
+                           offset: Long, count: Int): Either<Throwable, List<DamageClaim>> {
         val malfunctions = arrayListOf<DamageClaim>()
 
         try {
@@ -144,14 +143,14 @@ class DamageClaimDaoImpl : DamageClaimDao {
                     getImagesByDamageClaimId(connection, malfunctions, ids)
                 }
             }
-        } catch (e: SQLException) {
+        } catch (e: Throwable) {
             return Either.Error(e)
         }
 
         return Either.Value(malfunctions)
     }
 
-    override fun findManyActiveByIdList(idsToSearch: List<Long>): Either<SQLException, List<DamageClaim>> {
+    override fun findManyActiveByIdList(idsToSearch: List<Long>): Either<Throwable, List<DamageClaim>> {
         val damageClaimsList = arrayListOf<DamageClaim>()
         val idsStatement = TextUtils.createStatementForList(idsToSearch.size)
         val sql = "SELECT id, owner_id, category, is_active, description, created_on, folder_name, lat, lon " +
@@ -184,18 +183,18 @@ class DamageClaimDaoImpl : DamageClaimDao {
                     getImagesByDamageClaimId(connection, damageClaimsList, idsToSearch)
                 }
             }
-        } catch (e: SQLException) {
+        } catch (e: Throwable) {
             return Either.Error(e)
         }
 
         return Either.Value(damageClaimsList)
     }
 
-    override fun findManyActiveByOwnerId(ownerId: Long): Either<SQLException, List<DamageClaim>> {
+    override fun findManyActiveByOwnerId(ownerId: Long): Either<Throwable, List<DamageClaim>> {
         return getManyByOwnerId(ownerId, true)
     }
 
-    override fun findManyInactiveByOwnerId(ownerId: Long): Either<SQLException, List<DamageClaim>> {
+    override fun findManyInactiveByOwnerId(ownerId: Long): Either<Throwable, List<DamageClaim>> {
         return getManyByOwnerId(ownerId, false)
     }
 
@@ -223,20 +222,20 @@ class DamageClaimDaoImpl : DamageClaimDao {
         return items
     }
 
-    override fun deleteOne(id: Long): Either<SQLException, Boolean> {
+    override fun deleteOne(id: Long): Either<Throwable, Boolean> {
         try {
             hikariCP.connection.transactionalUse { connection ->
                 deleteDamageClaim(connection, id)
                 deletePhoto(connection, id)
             }
-        } catch (e: SQLException) {
+        } catch (e: Throwable) {
             return Either.Error(e)
         }
 
         return Either.Value(true)
     }
 
-    override fun deleteOnePermanently(id: Long): Either<SQLException, Boolean> {
+    override fun deleteOnePermanently(id: Long): Either<Throwable, Boolean> {
         try {
             hikariCP.connection.use { connection ->
                 connection.prepareStatement("DELETE FROM public.damage_claims WHERE id = ? LIMIT 1").use { ps ->
@@ -244,14 +243,14 @@ class DamageClaimDaoImpl : DamageClaimDao {
                     ps.executeUpdate()
                 }
             }
-        } catch (e: SQLException) {
+        } catch (e: Throwable) {
             return Either.Error(e)
         }
 
         return Either.Value(true)
     }
 
-    private fun getManyByOwnerId(ownerId: Long, isActive: Boolean): Either<SQLException, List<DamageClaim>> {
+    private fun getManyByOwnerId(ownerId: Long, isActive: Boolean): Either<Throwable, List<DamageClaim>> {
         val malfunctions = arrayListOf<DamageClaim>()
 
         try {
@@ -284,7 +283,7 @@ class DamageClaimDaoImpl : DamageClaimDao {
                     getImagesByDamageClaimId(connection, malfunctions, ids)
                 }
             }
-        } catch (e: SQLException) {
+        } catch (e: Throwable) {
             return Either.Error(e)
         }
 

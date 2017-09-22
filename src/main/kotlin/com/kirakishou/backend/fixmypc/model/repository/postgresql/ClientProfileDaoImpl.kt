@@ -7,7 +7,6 @@ import com.kirakishou.backend.fixmypc.extension.transactionalUse
 import com.kirakishou.backend.fixmypc.model.entity.ClientProfile
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
-import java.sql.SQLException
 import javax.sql.DataSource
 
 @Component
@@ -18,7 +17,7 @@ class ClientProfileDaoImpl : ClientProfileDao {
 
     private val TABLE_NAME = "public.client_profiles"
 
-    override fun saveOne(clientProfile: ClientProfile): Either<SQLException, Boolean> {
+    override fun saveOne(clientProfile: ClientProfile): Either<Throwable, Boolean> {
         try {
             hikariCP.connection.transactionalUse { connection ->
                 connection.prepareStatement("INSERT INTO $TABLE_NAME (user_id, name, phone, is_profile_filled_out) " +
@@ -32,14 +31,14 @@ class ClientProfileDaoImpl : ClientProfileDao {
                     ps.executeUpdate()
                 }
             }
-        } catch (e: SQLException) {
+        } catch (e: Throwable) {
             return Either.Error(e)
         }
 
         return Either.Value(true)
     }
 
-    override fun findOne(userId: Long): Either<SQLException, Fickle<ClientProfile>> {
+    override fun findOne(userId: Long): Either<Throwable, Fickle<ClientProfile>> {
         var clientProfile: ClientProfile? = null
 
         try {
@@ -58,14 +57,14 @@ class ClientProfileDaoImpl : ClientProfileDao {
                     }
                 }
             }
-        } catch (e: SQLException) {
+        } catch (e: Throwable) {
             return Either.Error(e)
         }
 
         return Either.Value(Fickle.of(clientProfile))
     }
 
-    override fun deleteOne(userId: Long): Either<SQLException, Boolean> {
+    override fun deleteOne(userId: Long): Either<Throwable, Boolean> {
         try {
             hikariCP.connection.use { connection ->
                 connection.prepareStatement("DELETE FROM $TABLE_NAME WHERE user_id = ?").use { ps ->
@@ -73,7 +72,7 @@ class ClientProfileDaoImpl : ClientProfileDao {
                     ps.execute()
                 }
             }
-        } catch (e: SQLException) {
+        } catch (e: Throwable) {
             return Either.Error(e)
         }
 

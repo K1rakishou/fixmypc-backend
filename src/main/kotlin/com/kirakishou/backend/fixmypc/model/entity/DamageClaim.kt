@@ -1,6 +1,7 @@
 package com.kirakishou.backend.fixmypc.model.entity
 
 import com.google.gson.annotations.SerializedName
+import java.io.Serializable
 
 
 data class DamageClaim(@SerializedName("id") var id: Long = 0L,
@@ -12,4 +13,4 @@ data class DamageClaim(@SerializedName("id") var id: Long = 0L,
                        @SerializedName("lat") var lat: Double = 0.0,
                        @SerializedName("lon") var lon: Double = 0.0,
                        @SerializedName("created_on") var createdOn: Long = 0L,
-                       @SerializedName("photos") var imageNamesList: MutableList<String> = mutableListOf())
+                       @SerializedName("photos") var imageNamesList: MutableList<String> = mutableListOf()) : Serializable

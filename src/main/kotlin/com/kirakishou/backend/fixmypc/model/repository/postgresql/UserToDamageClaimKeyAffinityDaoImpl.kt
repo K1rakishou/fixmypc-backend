@@ -5,7 +5,6 @@ import com.kirakishou.backend.fixmypc.extension.prepareStatementScrollable
 import com.kirakishou.backend.fixmypc.extension.transactionalUse
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
-import java.sql.SQLException
 import javax.sql.DataSource
 
 @Component
@@ -14,7 +13,7 @@ class UserToDamageClaimKeyAffinityDaoImpl : UserToDamageClaimKeyAffinityDao {
     @Autowired
     private lateinit var hikariCP: DataSource
 
-    override fun saveOne(ownerId: Long, malfunctionId: Long): Either<SQLException, Boolean> {
+    override fun saveOne(ownerId: Long, malfunctionId: Long): Either<Throwable, Boolean> {
         try {
             hikariCP.connection.transactionalUse { connection ->
                 connection.prepareStatement("INSERT INTO public.user_to_damage_claim_key_affinity " +
@@ -24,14 +23,14 @@ class UserToDamageClaimKeyAffinityDaoImpl : UserToDamageClaimKeyAffinityDao {
                     ps.executeUpdate()
                 }
             }
-        } catch (e: SQLException) {
+        } catch (e: Throwable) {
             return Either.Error(e)
         }
 
         return Either.Value(true)
     }
 
-    override fun findMany(ownerId: Long, offset: Long, count: Long): Either<SQLException, List<Long>> {
+    override fun findMany(ownerId: Long, offset: Long, count: Long): Either<Throwable, List<Long>> {
         val idsList = arrayListOf<Long>()
 
         try {
@@ -47,14 +46,14 @@ class UserToDamageClaimKeyAffinityDaoImpl : UserToDamageClaimKeyAffinityDao {
                     }
                 }
             }
-        } catch (e: SQLException) {
+        } catch (e: Throwable) {
             return Either.Error(e)
         }
 
         return Either.Value(idsList)
     }
 
-    override fun findAll(ownerId: Long):Either<SQLException, List<Long>> {
+    override fun findAll(ownerId: Long): Either<Throwable, List<Long>> {
         val idsList = arrayListOf<Long>()
 
         try {
@@ -68,14 +67,14 @@ class UserToDamageClaimKeyAffinityDaoImpl : UserToDamageClaimKeyAffinityDao {
                     }
                 }
             }
-        } catch (e: SQLException) {
+        } catch (e: Throwable) {
             return Either.Error(e)
         }
 
         return Either.Value(idsList)
     }
 
-    override fun deleteOne(ownerId: Long, malfunctionId: Long): Either<SQLException, Boolean> {
+    override fun deleteOne(ownerId: Long, malfunctionId: Long): Either<Throwable, Boolean> {
         try {
             hikariCP.connection.use { connection ->
                 connection.prepareStatement("UPDATE public.user_to_damage_claim_key_affinity SET deleted_on = NOW() " +
@@ -85,14 +84,14 @@ class UserToDamageClaimKeyAffinityDaoImpl : UserToDamageClaimKeyAffinityDao {
                     ps.executeUpdate()
                 }
             }
-        } catch (e: SQLException) {
+        } catch (e: Throwable) {
             return Either.Error(e)
         }
 
         return Either.Value(true)
     }
 
-    override fun deleteOnePermanently(ownerId: Long, malfunctionId: Long): Either<SQLException, Boolean> {
+    override fun deleteOnePermanently(ownerId: Long, malfunctionId: Long): Either<Throwable, Boolean> {
         try {
             hikariCP.connection.use { connection ->
                 connection.prepareStatement("DELETE FROM public.user_to_damage_claim_key_affinity " +
@@ -102,7 +101,7 @@ class UserToDamageClaimKeyAffinityDaoImpl : UserToDamageClaimKeyAffinityDao {
                     ps.executeUpdate()
                 }
             }
-        } catch (e: SQLException) {
+        } catch (e: Throwable) {
             return Either.Error(e)
         }
 

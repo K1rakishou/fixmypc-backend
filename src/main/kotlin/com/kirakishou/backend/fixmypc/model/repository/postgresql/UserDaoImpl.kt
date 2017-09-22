@@ -7,8 +7,7 @@ import com.kirakishou.backend.fixmypc.extension.prepareStatementScrollable
 import com.kirakishou.backend.fixmypc.extension.transactionalUse
 import com.kirakishou.backend.fixmypc.model.entity.User
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Repository
-import java.sql.SQLException
+import org.springframework.stereotype.Component
 import java.sql.Statement
 import javax.sql.DataSource
 
@@ -16,13 +15,13 @@ import javax.sql.DataSource
  * Created by kirakishou on 7/17/2017.
  */
 
-@Repository
+@Component
 class UserDaoImpl : UserDao {
 
     @Autowired
     private lateinit var hikariCP: DataSource
 
-    override fun saveOne(user: User): Either<SQLException, Pair<Boolean, Long>> {
+    override fun saveOne(user: User): Either<Throwable, Pair<Boolean, Long>> {
         var userId = Fickle.empty<Long>()
 
         try {
@@ -42,7 +41,7 @@ class UserDaoImpl : UserDao {
                     }
                 }
             }
-        } catch (e: SQLException) {
+        } catch (e: Throwable) {
             return Either.Error(e)
         }
 
@@ -53,7 +52,7 @@ class UserDaoImpl : UserDao {
         return Either.Value(true to userId.get())
     }
 
-    override fun findOne(login: String): Either<SQLException, Fickle<User>> {
+    override fun findOne(login: String): Either<Throwable, Fickle<User>> {
         var user: User? = null
 
         try {
@@ -72,7 +71,7 @@ class UserDaoImpl : UserDao {
                     }
                 }
             }
-        } catch (e: SQLException) {
+        } catch (e: Throwable) {
             return Either.Error(e)
         }
 
@@ -80,7 +79,7 @@ class UserDaoImpl : UserDao {
     }
 
     //for tests only!!!
-    override fun deleteOne(login: String): Either<SQLException, Boolean> {
+    override fun deleteOne(login: String): Either<Throwable, Boolean> {
         try {
             hikariCP.connection.use { connection ->
                 connection.prepareStatement("DELETE FROM public.users WHERE login = ?").use { ps ->
@@ -88,7 +87,7 @@ class UserDaoImpl : UserDao {
                     ps.execute()
                 }
             }
-        } catch (e: SQLException) {
+        } catch (e: Throwable) {
             return Either.Error(e)
         }
 

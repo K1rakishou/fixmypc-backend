@@ -44,7 +44,6 @@ class DamageClaimRepositoryImpl : DamageClaimRepository {
 
         val repositoryResult = userToDamageClaimKeyAffinityRepository.saveOne(damageClaim.ownerId, damageClaim.id)
         if (!repositoryResult) {
-            //couldn't store in the userToDamageClaimKeyAffinityRepository so we need to delete it from DB as well
             damageClaimDao.deleteOnePermanently(damageClaim.id)
             return false
         }
@@ -63,9 +62,14 @@ class DamageClaimRepositoryImpl : DamageClaimRepository {
         if (daoResult is Either.Error) {
             log.e(daoResult.error)
             return Fickle.empty()
+        } else {
+            if (!(daoResult as Either.Value).value.isPresent()) {
+                return Fickle.empty()
+            }
         }
 
-        return (daoResult as Either.Value).value
+        damageClaimCache.saveOne(daoResult.value.get())
+        return daoResult.value
     }
 
     override fun findMany(ownerId: Long, offset: Long, count: Long): List<DamageClaim> {
@@ -166,16 +170,6 @@ class DamageClaimRepositoryImpl : DamageClaimRepository {
 
             return 0
         }
-    }
-
-    private fun damageClaimComparator(mf1: DamageClaim, mf2: DamageClaim): Int {
-        if (mf1.id < mf2.id) {
-            return -1
-        } else if (mf1.id > mf2.id) {
-            return 1
-        }
-
-        return 0
     }
 
     private fun containsDamageClaimId(id: Long, malfunctionsList: List<DamageClaim>): Boolean {
