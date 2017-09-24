@@ -1,4 +1,4 @@
-package com.kirakishou.backend.fixmypc.service.malfunction
+package com.kirakishou.backend.fixmypc.service.damageclaim
 
 import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.log.FileLog

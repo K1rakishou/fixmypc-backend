@@ -6,8 +6,10 @@ import com.kirakishou.backend.fixmypc.model.entity.RespondedSpecialist
 import com.kirakishou.backend.fixmypc.model.repository.ignite.RespondedSpecialistsCache
 import com.kirakishou.backend.fixmypc.model.repository.postgresql.RespondedSpecialistsDao
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
 import java.util.stream.Collectors
 
+@Component
 class RespondedSpecialistsRepositoryImpl : RespondedSpecialistsRepository {
 
     @Autowired

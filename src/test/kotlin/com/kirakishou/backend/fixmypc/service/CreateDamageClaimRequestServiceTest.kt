@@ -11,8 +11,8 @@ import com.kirakishou.backend.fixmypc.model.entity.FileServerAnswerWrapper
 import com.kirakishou.backend.fixmypc.model.entity.FileServerInfo
 import com.kirakishou.backend.fixmypc.model.net.request.CreateDamageClaimRequest
 import com.kirakishou.backend.fixmypc.model.repository.postgresql.DamageClaimDao
-import com.kirakishou.backend.fixmypc.service.malfunction.CreateDamageClaimService
-import com.kirakishou.backend.fixmypc.service.malfunction.CreateDamageClaimServiceImpl
+import com.kirakishou.backend.fixmypc.service.damageclaim.CreateDamageClaimService
+import com.kirakishou.backend.fixmypc.service.damageclaim.CreateDamageClaimServiceImpl
 import io.reactivex.Flowable
 import io.reactivex.plugins.RxJavaPlugins
 import io.reactivex.schedulers.Schedulers

@@ -1,4 +1,4 @@
-package com.kirakishou.backend.fixmypc.service.malfunction
+package com.kirakishou.backend.fixmypc.service.damageclaim
 
 import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.core.FileServerErrorCode
@@ -102,7 +102,7 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
 
         val requestCheckResult = checkRequestCorrectness(request)
         if (requestCheckResult !is CreateDamageClaimService.Post.Result.Ok) {
-            log.e("Bad malfunction request")
+            log.e("Bad damageclaim request")
             return Single.just(requestCheckResult)
         }
 
@@ -180,9 +180,9 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
                 imageNamesList = imageNamesList)
 
         if (!damageClaimRepository.saveOne(malfunction)) {
-            log.d("Failed to create malfunction (Repository error)")
+            log.d("Failed to create damageclaim (Repository error)")
 
-            //we failed to save malfunction request in the repository, so we have to notify file servers to delete images related to the request
+            //we failed to save damageclaim request in the repository, so we have to notify file servers to delete images related to the request
             for (imageName in imageNamesList) {
                 val extractedImageInfo = TextUtils.parseImageName(imageName)
                 val host = fileServerManager.getHostById(extractedImageInfo.serverId)

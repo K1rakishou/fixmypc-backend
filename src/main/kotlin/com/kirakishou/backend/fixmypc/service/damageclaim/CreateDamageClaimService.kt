@@ -1,4 +1,4 @@
-package com.kirakishou.backend.fixmypc.service.malfunction
+package com.kirakishou.backend.fixmypc.service.damageclaim
 
 import com.kirakishou.backend.fixmypc.model.net.request.CreateDamageClaimRequest
 import io.reactivex.Single

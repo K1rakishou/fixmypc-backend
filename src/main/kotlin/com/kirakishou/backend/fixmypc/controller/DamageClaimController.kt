@@ -4,10 +4,13 @@ import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.net.ServerErrorCode
 import com.kirakishou.backend.fixmypc.model.net.request.CreateDamageClaimRequest
+import com.kirakishou.backend.fixmypc.model.net.request.RespondToDamageClaimRequest
 import com.kirakishou.backend.fixmypc.model.net.response.CreateDamageClaimResponse
 import com.kirakishou.backend.fixmypc.model.net.response.DamageClaimsResponse
-import com.kirakishou.backend.fixmypc.service.malfunction.CreateDamageClaimService
-import com.kirakishou.backend.fixmypc.service.malfunction.GetUserDamageClaimListService
+import com.kirakishou.backend.fixmypc.model.net.response.StatusResponse
+import com.kirakishou.backend.fixmypc.service.damageclaim.CreateDamageClaimService
+import com.kirakishou.backend.fixmypc.service.damageclaim.GetUserDamageClaimListService
+import com.kirakishou.backend.fixmypc.service.damageclaim.RespondToDamageClaimService
 import io.reactivex.Single
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
@@ -25,6 +28,9 @@ class DamageClaimController {
 
     @Autowired
     lateinit var mGetUserDamageClaimListService: GetUserDamageClaimListService
+
+    @Autowired
+    lateinit var mRespondToDamageClaimService: RespondToDamageClaimService
 
     @Autowired
     lateinit var log: FileLog
@@ -129,4 +135,76 @@ class DamageClaimController {
                     }
                 }
     }
+
+    @RequestMapping(path = arrayOf("${Constant.Paths.DAMAGE_CLAIM_CONTROLLER_PATH}/damage_claim_id"),
+            method = arrayOf(RequestMethod.POST))
+    fun respondToDamageClaim(@RequestHeader(value = "session_id", defaultValue = "") sessionId: String,
+                             @RequestBody request: RespondToDamageClaimRequest): Single<ResponseEntity<StatusResponse>> {
+
+        return mRespondToDamageClaimService.respondToDamageClaim(sessionId, request.damageClaimId)
+                .map { result ->
+                    when (result) {
+                        is RespondToDamageClaimService.Post.Result.Ok -> {
+                            return@map ResponseEntity(StatusResponse(ServerErrorCode.SEC_OK.value), HttpStatus.OK)
+                        }
+
+                        is RespondToDamageClaimService.Post.Result.CouldNotRespondToDamageClaim -> {
+                            //TODO
+                            return@map ResponseEntity(StatusResponse(ServerErrorCode.SEC_UNKNOWN_SERVER_ERROR.value), HttpStatus.INTERNAL_SERVER_ERROR)
+                        }
+
+                        is RespondToDamageClaimService.Post.Result.SessionIdExpired -> {
+                            //TODO
+                            return@map ResponseEntity(StatusResponse(ServerErrorCode.SEC_UNKNOWN_SERVER_ERROR.value), HttpStatus.INTERNAL_SERVER_ERROR)
+                        }
+
+                        is RespondToDamageClaimService.Post.Result.DamageClaimDoesNotExists -> {
+                            //TODO
+                            return@map ResponseEntity(StatusResponse(ServerErrorCode.SEC_UNKNOWN_SERVER_ERROR.value), HttpStatus.INTERNAL_SERVER_ERROR)
+                        }
+
+                        else -> throw IllegalArgumentException("Unknown result")
+                    }
+                }
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

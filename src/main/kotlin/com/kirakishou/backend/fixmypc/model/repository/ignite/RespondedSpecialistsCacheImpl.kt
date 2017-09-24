@@ -14,7 +14,7 @@ import javax.annotation.PostConstruct
 import javax.cache.expiry.Duration
 
 @Component
-class RespondedSpecialistsImpl : RespondedSpecialistsCache {
+class RespondedSpecialistsCacheImpl : RespondedSpecialistsCache {
 
     @Autowired
     lateinit var ignite: Ignite
