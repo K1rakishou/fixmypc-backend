@@ -113,6 +113,11 @@ class DamageClaimController {
                         else -> throw IllegalArgumentException("Unknown result")
                     }
                 }
+                .onErrorReturn {
+                    return@onErrorReturn ResponseEntity(CreateDamageClaimResponse(
+                            ServerErrorCode.SEC_UNKNOWN_SERVER_ERROR.value),
+                            HttpStatus.INTERNAL_SERVER_ERROR)
+                }
     }
 
     @RequestMapping(path = arrayOf("${Constant.Paths.DAMAGE_CLAIM_CONTROLLER_PATH}/{lat}/{lon}/{radius}/{skip}/{count}"),
@@ -139,6 +144,11 @@ class DamageClaimController {
                         else -> throw IllegalArgumentException("Unknown result")
                     }
                 }
+                .onErrorReturn {
+                    return@onErrorReturn ResponseEntity(DamageClaimsResponse(emptyList(),
+                            ServerErrorCode.SEC_UNKNOWN_SERVER_ERROR.value),
+                            HttpStatus.INTERNAL_SERVER_ERROR)
+                }
     }
 
     @RequestMapping(path = arrayOf("${Constant.Paths.DAMAGE_CLAIM_CONTROLLER_PATH}/respond"),
@@ -154,22 +164,37 @@ class DamageClaimController {
                         }
 
                         is RespondToDamageClaimService.Post.Result.CouldNotRespondToDamageClaim -> {
-                            //TODO
-                            return@map ResponseEntity(StatusResponse(ServerErrorCode.SEC_UNKNOWN_SERVER_ERROR.value), HttpStatus.INTERNAL_SERVER_ERROR)
+                            return@map ResponseEntity(StatusResponse(ServerErrorCode.SEC_COULD_NOT_RESPOND_TO_DAMAGE_CLAIM.value),
+                                    HttpStatus.UNPROCESSABLE_ENTITY)
                         }
 
                         is RespondToDamageClaimService.Post.Result.SessionIdExpired -> {
-                            //TODO
-                            return@map ResponseEntity(StatusResponse(ServerErrorCode.SEC_UNKNOWN_SERVER_ERROR.value), HttpStatus.INTERNAL_SERVER_ERROR)
+                            return@map ResponseEntity(StatusResponse(ServerErrorCode.SEC_SESSION_ID_EXPIRED.value),
+                                    HttpStatus.UNAUTHORIZED)
                         }
 
                         is RespondToDamageClaimService.Post.Result.DamageClaimDoesNotExist -> {
-                            //TODO
-                            return@map ResponseEntity(StatusResponse(ServerErrorCode.SEC_UNKNOWN_SERVER_ERROR.value), HttpStatus.INTERNAL_SERVER_ERROR)
+                            return@map ResponseEntity(StatusResponse(ServerErrorCode.SEC_DAMAGE_CLAIM_DOES_NOT_EXIST.value),
+                                    HttpStatus.UNPROCESSABLE_ENTITY)
+                        }
+
+                        is RespondToDamageClaimService.Post.Result.DamageClaimIsNotActive -> {
+                            return@map ResponseEntity(StatusResponse(ServerErrorCode.SEC_DAMAGE_CLAIM_IS_NOT_ACTIVE.value),
+                                    HttpStatus.UNPROCESSABLE_ENTITY)
+                        }
+
+                        is RespondToDamageClaimService.Post.Result.BadAccountType -> {
+                            return@map ResponseEntity(StatusResponse(ServerErrorCode.SEC_BAD_ACCOUNT_TYPE.value),
+                                    HttpStatus.UNPROCESSABLE_ENTITY)
                         }
 
                         else -> throw IllegalArgumentException("Unknown result")
                     }
+                }
+                .onErrorReturn {
+                    return@onErrorReturn ResponseEntity(StatusResponse(
+                            ServerErrorCode.SEC_UNKNOWN_SERVER_ERROR.value),
+                            HttpStatus.INTERNAL_SERVER_ERROR)
                 }
     }
 
@@ -184,31 +209,40 @@ class DamageClaimController {
                 .map { result ->
                     when (result) {
                         is GetRespondedSpecialistsService.Get.Result.Ok -> {
-                            return@map ResponseEntity(SpecialistsListResponse(result.responded, ServerErrorCode.SEC_OK.value), HttpStatus.OK)
+                            return@map ResponseEntity(SpecialistsListResponse(result.responded,
+                                    ServerErrorCode.SEC_OK.value), HttpStatus.OK)
                         }
 
                         is GetRespondedSpecialistsService.Get.Result.BadAccountType -> {
-                            //TODO
-                            return@map ResponseEntity(SpecialistsListResponse(emptyList(), ServerErrorCode.SEC_OK.value), HttpStatus.OK)
+                            return@map ResponseEntity(SpecialistsListResponse(emptyList(),
+                                    ServerErrorCode.SEC_BAD_ACCOUNT_TYPE.value),
+                                    HttpStatus.UNPROCESSABLE_ENTITY)
                         }
 
                         is GetRespondedSpecialistsService.Get.Result.DamageClaimDoesNotExist -> {
-                            //TODO
-                            return@map ResponseEntity(SpecialistsListResponse(emptyList(), ServerErrorCode.SEC_OK.value), HttpStatus.OK)
+                            return@map ResponseEntity(SpecialistsListResponse(emptyList(),
+                                    ServerErrorCode.SEC_DAMAGE_CLAIM_DOES_NOT_EXIST.value),
+                                    HttpStatus.UNPROCESSABLE_ENTITY)
                         }
 
                         is GetRespondedSpecialistsService.Get.Result.DamageClaimIsNotActive -> {
-                            //TODO
-                            return@map ResponseEntity(SpecialistsListResponse(emptyList(), ServerErrorCode.SEC_OK.value), HttpStatus.OK)
+                            return@map ResponseEntity(SpecialistsListResponse(emptyList(),
+                                    ServerErrorCode.SEC_DAMAGE_CLAIM_IS_NOT_ACTIVE.value),
+                                    HttpStatus.UNPROCESSABLE_ENTITY)
                         }
 
                         is GetRespondedSpecialistsService.Get.Result.SessionIdExpired -> {
-                            //TODO
-                            return@map ResponseEntity(SpecialistsListResponse(emptyList(), ServerErrorCode.SEC_OK.value), HttpStatus.OK)
+                            return@map ResponseEntity(SpecialistsListResponse(emptyList(),
+                                    ServerErrorCode.SEC_SESSION_ID_EXPIRED.value), HttpStatus.UNAUTHORIZED)
                         }
 
                         else -> throw IllegalArgumentException("Unknown result")
                     }
+                }
+                .onErrorReturn {
+                    return@onErrorReturn ResponseEntity(SpecialistsListResponse(emptyList(),
+                            ServerErrorCode.SEC_UNKNOWN_SERVER_ERROR.value),
+                            HttpStatus.INTERNAL_SERVER_ERROR)
                 }
     }
 }

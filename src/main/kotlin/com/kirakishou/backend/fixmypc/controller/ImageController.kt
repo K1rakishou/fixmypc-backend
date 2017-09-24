@@ -54,5 +54,8 @@ class ImageController {
                         else -> throw IllegalArgumentException("Unknown result")
                     }
                 }
+                .onErrorReturn {
+                    return@onErrorReturn ResponseEntity<Resource>(HttpStatus.INTERNAL_SERVER_ERROR)
+                }
     }
 }

@@ -69,5 +69,10 @@ class SignupController {
                         else -> throw IllegalArgumentException("Unknown result")
                     }
                 }
+                .onErrorReturn {
+                    return@onErrorReturn ResponseEntity(SignupResponse(
+                            ServerErrorCode.SEC_UNKNOWN_SERVER_ERROR.value),
+                            HttpStatus.INTERNAL_SERVER_ERROR)
+                }
     }
 }
