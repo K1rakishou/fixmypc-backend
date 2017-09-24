@@ -40,7 +40,7 @@ class ClientProfileCacheImpl : ClientProfileCache {
         return Fickle.of(clientProfileCache[userId])
     }
 
-    override fun deleteOne(userId: Long) {
+    /*override fun deleteOne(userId: Long) {
         clientProfileCache.remove(userId)
-    }
+    }*/
 }

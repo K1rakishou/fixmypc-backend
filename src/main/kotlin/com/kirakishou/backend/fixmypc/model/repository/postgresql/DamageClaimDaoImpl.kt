@@ -22,10 +22,13 @@ class DamageClaimDaoImpl : DamageClaimDao {
     @Autowired
     private lateinit var hikariCP: DataSource
 
+    private val TABLE_NAME = "public.damage_claims"
+    private val PHOTOS_TABLE_NAME = "public.damage_claims_photos"
+
     override fun saveOne(damageClaim: DamageClaim): Either<Throwable, Boolean> {
         try {
             hikariCP.connection.use { connection ->
-                connection.prepareStatement("INSERT INTO public.damage_claims (owner_id, category, description, " +
+                connection.prepareStatement("INSERT INTO $TABLE_NAME (owner_id, category, description, " +
                         "folder_name, lat, lon, is_active, created_on, deleted_on) " +
                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL)", Statement.RETURN_GENERATED_KEYS).use { ps ->
 
@@ -46,7 +49,7 @@ class DamageClaimDaoImpl : DamageClaimDao {
                     }
                 }
 
-                connection.prepareStatement("INSERT INTO public.damage_claims_photos (damage_claim_id, " +
+                connection.prepareStatement("INSERT INTO $PHOTOS_TABLE_NAME (damage_claim_id, " +
                         "photo_name, photo_type, deleted_on) " +
                         "VALUES (?, ?, ?, NULL)").use { ps ->
 
@@ -74,7 +77,7 @@ class DamageClaimDaoImpl : DamageClaimDao {
 
         try {
             hikariCP.connection.use { connection ->
-                connection.prepareStatementScrollable("SELECT * FROM public.damage_claims WHERE id = ? AND" +
+                connection.prepareStatementScrollable("SELECT * FROM $TABLE_NAME WHERE id = ? AND" +
                         " deleted_on IS NULL AND is_active = true LIMIT 1").use { ps ->
 
                     ps.setLong(1, id)
@@ -113,7 +116,7 @@ class DamageClaimDaoImpl : DamageClaimDao {
         try {
             hikariCP.connection.use { connection ->
                 connection.prepareStatement("SELECT id, category, description, created_on, folder_name, " +
-                        "lat, lon FROM public.damage_claims WHERE owner_id = ? AND is_active = ? AND " +
+                        "lat, lon FROM $TABLE_NAME WHERE owner_id = ? AND is_active = ? AND " +
                         "deleted_on IS NULL ORDER BY id ASC OFFSET ? LIMIT ?").use { ps ->
 
                     ps.setLong(1, ownerId)
@@ -152,9 +155,9 @@ class DamageClaimDaoImpl : DamageClaimDao {
 
     override fun findManyActiveByIdList(idsToSearch: List<Long>): Either<Throwable, List<DamageClaim>> {
         val damageClaimsList = arrayListOf<DamageClaim>()
-        val idsStatement = TextUtils.createStatementForList(idsToSearch.size)
+        val ids = TextUtils.createStatementForList(idsToSearch.size)
         val sql = "SELECT id, owner_id, category, is_active, description, created_on, folder_name, lat, lon " +
-                "FROM public.damage_claims WHERE id IN ($idsStatement) AND is_active = TRUE AND deleted_on IS NULL ORDER BY id ASC"
+                "FROM $TABLE_NAME WHERE id IN ($ids) AND is_active = TRUE AND deleted_on IS NULL ORDER BY id ASC"
 
         try {
             hikariCP.connection.use { connection ->
@@ -202,7 +205,7 @@ class DamageClaimDaoImpl : DamageClaimDao {
         val items = arrayListOf<DamageClaimIdLocationDTO>()
 
         hikariCP.connection.use { connection ->
-            connection.prepareStatement("SELECT id, lat, lon FROM public.damage_claims WHERE deleted_on IS NULL OFFSET ? LIMIT ?").use { ps ->
+            connection.prepareStatement("SELECT id, lat, lon FROM $TABLE_NAME WHERE deleted_on IS NULL OFFSET ? LIMIT ?").use { ps ->
                 ps.setLong(1, offset)
                 ps.setLong(2, count)
 
@@ -238,7 +241,7 @@ class DamageClaimDaoImpl : DamageClaimDao {
     override fun deleteOnePermanently(id: Long): Either<Throwable, Boolean> {
         try {
             hikariCP.connection.use { connection ->
-                connection.prepareStatement("DELETE FROM public.damage_claims WHERE id = ? LIMIT 1").use { ps ->
+                connection.prepareStatement("DELETE FROM $TABLE_NAME WHERE id = ? LIMIT 1").use { ps ->
                     ps.setLong(1, id)
                     ps.executeUpdate()
                 }
@@ -256,7 +259,7 @@ class DamageClaimDaoImpl : DamageClaimDao {
         try {
             hikariCP.connection.use { connection ->
                 connection.prepareStatement("SELECT id, category, description, created_on, folder_name, lat, lon " +
-                        "FROM public.damage_claims WHERE owner_id = ? AND is_active = ? AND deleted_on IS NULL ORDER BY id ASC").use { ps ->
+                        "FROM $TABLE_NAME WHERE owner_id = ? AND is_active = ? AND deleted_on IS NULL ORDER BY id ASC").use { ps ->
 
                     ps.setLong(1, ownerId)
                     ps.setBoolean(2, isActive)
@@ -295,7 +298,7 @@ class DamageClaimDaoImpl : DamageClaimDao {
         val malfunctionIdsCount = damageClaimIdList.size
         val idsToSearch = TextUtils.createStatementForList(malfunctionIdsCount)
 
-        val sql = "SELECT damage_claim_id, photo_name FROM public.damage_claims_photos WHERE damage_claim_id IN ($idsToSearch) " +
+        val sql = "SELECT damage_claim_id, photo_name FROM $PHOTOS_TABLE_NAME WHERE damage_claim_id IN ($idsToSearch) " +
                 "AND deleted_on IS NULL"
 
         connection.prepareStatement(sql).use { ps ->
@@ -320,14 +323,14 @@ class DamageClaimDaoImpl : DamageClaimDao {
     }
 
     private fun deletePhoto(connection: Connection, id: Long) {
-        connection.prepareStatement("UPDATE public.damage_claims_photos SET deleted_on = NOW() WHERE id = ?").use { ps ->
+        connection.prepareStatement("UPDATE $PHOTOS_TABLE_NAME SET deleted_on = NOW() WHERE id = ?").use { ps ->
             ps.setLong(1, id)
             ps.executeUpdate()
         }
     }
 
     private fun deleteDamageClaim(connection: Connection, id: Long) {
-        connection.prepareStatement("UPDATE public.damage_claims_photos SET deleted_on = NOW() WHERE id = ?").use { ps ->
+        connection.prepareStatement("UPDATE $TABLE_NAME SET deleted_on = NOW() WHERE id = ?").use { ps ->
             ps.setLong(1, id)
             ps.executeUpdate()
         }

@@ -12,10 +12,12 @@ class UserToDamageClaimKeyAffinityDaoImpl : UserToDamageClaimKeyAffinityDao {
     @Autowired
     private lateinit var hikariCP: DataSource
 
+    private val TABLE_NAME = "public.user_to_damage_claim_key_affinity"
+
     override fun saveOne(ownerId: Long, malfunctionId: Long): Either<Throwable, Boolean> {
         try {
             hikariCP.connection.use { connection ->
-                connection.prepareStatement("INSERT INTO public.user_to_damage_claim_key_affinity " +
+                connection.prepareStatement("INSERT INTO $TABLE_NAME " +
                         "(owner_id, damage_claim_id, deleted_on) VALUES (?, ?, NULL)").use { ps ->
                     ps.setLong(1, ownerId)
                     ps.setLong(2, malfunctionId)
@@ -33,7 +35,7 @@ class UserToDamageClaimKeyAffinityDaoImpl : UserToDamageClaimKeyAffinityDao {
         val idsList = arrayListOf<Long>()
 
         try {
-            hikariCP.connection.prepareStatementScrollable("SELECT damage_claim_id FROM public.user_to_damage_claim_key_affinity WHERE " +
+            hikariCP.connection.prepareStatementScrollable("SELECT damage_claim_id FROM $TABLE_NAME WHERE " +
                     "owner_id = ? AND deleted_on IS NULL OFFSET ? LIMIT ? ORDER BY id ASC").use { ps ->
                 ps.setLong(1, ownerId)
                 ps.setLong(2, offset)
@@ -56,7 +58,7 @@ class UserToDamageClaimKeyAffinityDaoImpl : UserToDamageClaimKeyAffinityDao {
         val idsList = arrayListOf<Long>()
 
         try {
-            hikariCP.connection.prepareStatementScrollable("SELECT damage_claim_id FROM public.user_to_damage_claim_key_affinity WHERE " +
+            hikariCP.connection.prepareStatementScrollable("SELECT damage_claim_id FROM $TABLE_NAME WHERE " +
                     "owner_id = ? AND deleted_on IS NULL ORDER BY id ASC").use { ps ->
                 ps.setLong(1, ownerId)
 
@@ -76,7 +78,7 @@ class UserToDamageClaimKeyAffinityDaoImpl : UserToDamageClaimKeyAffinityDao {
     override fun deleteOne(ownerId: Long, malfunctionId: Long): Either<Throwable, Boolean> {
         try {
             hikariCP.connection.use { connection ->
-                connection.prepareStatement("UPDATE public.user_to_damage_claim_key_affinity SET deleted_on = NOW() " +
+                connection.prepareStatement("UPDATE $TABLE_NAME SET deleted_on = NOW() " +
                         "WHERE owner_id = ? AND damage_claim_id = ?").use { ps ->
                     ps.setLong(1, ownerId)
                     ps.setLong(2, malfunctionId)
@@ -93,7 +95,7 @@ class UserToDamageClaimKeyAffinityDaoImpl : UserToDamageClaimKeyAffinityDao {
     override fun deleteOnePermanently(ownerId: Long, malfunctionId: Long): Either<Throwable, Boolean> {
         try {
             hikariCP.connection.use { connection ->
-                connection.prepareStatement("DELETE FROM public.user_to_damage_claim_key_affinity " +
+                connection.prepareStatement("DELETE FROM $TABLE_NAME " +
                         "WHERE owner_id = ? AND damage_claim_id = ? LIMIT 1").use { ps ->
                     ps.setLong(1, ownerId)
                     ps.setLong(2, malfunctionId)

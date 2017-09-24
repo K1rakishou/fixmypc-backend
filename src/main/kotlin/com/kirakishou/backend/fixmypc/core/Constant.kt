@@ -39,7 +39,7 @@ object Constant {
         const val CLIENT_PROFILE = "client_profile"
 
         const val DAMAGE_CLAIM_ID = "id"
-        const val SPECIALISTS_LIST = "specialists_list"
+        const val SPECIALIST_PROFILES_LIST = "specialist_profiles_list"
     }
 
     object IgniteNames {
@@ -48,6 +48,7 @@ object Constant {
         val USER_CACHE_NAME = "user_cache"
         val PHOTO_TO_USER_AFFINITY_CACHE = "photo_to_user_affinity_cache"
         val CLIENT_PROFILE_CACHE_NAME = "client_profile_cache"
+        val SPECIALIST_PROFILE_CACHE_NAME = "specialist_profile_cache"
         val DAMAGE_CLAIM_ASSIGNED_SPECIALIST = "damage_claim_assigned_specialist"
         val RESPONDED_SPECIALISTS = "responded_specialists"
     }

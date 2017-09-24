@@ -6,5 +6,5 @@ import com.kirakishou.backend.fixmypc.model.entity.ClientProfile
 interface ClientProfileCache {
     fun saveOne(clientProfile: ClientProfile)
     fun findOne(userId: Long): Fickle<ClientProfile>
-    fun deleteOne(userId: Long)
+    //fun deleteOne(userId: Long)
 }

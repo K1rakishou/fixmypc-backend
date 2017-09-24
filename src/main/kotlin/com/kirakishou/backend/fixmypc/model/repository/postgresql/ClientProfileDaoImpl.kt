@@ -63,7 +63,7 @@ class ClientProfileDaoImpl : ClientProfileDao {
         return Either.Value(Fickle.of(clientProfile))
     }
 
-    override fun deleteOne(userId: Long): Either<Throwable, Boolean> {
+    /*override fun deleteOne(userId: Long): Either<Throwable, Boolean> {
         try {
             hikariCP.connection.use { connection ->
                 connection.prepareStatement("DELETE FROM $TABLE_NAME WHERE user_id = ?").use { ps ->
@@ -76,7 +76,7 @@ class ClientProfileDaoImpl : ClientProfileDao {
         }
 
         return Either.Value(true)
-    }
+    }*/
 }
 
 

@@ -14,13 +14,16 @@ class PhotoToUserAffinityDaoImpl : PhotoToUserAffinityDao {
     @Autowired
     private lateinit var hikariCP: DataSource
 
+    private val TABLE_NAME = " public.damage_claims"
+    private val PHOTOS_TABLE_NAME = "public.damage_claims_photos"
+
     override fun findOne(imageName: String): Either<Throwable, Fickle<PhotoInfoDTO>> {
         val photoInfo = PhotoInfoDTO()
         var damageClaimId: Long = -1
 
         try {
             hikariCP.connection.use { connection ->
-                connection.prepareStatementScrollable("SELECT damage_claim_id, photo_type FROM public.damage_claims_photos " +
+                connection.prepareStatementScrollable("SELECT damage_claim_id, photo_type FROM $PHOTOS_TABLE_NAME " +
                         "WHERE photo_name = ? AND deleted_on IS NULL").use { ps ->
                     ps.setString(1, imageName)
 
@@ -36,7 +39,7 @@ class PhotoToUserAffinityDaoImpl : PhotoToUserAffinityDao {
                     return Either.Value(Fickle.empty())
                 }
 
-                connection.prepareStatementScrollable("SELECT owner_id, folder_name FROM public.damage_claims WHERE id = ? AND deleted_on IS NULL").use { ps ->
+                connection.prepareStatementScrollable("SELECT owner_id, folder_name FROM $TABLE_NAME WHERE id = ? AND deleted_on IS NULL").use { ps ->
                     ps.setLong(1, damageClaimId)
 
                     ps.executeQuery().use { rs ->

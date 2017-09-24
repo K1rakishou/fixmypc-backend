@@ -20,12 +20,14 @@ class UserDaoImpl : UserDao {
     @Autowired
     private lateinit var hikariCP: DataSource
 
+    private val TABLE_NAME = " public.users"
+
     override fun saveOne(user: User): Either<Throwable, Pair<Boolean, Long>> {
         var userId = Fickle.empty<Long>()
 
         try {
             hikariCP.connection.use { connection ->
-                connection.prepareStatement("INSERT INTO public.users (login, password, account_type, created_on, deleted_on) " +
+                connection.prepareStatement("INSERT INTO $TABLE_NAME (login, password, account_type, created_on, deleted_on) " +
                         "VALUES (?, ?, ?, NOW(), NULL)", Statement.RETURN_GENERATED_KEYS).use { ps ->
 
                     ps.setString(1, user.login)
@@ -56,7 +58,7 @@ class UserDaoImpl : UserDao {
 
         try {
             hikariCP.connection.use { connection ->
-                connection.prepareStatementScrollable("SELECT * FROM public.users WHERE login = ? AND deleted_on IS NULL LIMIT 1").use { ps ->
+                connection.prepareStatementScrollable("SELECT * FROM $TABLE_NAME WHERE login = ? AND deleted_on IS NULL LIMIT 1").use { ps ->
                     ps.setString(1, login)
                     ps.executeQuery().use { rs ->
                         if (rs.first()) {
@@ -81,7 +83,7 @@ class UserDaoImpl : UserDao {
     override fun deleteOne(login: String): Either<Throwable, Boolean> {
         try {
             hikariCP.connection.use { connection ->
-                connection.prepareStatement("DELETE FROM public.users WHERE login = ?").use { ps ->
+                connection.prepareStatement("DELETE FROM $TABLE_NAME WHERE login = ?").use { ps ->
                     ps.setString(1, login)
                     ps.execute()
                 }

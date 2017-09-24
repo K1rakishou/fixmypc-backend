@@ -4,10 +4,12 @@ import com.kirakishou.backend.fixmypc.core.AccountType
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.repository.DamageClaimRepository
 import com.kirakishou.backend.fixmypc.model.repository.RespondedSpecialistsRepository
+import com.kirakishou.backend.fixmypc.model.repository.SpecialistProfileRepository
 import com.kirakishou.backend.fixmypc.model.repository.ignite.UserCache
 import io.reactivex.Single
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
+import java.util.stream.Collectors
 
 @Component
 class GetRespondedSpecialistsServiceImpl : GetRespondedSpecialistsService {
@@ -20,6 +22,9 @@ class GetRespondedSpecialistsServiceImpl : GetRespondedSpecialistsService {
 
     @Autowired
     private lateinit var userCache: UserCache
+
+    @Autowired
+    private lateinit var specialistProfilesRepository: SpecialistProfileRepository
 
     @Autowired
     private lateinit var log: FileLog
@@ -52,7 +57,12 @@ class GetRespondedSpecialistsServiceImpl : GetRespondedSpecialistsService {
         }
 
         val respondedSpecialistsList = repository.findAllForDamageClaimPaged(damageClaimId, skip, count)
-        return Single.just(GetRespondedSpecialistsService.Get.Result.Ok(respondedSpecialistsList))
+        val specialistIdsList = respondedSpecialistsList.stream()
+                .map { it.userId }
+                .collect(Collectors.toList())
+
+        val specialistProfilesList = specialistProfilesRepository.findMany(specialistIdsList)
+        return Single.just(GetRespondedSpecialistsService.Get.Result.Ok(specialistProfilesList))
     }
 }
 
