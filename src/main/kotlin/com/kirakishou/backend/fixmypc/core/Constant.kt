@@ -39,6 +39,7 @@ object Constant {
         const val CLIENT_PROFILE = "client_profile"
 
         const val DAMAGE_CLAIM_ID = "id"
+        const val SPECIALISTS_LIST = "specialists_list"
     }
 
     object IgniteNames {

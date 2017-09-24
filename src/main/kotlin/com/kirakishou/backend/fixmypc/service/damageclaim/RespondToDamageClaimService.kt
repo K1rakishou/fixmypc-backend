@@ -9,7 +9,9 @@ interface RespondToDamageClaimService {
             class Ok : Result
             class SessionIdExpired : Result
             class CouldNotRespondToDamageClaim : Result
-            class DamageClaimDoesNotExists : Result
+            class DamageClaimDoesNotExist : Result
+            class BadAccountType: Result
+            class DamageClaimIsNotActive : Result
         }
     }
 

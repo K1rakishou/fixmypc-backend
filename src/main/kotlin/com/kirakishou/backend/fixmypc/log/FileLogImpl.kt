@@ -151,7 +151,7 @@ open class FileLogImpl(printLog: Boolean) : FileLog {
 
     override fun e(message: String) {
         val sdf2 = SimpleDateFormat("dd:MM:yyyy HH:mm:ss")
-        val str = "[" + sdf2.format(ServerUtils.getTimeFast()) + "] " + message + "\n"
+        val str = "EXCEPTION: [" + sdf2.format(ServerUtils.getTimeFast()) + "] " + message + "\n"
 
         synchronized(logQueue) {
             logQueue.add(str)
@@ -168,7 +168,7 @@ open class FileLogImpl(printLog: Boolean) : FileLog {
 
     override fun e(exception: Throwable) {
         val sdf2 = SimpleDateFormat("dd:MM:yyyy HH:mm:ss")
-        val str = StringBuilder("[" + sdf2.format(ServerUtils.getTimeFast()) + "] " + exception + "\n")
+        val str = StringBuilder("EXCEPTION: [" + sdf2.format(ServerUtils.getTimeFast()) + "] " + exception + "\n")
         val ste = exception.stackTrace
         for (e in ste) {
             str.append(e.toString())
@@ -191,7 +191,7 @@ open class FileLogImpl(printLog: Boolean) : FileLog {
 
     override fun d(message: String) {
         val sdf2 = SimpleDateFormat("dd:MM:yyyy HH:mm:ss")
-        val str = "[" + sdf2.format(ServerUtils.getTimeFast()) + "] " + message + "\n"
+        val str = "DEBUG: [" + sdf2.format(ServerUtils.getTimeFast()) + "] " + message + "\n"
 
         synchronized(logQueue) {
             logQueue.add(str)
@@ -208,7 +208,7 @@ open class FileLogImpl(printLog: Boolean) : FileLog {
 
     override fun w(message: String) {
         val sdf2 = SimpleDateFormat("dd:MM:yyyy HH:mm:ss")
-        val str = "[" + sdf2.format(ServerUtils.getTimeFast()) + "] " + message + "\n"
+        val str = "WARNING: [" + sdf2.format(ServerUtils.getTimeFast()) + "] " + message + "\n"
 
         synchronized(logQueue) {
             logQueue.add(str)

@@ -7,8 +7,10 @@ import com.kirakishou.backend.fixmypc.model.net.request.CreateDamageClaimRequest
 import com.kirakishou.backend.fixmypc.model.net.request.RespondToDamageClaimRequest
 import com.kirakishou.backend.fixmypc.model.net.response.CreateDamageClaimResponse
 import com.kirakishou.backend.fixmypc.model.net.response.DamageClaimsResponse
+import com.kirakishou.backend.fixmypc.model.net.response.SpecialistsListResponse
 import com.kirakishou.backend.fixmypc.model.net.response.StatusResponse
 import com.kirakishou.backend.fixmypc.service.damageclaim.CreateDamageClaimService
+import com.kirakishou.backend.fixmypc.service.damageclaim.GetRespondedSpecialistsService
 import com.kirakishou.backend.fixmypc.service.damageclaim.GetUserDamageClaimListService
 import com.kirakishou.backend.fixmypc.service.damageclaim.RespondToDamageClaimService
 import io.reactivex.Single
@@ -33,9 +35,12 @@ class DamageClaimController {
     lateinit var mRespondToDamageClaimService: RespondToDamageClaimService
 
     @Autowired
+    lateinit var mGetRespondedSpecialistsService: GetRespondedSpecialistsService
+
+    @Autowired
     lateinit var log: FileLog
 
-    @RequestMapping(path = arrayOf(Constant.Paths.DAMAGE_CLAIM_CONTROLLER_PATH),
+    @RequestMapping(path = arrayOf("${Constant.Paths.DAMAGE_CLAIM_CONTROLLER_PATH}/create"),
             method = arrayOf(RequestMethod.POST))
     fun createDamageClaim(@RequestHeader(value = "session_id", defaultValue = "") sessionId: String,
                           @RequestPart("photos") uploadingFiles: Array<MultipartFile>,
@@ -136,7 +141,7 @@ class DamageClaimController {
                 }
     }
 
-    @RequestMapping(path = arrayOf("${Constant.Paths.DAMAGE_CLAIM_CONTROLLER_PATH}/damage_claim_id"),
+    @RequestMapping(path = arrayOf("${Constant.Paths.DAMAGE_CLAIM_CONTROLLER_PATH}/respond"),
             method = arrayOf(RequestMethod.POST))
     fun respondToDamageClaim(@RequestHeader(value = "session_id", defaultValue = "") sessionId: String,
                              @RequestBody request: RespondToDamageClaimRequest): Single<ResponseEntity<StatusResponse>> {
@@ -158,9 +163,48 @@ class DamageClaimController {
                             return@map ResponseEntity(StatusResponse(ServerErrorCode.SEC_UNKNOWN_SERVER_ERROR.value), HttpStatus.INTERNAL_SERVER_ERROR)
                         }
 
-                        is RespondToDamageClaimService.Post.Result.DamageClaimDoesNotExists -> {
+                        is RespondToDamageClaimService.Post.Result.DamageClaimDoesNotExist -> {
                             //TODO
                             return@map ResponseEntity(StatusResponse(ServerErrorCode.SEC_UNKNOWN_SERVER_ERROR.value), HttpStatus.INTERNAL_SERVER_ERROR)
+                        }
+
+                        else -> throw IllegalArgumentException("Unknown result")
+                    }
+                }
+    }
+
+    @RequestMapping(path = arrayOf("${Constant.Paths.DAMAGE_CLAIM_CONTROLLER_PATH}/get/{damage_claim_id}/{skip}/{count}"),
+            method = arrayOf(RequestMethod.GET))
+    fun getAllRespondedSpecialistsPaged(@RequestHeader(value = "session_id", defaultValue = "") sessionId: String,
+                                        @PathVariable("damage_claim_id") damageClaimId: Long,
+                                        @PathVariable("skip") skip: Long,
+                                        @PathVariable("count") count: Long): Single<ResponseEntity<SpecialistsListResponse>> {
+
+        return mGetRespondedSpecialistsService.getRespondedSpecialistsPaged(sessionId, damageClaimId, skip, count)
+                .map { result ->
+                    when (result) {
+                        is GetRespondedSpecialistsService.Get.Result.Ok -> {
+                            return@map ResponseEntity(SpecialistsListResponse(result.responded, ServerErrorCode.SEC_OK.value), HttpStatus.OK)
+                        }
+
+                        is GetRespondedSpecialistsService.Get.Result.BadAccountType -> {
+                            //TODO
+                            return@map ResponseEntity(SpecialistsListResponse(emptyList(), ServerErrorCode.SEC_OK.value), HttpStatus.OK)
+                        }
+
+                        is GetRespondedSpecialistsService.Get.Result.DamageClaimDoesNotExist -> {
+                            //TODO
+                            return@map ResponseEntity(SpecialistsListResponse(emptyList(), ServerErrorCode.SEC_OK.value), HttpStatus.OK)
+                        }
+
+                        is GetRespondedSpecialistsService.Get.Result.DamageClaimIsNotActive -> {
+                            //TODO
+                            return@map ResponseEntity(SpecialistsListResponse(emptyList(), ServerErrorCode.SEC_OK.value), HttpStatus.OK)
+                        }
+
+                        is GetRespondedSpecialistsService.Get.Result.SessionIdExpired -> {
+                            //TODO
+                            return@map ResponseEntity(SpecialistsListResponse(emptyList(), ServerErrorCode.SEC_OK.value), HttpStatus.OK)
                         }
 
                         else -> throw IllegalArgumentException("Unknown result")
