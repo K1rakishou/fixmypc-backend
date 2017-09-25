@@ -32,7 +32,6 @@ class RespondedSpecialistsRepositoryImpl : RespondedSpecialistsRepository {
             }
         }
 
-        cache.saveOne(respondedSpecialist)
         return true
     }
 

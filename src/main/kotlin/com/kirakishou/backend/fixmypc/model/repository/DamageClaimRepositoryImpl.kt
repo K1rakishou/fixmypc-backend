@@ -4,7 +4,6 @@ import com.kirakishou.backend.fixmypc.core.Either
 import com.kirakishou.backend.fixmypc.core.Fickle
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.entity.DamageClaim
-import com.kirakishou.backend.fixmypc.model.entity.LatLon
 import com.kirakishou.backend.fixmypc.model.repository.ignite.DamageClaimCache
 import com.kirakishou.backend.fixmypc.model.repository.ignite.LocationCache
 import com.kirakishou.backend.fixmypc.model.repository.postgresql.DamageClaimDao
@@ -48,7 +47,6 @@ class DamageClaimRepositoryImpl : DamageClaimRepository {
             return false
         }
 
-        locationCache.saveOne(LatLon(damageClaim.lat, damageClaim.lon), damageClaim.id)
         return true
     }
 

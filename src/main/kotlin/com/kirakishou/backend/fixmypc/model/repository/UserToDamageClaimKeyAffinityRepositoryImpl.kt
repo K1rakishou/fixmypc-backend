@@ -31,7 +31,6 @@ class UserToDamageClaimKeyAffinityRepositoryImpl : UserToDamageClaimKeyAffinityR
             }
         }
 
-        cache.saveOne(ownerId, malfunctionId)
         return true
     }
 

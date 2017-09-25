@@ -31,7 +31,6 @@ class AssignedSpecialistRepositoryImpl : AssignedSpecialistRepository {
             }
         }
 
-        cache.saveOne(assignedSpecialist)
         return true
     }
 

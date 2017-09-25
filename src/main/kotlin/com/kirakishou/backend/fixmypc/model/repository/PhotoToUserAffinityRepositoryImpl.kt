@@ -37,7 +37,6 @@ class PhotoToUserAffinityRepositoryImpl : PhotoToUserAffinityRepository {
             }
         }
 
-        cache.saveOne(imageName, daoResult.value.get())
         return daoResult.value
     }
 }

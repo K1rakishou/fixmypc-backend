@@ -32,7 +32,6 @@ class ClientProfileRepositoryImpl : ClientProfileRepository {
             }
         }
 
-        cache.saveOne(clientProfile)
         return true
     }
 

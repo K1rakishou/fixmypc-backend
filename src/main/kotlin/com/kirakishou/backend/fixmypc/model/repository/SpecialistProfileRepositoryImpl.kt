@@ -32,7 +32,6 @@ class SpecialistProfileRepositoryImpl : SpecialistProfileRepository {
             }
         }
 
-        cache.saveOne(specialistProfile)
         return true
     }
 
