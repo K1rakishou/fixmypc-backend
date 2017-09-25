@@ -1,4 +1,4 @@
-package com.kirakishou.backend.fixmypc.model.net
+package com.kirakishou.backend.fixmypc.core
 
 enum class ServerErrorCode(val value: Int) {
     SEC_OK(0),

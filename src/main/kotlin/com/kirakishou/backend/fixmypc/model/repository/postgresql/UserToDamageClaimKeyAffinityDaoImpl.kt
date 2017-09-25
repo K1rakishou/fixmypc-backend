@@ -21,6 +21,7 @@ class UserToDamageClaimKeyAffinityDaoImpl : UserToDamageClaimKeyAffinityDao {
                         "(owner_id, damage_claim_id, deleted_on) VALUES (?, ?, NULL)").use { ps ->
                     ps.setLong(1, ownerId)
                     ps.setLong(2, malfunctionId)
+
                     ps.executeUpdate()
                 }
             }

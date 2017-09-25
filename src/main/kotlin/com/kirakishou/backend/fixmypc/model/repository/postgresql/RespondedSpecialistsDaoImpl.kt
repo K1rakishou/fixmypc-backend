@@ -17,7 +17,8 @@ class RespondedSpecialistsDaoImpl : RespondedSpecialistsDao {
     override fun saveOne(respondedSpecialist: RespondedSpecialist): Either<Throwable, Boolean> {
         try {
             hikariCP.connection.use { connection ->
-                connection.prepareStatement("INSERT INTO $TABLE_NAME (user_id, damage_claim_id, closed_at) VALUES (?, ?, NULL)").use { ps ->
+                connection.prepareStatement("INSERT INTO $TABLE_NAME " +
+                        "(user_id, damage_claim_id, closed_at) VALUES (?, ?, NULL)").use { ps ->
                     ps.setLong(1, respondedSpecialist.userId)
                     ps.setLong(2, respondedSpecialist.damageClaimId)
 

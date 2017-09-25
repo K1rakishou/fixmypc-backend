@@ -1,7 +1,7 @@
 package com.kirakishou.backend.fixmypc.controller
 
 import com.kirakishou.backend.fixmypc.core.Constant
-import com.kirakishou.backend.fixmypc.model.net.ServerErrorCode
+import com.kirakishou.backend.fixmypc.core.ServerErrorCode
 import com.kirakishou.backend.fixmypc.model.net.response.ClientProfileResponse
 import com.kirakishou.backend.fixmypc.service.profile.ClientProfileService
 import io.reactivex.Single
