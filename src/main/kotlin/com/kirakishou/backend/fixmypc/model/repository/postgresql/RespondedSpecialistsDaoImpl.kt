@@ -1,6 +1,8 @@
 package com.kirakishou.backend.fixmypc.model.repository.postgresql
 
 import com.kirakishou.backend.fixmypc.core.Either
+import com.kirakishou.backend.fixmypc.core.Fickle
+import com.kirakishou.backend.fixmypc.extension.prepareStatementScrollable
 import com.kirakishou.backend.fixmypc.model.entity.RespondedSpecialist
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -30,6 +32,33 @@ class RespondedSpecialistsDaoImpl : RespondedSpecialistsDao {
         }
 
         return Either.Value(true)
+    }
+
+    override fun findOne(userId: Long, damageClaimId: Long): Either<Throwable, Fickle<RespondedSpecialist>> {
+        var specialist: RespondedSpecialist? = null
+
+        try {
+            hikariCP.connection.use { connection ->
+                connection.prepareStatementScrollable("SELECT id FROM $TABLE_NAME WHERE damage_claim_id = ? AND user_id = ? LIMIT 1").use { ps ->
+                    ps.setLong(1, damageClaimId)
+                    ps.setLong(2, userId)
+
+                    ps.executeQuery().use { rs ->
+                        if (rs.first()) {
+                            specialist = RespondedSpecialist(
+                                    rs.getLong("id"),
+                                    userId,
+                                    damageClaimId
+                            )
+                        }
+                    }
+                }
+            }
+        } catch (e: Throwable) {
+            return Either.Error(e)
+        }
+
+        return Either.Value(Fickle.of(specialist))
     }
 
     override fun findAllForDamageClaimPaged(damageClaimId: Long, skip: Long, count: Long): Either<Throwable, List<RespondedSpecialist>> {

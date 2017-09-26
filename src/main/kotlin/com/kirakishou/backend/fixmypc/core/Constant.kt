@@ -38,8 +38,10 @@ object Constant {
         const val DAMAGE_CLAIM_LIST = "damage_claim_list"
         const val CLIENT_PROFILE = "client_profile"
 
-        const val DAMAGE_CLAIM_ID = "id"
+        const val DAMAGE_CLAIM_ID = "damage_claim_id"
         const val SPECIALIST_PROFILES_LIST = "specialist_profiles_list"
+
+        const val HAS_SPECIALIST_ALREADY_RESPONDED = "responded"
     }
 
     object IgniteNames {

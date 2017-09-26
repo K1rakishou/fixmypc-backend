@@ -1,6 +1,7 @@
 package com.kirakishou.backend.fixmypc.model.repository.ignite
 
 import com.kirakishou.backend.fixmypc.core.Constant
+import com.kirakishou.backend.fixmypc.core.Fickle
 import com.kirakishou.backend.fixmypc.core.MyExpiryPolicyFactory
 import com.kirakishou.backend.fixmypc.model.entity.RespondedSpecialist
 import org.apache.ignite.Ignite
@@ -59,6 +60,15 @@ class RespondedSpecialistsCacheImpl : RespondedSpecialistsCache {
         } finally {
             lock.unlock()
         }
+    }
+
+    override fun findOne(userId: Long, damageClaimId: Long): Fickle<RespondedSpecialist> {
+        val allRespondedSpecialists = respondedSpecialistsCache.get(damageClaimId)
+        if (allRespondedSpecialists == null || allRespondedSpecialists.isEmpty()) {
+            return Fickle.empty()
+        }
+
+        return Fickle.of(allRespondedSpecialists.firstOrNull { it.userId == userId })
     }
 
     override fun findManyForDamageClaimPaged(damageClaimId: Long, skip: Long, count: Long): List<RespondedSpecialist> {

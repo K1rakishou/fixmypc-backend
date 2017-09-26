@@ -66,6 +66,27 @@ class RespondedSpecialistsRepositoryImpl : RespondedSpecialistsRepository {
         return filteredSpecialistsList
     }
 
+    override fun containsOne(userId: Long, damageClaimId: Long): Boolean {
+        val cacheResult = cache.findOne(userId, damageClaimId)
+        if (cacheResult.isPresent()) {
+            return true
+        }
+
+        val daoResult = dao.findOne(userId, damageClaimId)
+        if (daoResult is Either.Error) {
+            log.e(daoResult.error)
+            return false
+        }
+
+        val specialistFickle = (daoResult as Either.Value).value
+        if (!specialistFickle.isPresent()) {
+            return false
+        }
+
+        cache.saveOne(specialistFickle.get())
+        return true
+    }
+
     override fun deleteAllForDamageClaim(damageClaimId: Long): Boolean {
         val daoResult = dao.deleteAllForDamageClaim(damageClaimId)
         if (daoResult is Either.Error) {

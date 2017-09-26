@@ -5,14 +5,11 @@ import com.kirakishou.backend.fixmypc.core.ServerErrorCode
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.net.request.CreateDamageClaimRequest
 import com.kirakishou.backend.fixmypc.model.net.request.RespondToDamageClaimRequest
-import com.kirakishou.backend.fixmypc.model.net.response.CreateDamageClaimResponse
-import com.kirakishou.backend.fixmypc.model.net.response.DamageClaimsResponse
-import com.kirakishou.backend.fixmypc.model.net.response.SpecialistsListResponse
-import com.kirakishou.backend.fixmypc.model.net.response.StatusResponse
+import com.kirakishou.backend.fixmypc.model.net.response.*
 import com.kirakishou.backend.fixmypc.service.damageclaim.CreateDamageClaimService
+import com.kirakishou.backend.fixmypc.service.damageclaim.DamageClaimResponseService
 import com.kirakishou.backend.fixmypc.service.damageclaim.GetRespondedSpecialistsService
 import com.kirakishou.backend.fixmypc.service.damageclaim.GetUserDamageClaimListService
-import com.kirakishou.backend.fixmypc.service.damageclaim.RespondToDamageClaimService
 import io.reactivex.Single
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
@@ -32,7 +29,7 @@ class DamageClaimController {
     lateinit var mGetUserDamageClaimListService: GetUserDamageClaimListService
 
     @Autowired
-    lateinit var mRespondToDamageClaimService: RespondToDamageClaimService
+    lateinit var mDamageClaimResponseService: DamageClaimResponseService
 
     @Autowired
     lateinit var mGetRespondedSpecialistsService: GetRespondedSpecialistsService
@@ -120,7 +117,7 @@ class DamageClaimController {
                 }
     }
 
-    @RequestMapping(path = arrayOf("${Constant.Paths.DAMAGE_CLAIM_CONTROLLER_PATH}/{lat}/{lon}/{radius}/{skip}/{count}"),
+    @RequestMapping(path = arrayOf("${Constant.Paths.DAMAGE_CLAIM_CONTROLLER_PATH}/get_within/{lat}/{lon}/{radius}/{skip}/{count}"),
             method = arrayOf(RequestMethod.GET))
     fun getDamageClaimsWithinRadiusPaged(@PathVariable("lat") lat: Double,
                                          @PathVariable("lon") lon: Double,
@@ -151,39 +148,72 @@ class DamageClaimController {
                 }
     }
 
+    @RequestMapping(path = arrayOf("${Constant.Paths.DAMAGE_CLAIM_CONTROLLER_PATH}/respond/{damage_claim_id}"),
+            method = arrayOf(RequestMethod.GET))
+    fun hasAlreadyResponded(@RequestHeader(value = "session_id", defaultValue = "") sessionId: String,
+                            @PathVariable("damage_claim_id") damageClaimId: Long): Single<ResponseEntity<HasAlreadyRespondedResponse>> {
+
+        return mDamageClaimResponseService.hasAlreadyResponded(sessionId, damageClaimId)
+                .map { result ->
+                    when (result) {
+                        is DamageClaimResponseService.Get.Result.Ok -> {
+                            return@map ResponseEntity(HasAlreadyRespondedResponse(result.responded, ServerErrorCode.SEC_OK.value),
+                                    HttpStatus.OK)
+                        }
+
+                        is DamageClaimResponseService.Get.Result.SessionIdExpired -> {
+                            return@map ResponseEntity(HasAlreadyRespondedResponse(null, ServerErrorCode.SEC_SESSION_ID_EXPIRED.value),
+                                    HttpStatus.UNAUTHORIZED)
+                        }
+
+                        is DamageClaimResponseService.Get.Result.BadAccountType -> {
+                            return@map ResponseEntity(HasAlreadyRespondedResponse(null, ServerErrorCode.SEC_BAD_ACCOUNT_TYPE.value),
+                                    HttpStatus.UNPROCESSABLE_ENTITY)
+                        }
+
+                        else -> throw IllegalArgumentException("Unknown result")
+                    }
+                }
+                .onErrorReturn {
+                    return@onErrorReturn ResponseEntity(HasAlreadyRespondedResponse(null,
+                            ServerErrorCode.SEC_UNKNOWN_SERVER_ERROR.value),
+                            HttpStatus.INTERNAL_SERVER_ERROR)
+                }
+    }
+
     @RequestMapping(path = arrayOf("${Constant.Paths.DAMAGE_CLAIM_CONTROLLER_PATH}/respond"),
             method = arrayOf(RequestMethod.POST))
     fun respondToDamageClaim(@RequestHeader(value = "session_id", defaultValue = "") sessionId: String,
                              @RequestBody request: RespondToDamageClaimRequest): Single<ResponseEntity<StatusResponse>> {
 
-        return mRespondToDamageClaimService.respondToDamageClaim(sessionId, request.damageClaimId)
+        return mDamageClaimResponseService.respondToDamageClaim(sessionId, request.damageClaimId)
                 .map { result ->
                     when (result) {
-                        is RespondToDamageClaimService.Post.Result.Ok -> {
+                        is DamageClaimResponseService.Post.Result.Ok -> {
                             return@map ResponseEntity(StatusResponse(ServerErrorCode.SEC_OK.value), HttpStatus.OK)
                         }
 
-                        is RespondToDamageClaimService.Post.Result.CouldNotRespondToDamageClaim -> {
+                        is DamageClaimResponseService.Post.Result.CouldNotRespondToDamageClaim -> {
                             return@map ResponseEntity(StatusResponse(ServerErrorCode.SEC_COULD_NOT_RESPOND_TO_DAMAGE_CLAIM.value),
                                     HttpStatus.UNPROCESSABLE_ENTITY)
                         }
 
-                        is RespondToDamageClaimService.Post.Result.SessionIdExpired -> {
+                        is DamageClaimResponseService.Post.Result.SessionIdExpired -> {
                             return@map ResponseEntity(StatusResponse(ServerErrorCode.SEC_SESSION_ID_EXPIRED.value),
                                     HttpStatus.UNAUTHORIZED)
                         }
 
-                        is RespondToDamageClaimService.Post.Result.DamageClaimDoesNotExist -> {
+                        is DamageClaimResponseService.Post.Result.DamageClaimDoesNotExist -> {
                             return@map ResponseEntity(StatusResponse(ServerErrorCode.SEC_DAMAGE_CLAIM_DOES_NOT_EXIST.value),
                                     HttpStatus.UNPROCESSABLE_ENTITY)
                         }
 
-                        is RespondToDamageClaimService.Post.Result.DamageClaimIsNotActive -> {
+                        is DamageClaimResponseService.Post.Result.DamageClaimIsNotActive -> {
                             return@map ResponseEntity(StatusResponse(ServerErrorCode.SEC_DAMAGE_CLAIM_IS_NOT_ACTIVE.value),
                                     HttpStatus.UNPROCESSABLE_ENTITY)
                         }
 
-                        is RespondToDamageClaimService.Post.Result.BadAccountType -> {
+                        is DamageClaimResponseService.Post.Result.BadAccountType -> {
                             return@map ResponseEntity(StatusResponse(ServerErrorCode.SEC_BAD_ACCOUNT_TYPE.value),
                                     HttpStatus.UNPROCESSABLE_ENTITY)
                         }
