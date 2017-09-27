@@ -5,7 +5,6 @@ import com.kirakishou.backend.fixmypc.log.FileLogImpl
 import com.zaxxer.hikari.HikariDataSource
 import org.apache.ignite.Ignite
 import org.apache.ignite.Ignition
-import org.apache.ignite.configuration.DeploymentMode
 import org.apache.ignite.configuration.IgniteConfiguration
 import org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi
 import org.apache.ignite.spi.discovery.tcp.ipfinder.vm.TcpDiscoveryVmIpFinder
@@ -53,10 +52,11 @@ class AppConfig {
         discoSpi.ipFinder = ipFinder
 
         val igniteConfiguration = IgniteConfiguration()
-        igniteConfiguration.discoverySpi = discoSpi
-        igniteConfiguration.deploymentMode = DeploymentMode.SHARED
+        //igniteConfiguration.discoverySpi = discoSpi
+        //igniteConfiguration.deploymentMode = DeploymentMode.SHARED
+        igniteConfiguration.metricsLogFrequency = 0
 
-        return Ignition.start()
+        return Ignition.start(igniteConfiguration)
     }
 
     @Bean

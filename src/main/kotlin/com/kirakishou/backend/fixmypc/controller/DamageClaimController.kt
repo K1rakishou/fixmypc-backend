@@ -13,6 +13,7 @@ import com.kirakishou.backend.fixmypc.service.damageclaim.GetUserDamageClaimList
 import io.reactivex.Single
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.*
@@ -182,7 +183,8 @@ class DamageClaimController {
     }
 
     @RequestMapping(path = arrayOf("${Constant.Paths.DAMAGE_CLAIM_CONTROLLER_PATH}/respond"),
-            method = arrayOf(RequestMethod.POST))
+            method = arrayOf(RequestMethod.POST),
+            consumes = arrayOf(MediaType.APPLICATION_JSON_VALUE))
     fun respondToDamageClaim(@RequestHeader(value = "session_id", defaultValue = "") sessionId: String,
                              @RequestBody request: RespondToDamageClaimRequest): Single<ResponseEntity<StatusResponse>> {
 
