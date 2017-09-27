@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 
@@ -22,15 +23,22 @@ class ProfileController {
 
     @RequestMapping(path = arrayOf("${Constant.Paths.CLIENT_PROFILE_CONTROLLER_PATH}/{user_id}"),
             method = arrayOf(RequestMethod.GET))
-    fun getClientProfile(@PathVariable("user_id") userId: Long): Single<ResponseEntity<ClientProfileResponse>> {
+    fun getClientProfile(@RequestHeader(value = "session_id", defaultValue = "") sessionId: String,
+                         @PathVariable("user_id") userId: Long): Single<ResponseEntity<ClientProfileResponse>> {
 
-        return clientProfileService.getClientProfile(userId)
+        return clientProfileService.getClientProfile(sessionId, userId)
                 .map { result ->
                     when (result) {
                         is ClientProfileService.Get.Result.Ok -> {
                             return@map ResponseEntity(
                                     ClientProfileResponse(result.clientProfile, ServerErrorCode.SEC_OK.value),
                                     HttpStatus.OK)
+                        }
+
+                        is ClientProfileService.Get.Result.SessionIdExpired -> {
+                            return@map ResponseEntity(
+                                    ClientProfileResponse(null, ServerErrorCode.SEC_SESSION_ID_EXPIRED.value),
+                                    HttpStatus.UNAUTHORIZED)
                         }
 
                         is ClientProfileService.Get.Result.CouldNotFindProfile -> {

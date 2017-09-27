@@ -9,8 +9,9 @@ interface ClientProfileService {
         interface Result {
             class Ok(val clientProfile: ClientProfile) : Result
             class CouldNotFindProfile : Result
+            class SessionIdExpired : Result
         }
     }
 
-    fun getClientProfile(userId: Long): Single<Get.Result>
+    fun getClientProfile(sessionId: String, userId: Long): Single<Get.Result>
 }
