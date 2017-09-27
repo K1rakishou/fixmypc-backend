@@ -5,6 +5,7 @@ import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.entity.LatLon
 import com.kirakishou.backend.fixmypc.model.repository.DamageClaimRepository
 import com.kirakishou.backend.fixmypc.model.repository.ignite.LocationCache
+import com.kirakishou.backend.fixmypc.model.repository.ignite.UserCache
 import io.reactivex.Single
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -19,10 +20,20 @@ class GetUserDamageClaimListServiceImpl : GetUserDamageClaimListService {
     private lateinit var damageClaimRepository: DamageClaimRepository
 
     @Autowired
+    private lateinit var userCache: UserCache
+
+    @Autowired
     private lateinit var log: FileLog
 
-    override fun getDamageClaimsWithinRadiusPaged(latParam: Double, lonParam: Double, radiusParam: Double, skipParam: Long, countParam: Long):
+    override fun getDamageClaimsWithinRadiusPaged(sessionId: String, latParam: Double, lonParam: Double,
+                                                  radiusParam: Double, skipParam: Long, countParam: Long):
             Single<GetUserDamageClaimListService.Get.Result> {
+
+        val userFickle = userCache.findOne(sessionId)
+        if (!userFickle.isPresent()) {
+            log.d("SessionId $sessionId was not found in the cache")
+            return Single.just(GetUserDamageClaimListService.Get.Result.SessionIdExpired())
+        }
 
         val lat = when {
             latParam < -180.0 -> -180.0

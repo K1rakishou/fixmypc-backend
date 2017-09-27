@@ -12,5 +12,6 @@ interface GetUserDamageClaimListService {
         }
     }
 
-    fun getDamageClaimsWithinRadiusPaged(latParam: Double, lonParam: Double, radiusParam: Double, skipParam: Long, countParam: Long): Single<Get.Result>
+    fun getDamageClaimsWithinRadiusPaged(sessionId: String, latParam: Double, lonParam: Double,
+                                         radiusParam: Double, skipParam: Long, countParam: Long): Single<Get.Result>
 }
