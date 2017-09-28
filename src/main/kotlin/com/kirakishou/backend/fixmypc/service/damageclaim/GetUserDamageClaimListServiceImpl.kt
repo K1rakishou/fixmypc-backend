@@ -1,5 +1,6 @@
 package com.kirakishou.backend.fixmypc.service.damageclaim
 
+import com.kirakishou.backend.fixmypc.core.AccountType
 import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.entity.LatLon
@@ -65,9 +66,28 @@ class GetUserDamageClaimListServiceImpl : GetUserDamageClaimListService {
         }
 
         val idsList = locationCache.findWithin(skip, LatLon(lat, lon), radius, count)
-        val damageClaimsList = damageClaimRepository.findMany(idsList)
+        val damageClaimsList = damageClaimRepository.findMany(true, idsList)
 
         return Single.just(GetUserDamageClaimListService.Get.Result.Ok(damageClaimsList))
+    }
+
+    override fun getClientDamageClaimsPaged(sessionId: String, isActive: Boolean, skip: Long, count: Long):
+            Single<GetUserDamageClaimListService.Get.Result> {
+
+        val userFickle = userCache.findOne(sessionId)
+        if (!userFickle.isPresent()) {
+            log.d("SessionId $sessionId was not found in the cache")
+            return Single.just(GetUserDamageClaimListService.Get.Result.SessionIdExpired())
+        }
+
+        val user = userFickle.get()
+        if (user.accountType != AccountType.Client) {
+            log.d("Bad accountType ${user.accountType}")
+            return Single.just(GetUserDamageClaimListService.Get.Result.BadAccountType())
+        }
+
+        val repoResult = damageClaimRepository.findMany(isActive, user.id, skip, count)
+        return Single.just(GetUserDamageClaimListService.Get.Result.Ok(repoResult))
     }
 }
 

@@ -50,9 +50,12 @@ class DamageClaimCacheImpl : DamageClaimCache {
         return Fickle.of(damageClaimCache[malfunctionId])
     }
 
-    override fun findMany(malfunctionIdList: List<Long>): List<DamageClaim> {
+    override fun findMany(isActive: Boolean, malfunctionIdList: List<Long>): List<DamageClaim> {
         val set = malfunctionIdList.toSet()
-        return ArrayList(damageClaimCache.getAll(set).values)
+        val clientDamageClaims = damageClaimCache.getAll(set).values
+        val filtered = clientDamageClaims.filter { it.isActive == isActive }
+
+        return ArrayList(filtered)
     }
 
     override fun deleteOne(malfunctionId: Long) {

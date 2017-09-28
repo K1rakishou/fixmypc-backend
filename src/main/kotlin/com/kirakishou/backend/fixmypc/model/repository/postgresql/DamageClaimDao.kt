@@ -8,9 +8,8 @@ import com.kirakishou.backend.fixmypc.model.entity.DamageClaim
 interface DamageClaimDao {
     fun saveOne(damageClaim: DamageClaim): Either<Throwable, Boolean>
     fun findOne(id: Long): Either<Throwable, Fickle<DamageClaim>>
-    fun findManyActiveByIdList(idsToSearch: List<Long>): Either<Throwable, List<DamageClaim>>
-    fun findManyActiveByOwnerId(ownerId: Long): Either<Throwable, List<DamageClaim>>
-    fun findManyInactiveByOwnerId(ownerId: Long): Either<Throwable, List<DamageClaim>>
+    fun findManyByIdList(isActive: Boolean, idsToSearch: List<Long>): Either<Throwable, List<DamageClaim>>
+    fun findManyByOwnerId(isActive: Boolean, ownerId: Long): Either<Throwable, List<DamageClaim>>
     fun findAllIdsWithLocations(offset: Long, count: Long): List<DamageClaimIdLocationDTO>
     fun findPaged(ownerId: Long, isActive: Boolean, offset: Long, count: Int): Either<Throwable, List<DamageClaim>>
     fun deleteOne(id: Long): Either<Throwable, Boolean>

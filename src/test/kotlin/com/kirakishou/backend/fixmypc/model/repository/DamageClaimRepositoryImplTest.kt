@@ -117,7 +117,7 @@ class DamageClaimRepositoryImplTest {
     fun testFindMany_ShouldReturnEmptyIfUserHasNotAddedAnyMalfunctions() {
         Mockito.`when`(userToDamageClaimKeyAffinityRepository.findMany(Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong())).thenReturn(emptyList())
 
-        val result = repository.findMany(0, 0, 5)
+        val result = repository.findMany(false, 0, 0, 5)
 
         assertEquals(0, result.size)
     }
@@ -129,9 +129,9 @@ class DamageClaimRepositoryImplTest {
         val count = 5L
 
         Mockito.`when`(userToDamageClaimKeyAffinityRepository.findMany(Mockito.anyLong(), Mockito.anyLong(), Mockito.anyLong())).thenReturn(malfunctionIdList)
-        Mockito.`when`(damageClaimCache.findMany(malfunctionIdList)).thenReturn(malfunctionList)
+        Mockito.`when`(damageClaimCache.findMany(false, malfunctionIdList)).thenReturn(malfunctionList)
 
-        val result = repository.findMany(0, 0, count)
+        val result = repository.findMany(false, 0, 0, count)
 
         assertEquals(count, result.size.toLong())
     }
@@ -156,22 +156,22 @@ class DamageClaimRepositoryImplTest {
                 .thenReturn(secondPageIds)
                 .thenReturn(thirdPageIds)
 
-        Mockito.`when`(damageClaimCache.findMany(firstPageIds)).thenReturn(firstPageMalfunctionsFromCache)
-        Mockito.`when`(damageClaimCache.findMany(secondPageIds)).thenReturn(secondPageMalfunctionsFromCache)
-        Mockito.`when`(damageClaimCache.findMany(thirdPageIds)).thenReturn(thirdPageMalfunctionsFromCache)
-        Mockito.`when`(damageClaimDao.findManyActiveByOwnerId(0)).thenReturn(Either.Value(allUserMalfunctions))
+        Mockito.`when`(damageClaimCache.findMany(false, firstPageIds)).thenReturn(firstPageMalfunctionsFromCache)
+        Mockito.`when`(damageClaimCache.findMany(false, secondPageIds)).thenReturn(secondPageMalfunctionsFromCache)
+        Mockito.`when`(damageClaimCache.findMany(false, thirdPageIds)).thenReturn(thirdPageMalfunctionsFromCache)
+        Mockito.`when`(damageClaimDao.findManyByOwnerId(false, 0)).thenReturn(Either.Value(allUserMalfunctions))
 
-        val result = repository.findMany(0, 0, 5)
+        val result = repository.findMany(false, 0, 0, 5)
         assertEquals(5, result.size)
         assertEquals(0, result[0].id)
         assertEquals(4, result[4].id)
 
-        val result2 = repository.findMany(0, 5, 5)
+        val result2 = repository.findMany(false, 0, 5, 5)
         assertEquals(5, result2.size)
         assertEquals(5, result2[0].id)
         assertEquals(9, result2[4].id)
 
-        val result3 = repository.findMany(0, 10, 5)
+        val result3 = repository.findMany(false, 0, 10, 5)
         assertEquals(5, result3.size)
         assertEquals(10, result3[0].id)
         assertEquals(14, result3[4].id)
@@ -197,22 +197,22 @@ class DamageClaimRepositoryImplTest {
                 .thenReturn(secondPageIds)
                 .thenReturn(thirdPageIds)
 
-        Mockito.`when`(damageClaimCache.findMany(firstPageIds)).thenReturn(firstPageMalfunctionsFromCache)
-        Mockito.`when`(damageClaimCache.findMany(secondPageIds)).thenReturn(secondPageMalfunctionsFromCache)
-        Mockito.`when`(damageClaimCache.findMany(thirdPageIds)).thenReturn(thirdPageMalfunctionsFromCache)
-        Mockito.`when`(damageClaimDao.findManyActiveByOwnerId(0)).thenReturn(Either.Value(allUserMalfunctions))
+        Mockito.`when`(damageClaimCache.findMany(false, firstPageIds)).thenReturn(firstPageMalfunctionsFromCache)
+        Mockito.`when`(damageClaimCache.findMany(false, secondPageIds)).thenReturn(secondPageMalfunctionsFromCache)
+        Mockito.`when`(damageClaimCache.findMany(false, thirdPageIds)).thenReturn(thirdPageMalfunctionsFromCache)
+        Mockito.`when`(damageClaimDao.findManyByOwnerId(false, 0)).thenReturn(Either.Value(allUserMalfunctions))
 
-        val result = repository.findMany(0, 0, 5)
+        val result = repository.findMany(false, 0, 0, 5)
         assertEquals(5, result.size)
         assertEquals(0, result[0].id)
         assertEquals(4, result[4].id)
 
-        val result2 = repository.findMany(0, 5, 5)
+        val result2 = repository.findMany(false, 0, 5, 5)
         assertEquals(5, result2.size)
         assertEquals(5, result2[0].id)
         assertEquals(9, result2[4].id)
 
-        val result3 = repository.findMany(0, 10, 5)
+        val result3 = repository.findMany(false, 0, 10, 5)
         assertEquals(5, result3.size)
         assertEquals(10, result3[0].id)
         assertEquals(14, result3[4].id)

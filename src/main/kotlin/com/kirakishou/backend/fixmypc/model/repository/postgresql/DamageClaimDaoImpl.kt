@@ -153,25 +153,30 @@ class DamageClaimDaoImpl : DamageClaimDao {
         return Either.Value(malfunctions)
     }
 
-    override fun findManyActiveByIdList(idsToSearch: List<Long>): Either<Throwable, List<DamageClaim>> {
+    override fun findManyByIdList(isActive: Boolean, idsToSearch: List<Long>): Either<Throwable, List<DamageClaim>> {
         val damageClaimsList = arrayListOf<DamageClaim>()
         val ids = TextUtils.createStatementForList(idsToSearch.size)
         val sql = "SELECT id, owner_id, category, is_active, description, created_on, folder_name, lat, lon " +
-                "FROM $TABLE_NAME WHERE id IN ($ids) AND is_active = TRUE AND deleted_on IS NULL ORDER BY id ASC"
+                "FROM $TABLE_NAME WHERE id IN ($ids) AND is_active = ? AND deleted_on IS NULL ORDER BY id ASC"
 
         try {
             hikariCP.connection.use { connection ->
                 connection.prepareStatement(sql).use { ps ->
+                    var index = 0
+
                     for ((i, id) in idsToSearch.withIndex()) {
-                        ps.setLong(i + 1, id)
+                        ps.setLong(index, id)
+                        ++index
                     }
+
+                    ps.setBoolean(index, isActive)
 
                     ps.executeQuery().use { rs ->
                         while (rs.next()) {
                             val malfunction = DamageClaim(
                                     rs.getLong("id"),
                                     rs.getLong("owner_id"),
-                                    true,
+                                    isActive,
                                     rs.getString("folder_name"),
                                     rs.getInt("category"),
                                     rs.getString("description"),
@@ -193,12 +198,44 @@ class DamageClaimDaoImpl : DamageClaimDao {
         return Either.Value(damageClaimsList)
     }
 
-    override fun findManyActiveByOwnerId(ownerId: Long): Either<Throwable, List<DamageClaim>> {
-        return getManyByOwnerId(ownerId, true)
-    }
+    override fun findManyByOwnerId(isActive: Boolean, ownerId: Long): Either<Throwable, List<DamageClaim>> {
+        val malfunctions = arrayListOf<DamageClaim>()
 
-    override fun findManyInactiveByOwnerId(ownerId: Long): Either<Throwable, List<DamageClaim>> {
-        return getManyByOwnerId(ownerId, false)
+        try {
+            hikariCP.connection.use { connection ->
+                connection.prepareStatement("SELECT id, category, description, created_on, folder_name, lat, lon " +
+                        "FROM $TABLE_NAME WHERE owner_id = ? AND is_active = ? AND deleted_on IS NULL ORDER BY id ASC").use { ps ->
+
+                    ps.setLong(1, ownerId)
+                    ps.setBoolean(2, isActive)
+                    val ids = arrayListOf<Long>()
+
+                    ps.executeQuery().use { rs ->
+                        while (rs.next()) {
+                            val malfunction = DamageClaim(
+                                    rs.getLong("id"),
+                                    ownerId,
+                                    isActive,
+                                    rs.getString("folder_name"),
+                                    rs.getInt("category"),
+                                    rs.getString("description"),
+                                    rs.getDouble("lat"),
+                                    rs.getDouble("lon"),
+                                    rs.getTimestamp("created_on").time)
+
+                            malfunctions.add(malfunction)
+                            ids.add(malfunction.id)
+                        }
+                    }
+
+                    getImagesByDamageClaimId(connection, malfunctions, ids)
+                }
+            }
+        } catch (e: Throwable) {
+            return Either.Error(e)
+        }
+
+        return Either.Value(malfunctions)
     }
 
     override fun findAllIdsWithLocations(offset: Long, count: Long): List<DamageClaimIdLocationDTO> {
@@ -251,46 +288,6 @@ class DamageClaimDaoImpl : DamageClaimDao {
         }
 
         return Either.Value(true)
-    }
-
-    private fun getManyByOwnerId(ownerId: Long, isActive: Boolean): Either<Throwable, List<DamageClaim>> {
-        val malfunctions = arrayListOf<DamageClaim>()
-
-        try {
-            hikariCP.connection.use { connection ->
-                connection.prepareStatement("SELECT id, category, description, created_on, folder_name, lat, lon " +
-                        "FROM $TABLE_NAME WHERE owner_id = ? AND is_active = ? AND deleted_on IS NULL ORDER BY id ASC").use { ps ->
-
-                    ps.setLong(1, ownerId)
-                    ps.setBoolean(2, isActive)
-                    val ids = arrayListOf<Long>()
-
-                    ps.executeQuery().use { rs ->
-                        while (rs.next()) {
-                            val malfunction = DamageClaim(
-                                    rs.getLong("id"),
-                                    ownerId,
-                                    isActive,
-                                    rs.getString("folder_name"),
-                                    rs.getInt("category"),
-                                    rs.getString("description"),
-                                    rs.getDouble("lat"),
-                                    rs.getDouble("lon"),
-                                    rs.getTimestamp("created_on").time)
-
-                            malfunctions.add(malfunction)
-                            ids.add(malfunction.id)
-                        }
-                    }
-
-                    getImagesByDamageClaimId(connection, malfunctions, ids)
-                }
-            }
-        } catch (e: Throwable) {
-            return Either.Error(e)
-        }
-
-        return Either.Value(malfunctions)
     }
 
     private fun getImagesByDamageClaimId(connection: Connection, damageClaims: ArrayList<DamageClaim>,

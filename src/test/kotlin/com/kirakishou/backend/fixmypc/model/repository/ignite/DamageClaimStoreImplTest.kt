@@ -65,7 +65,7 @@ class DamageClaimStoreImplTest {
         val malfunction2 = DamageClaim(1, 0, true, "436erydfawryu", 0, "test description2", 55.6, 44.2, ServerUtils.getTimeFast(), arrayListOf())
 
         cache.saveMany(listOf(malfunction, malfunction2))
-        val malfunctionsFromStore = cache.findMany(listOf(0, 1))
+        val malfunctionsFromStore = cache.findMany(true, listOf(0, 1))
 
         assertEquals(2, malfunctionsFromStore.size)
     }
@@ -99,7 +99,7 @@ class DamageClaimStoreImplTest {
                 DamageClaim(5, 0, createdOn = ServerUtils.getTimeFast())))
 
 
-        val result = cache.findMany(listOf(1, 13, 2, 5, 6, 4, 3))
+        val result = cache.findMany(false, listOf(1, 13, 2, 5, 6, 4, 3))
 
         assertEquals(7, result.size)
         assertEquals(1, result.first().id)
@@ -128,12 +128,12 @@ class DamageClaimStoreImplTest {
         val malfunction2 = DamageClaim(1, 0, true, "436erydfawryu", 0, "test description2", 55.6, 44.2, ServerUtils.getTimeFast(), arrayListOf())
 
         cache.saveMany(listOf(malfunction, malfunction2))
-        val malfunctionsFromStore = cache.findMany(listOf(0, 1))
+        val malfunctionsFromStore = cache.findMany(true, listOf(0, 1))
 
         assertEquals(2, malfunctionsFromStore.size)
 
         cache.deleteMany(listOf(0, 1))
-        val malfunctionsFromStore2 = cache.findMany(listOf(0, 1))
+        val malfunctionsFromStore2 = cache.findMany(true, listOf(0, 1))
 
         assertEquals(0, malfunctionsFromStore2.size)
     }

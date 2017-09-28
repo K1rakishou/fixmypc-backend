@@ -278,6 +278,41 @@ class DamageClaimController {
                             HttpStatus.INTERNAL_SERVER_ERROR)
                 }
     }
+
+    @RequestMapping(path = arrayOf("${Constant.Paths.DAMAGE_CLAIM_CONTROLLER_PATH}/get_client/{is_active}/{skip}/{count}"),
+            method = arrayOf(RequestMethod.GET))
+    fun getClientDamageClaimsPaged(@RequestHeader(value = "session_id", defaultValue = "") sessionId: String,
+                                   @PathVariable("is_active") isActive: Boolean,
+                                   @PathVariable("skip") skip: Long,
+                                   @PathVariable("count") count: Long): Single<ResponseEntity<DamageClaimsResponse>> {
+
+        return mGetUserDamageClaimListService.getClientDamageClaimsPaged(sessionId, isActive, skip, count)
+                .map { result ->
+                    when (result) {
+                        is GetUserDamageClaimListService.Get.Result.Ok -> {
+                            return@map ResponseEntity(DamageClaimsResponse(result.damageClaimList,
+                                    ServerErrorCode.SEC_OK.value), HttpStatus.OK)
+                        }
+
+                        is GetUserDamageClaimListService.Get.Result.BadAccountType -> {
+                            return@map ResponseEntity(DamageClaimsResponse(emptyList(),
+                                    ServerErrorCode.SEC_BAD_ACCOUNT_TYPE.value), HttpStatus.UNPROCESSABLE_ENTITY)
+                        }
+
+                        is GetUserDamageClaimListService.Get.Result.SessionIdExpired -> {
+                            return@map ResponseEntity(DamageClaimsResponse(emptyList(),
+                                    ServerErrorCode.SEC_SESSION_ID_EXPIRED.value), HttpStatus.UNAUTHORIZED)
+                        }
+
+                        else -> throw IllegalArgumentException("Unknown result")
+                    }
+                }
+                .onErrorReturn {
+                    return@onErrorReturn ResponseEntity(DamageClaimsResponse(emptyList(),
+                            ServerErrorCode.SEC_UNKNOWN_SERVER_ERROR.value),
+                            HttpStatus.INTERNAL_SERVER_ERROR)
+                }
+    }
 }
 
 

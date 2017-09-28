@@ -70,13 +70,13 @@ class DamageClaimRepositoryImpl : DamageClaimRepository {
         return daoResult.value
     }
 
-    override fun findMany(ownerId: Long, offset: Long, count: Long): List<DamageClaim> {
+    override fun findMany(isActive: Boolean, ownerId: Long, offset: Long, count: Long): List<DamageClaim> {
         val malfunctionIdList = userToDamageClaimKeyAffinityRepository.findMany(ownerId, offset, count)
         if (malfunctionIdList.isEmpty()) {
             return emptyList()
         }
 
-        val cacheResult = damageClaimCache.findMany(malfunctionIdList)
+        val cacheResult = damageClaimCache.findMany(isActive, malfunctionIdList)
 
         if (cacheResult.size == count.toInt()) {
             return cacheResult
@@ -85,7 +85,7 @@ class DamageClaimRepositoryImpl : DamageClaimRepository {
                     .collect(Collectors.toList())
         }
 
-        val daoResult = damageClaimDao.findManyActiveByOwnerId(ownerId)
+        val daoResult = damageClaimDao.findManyByOwnerId(isActive, ownerId)
         if (daoResult is Either.Error) {
             log.e(daoResult.error)
             return emptyList()
@@ -116,14 +116,14 @@ class DamageClaimRepositoryImpl : DamageClaimRepository {
                 .collect(Collectors.toList())
     }
 
-    override fun findMany(idsToSearch: List<Long>): List<DamageClaim> {
-        val cacheResult = damageClaimCache.findMany(idsToSearch) as ArrayList
+    override fun findMany(isActive: Boolean, idsToSearch: List<Long>): List<DamageClaim> {
+        val cacheResult = damageClaimCache.findMany(isActive, idsToSearch) as ArrayList
         if (cacheResult.size == idsToSearch.size) {
             return cacheResult
         }
 
         val remainderList = idsToSearch.filter { !containsDamageClaimId(it, cacheResult) }
-        val daoResult = damageClaimDao.findManyActiveByIdList(remainderList)
+        val daoResult = damageClaimDao.findManyByIdList(isActive, remainderList)
         if (daoResult is Either.Error) {
             log.e(daoResult.error)
             return cacheResult
