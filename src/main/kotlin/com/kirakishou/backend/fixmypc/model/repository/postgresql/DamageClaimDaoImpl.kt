@@ -228,7 +228,9 @@ class DamageClaimDaoImpl : DamageClaimDao {
                         }
                     }
 
-                    getImagesByDamageClaimId(connection, malfunctions, ids)
+                    if (malfunctions.isNotEmpty() && ids.isNotEmpty()) {
+                        getImagesByDamageClaimId(connection, malfunctions, ids)
+                    }
                 }
             }
         } catch (e: Throwable) {
@@ -292,6 +294,10 @@ class DamageClaimDaoImpl : DamageClaimDao {
 
     private fun getImagesByDamageClaimId(connection: Connection, damageClaims: ArrayList<DamageClaim>,
                                          damageClaimIdList: List<Long>) {
+        if (damageClaims.isEmpty() || damageClaimIdList.isEmpty()) {
+            return
+        }
+
         val malfunctionIdsCount = damageClaimIdList.size
         val idsToSearch = TextUtils.createStatementForList(malfunctionIdsCount)
 
