@@ -1,4 +1,4 @@
-package com.kirakishou.backend.fixmypc.service.damageclaim
+package com.kirakishou.backend.fixmypc.service.specialist
 
 import com.kirakishou.backend.fixmypc.core.AccountType
 import com.kirakishou.backend.fixmypc.log.FileLog

@@ -3,7 +3,7 @@ package com.kirakishou.backend.fixmypc.controller
 import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.core.ServerErrorCode
 import com.kirakishou.backend.fixmypc.model.net.response.ClientProfileResponse
-import com.kirakishou.backend.fixmypc.service.profile.ClientProfileService
+import com.kirakishou.backend.fixmypc.service.client.ClientProfileService
 import io.reactivex.Single
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
@@ -16,12 +16,12 @@ import org.springframework.web.bind.annotation.RequestMethod
 
 @Controller
 @RequestMapping
-class ProfileController {
+class ClientController {
 
     @Autowired
     private lateinit var clientProfileService: ClientProfileService
 
-    @RequestMapping(path = arrayOf("${Constant.Paths.CLIENT_PROFILE_CONTROLLER_PATH}/{user_id}"),
+    @RequestMapping(path = arrayOf("${Constant.Paths.CLIENT_CONTROLLER_PATH}/profile/{user_id}"),
             method = arrayOf(RequestMethod.GET))
     fun getClientProfile(@RequestHeader(value = "session_id", defaultValue = "") sessionId: String,
                          @PathVariable("user_id") userId: Long): Single<ResponseEntity<ClientProfileResponse>> {

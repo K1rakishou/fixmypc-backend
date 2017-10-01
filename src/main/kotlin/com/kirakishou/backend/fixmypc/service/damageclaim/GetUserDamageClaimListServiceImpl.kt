@@ -87,10 +87,6 @@ class GetUserDamageClaimListServiceImpl : GetUserDamageClaimListService {
         }
 
         val repoResult = damageClaimRepository.findMany(isActive, user.id, skip, count)
-
-        log.e("skip: $skip, count: $count")
-        repoResult.forEach { log.e("id: ${it.id}, isActive: ${it.isActive}") }
-
         return Single.just(GetUserDamageClaimListService.Get.Result.Ok(repoResult))
     }
 }

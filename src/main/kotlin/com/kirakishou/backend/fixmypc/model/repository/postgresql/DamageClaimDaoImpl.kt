@@ -164,7 +164,7 @@ class DamageClaimDaoImpl : DamageClaimDao {
                 connection.prepareStatement(sql).use { ps ->
                     var index = 0
 
-                    for ((i, id) in idsToSearch.withIndex()) {
+                    for (id in idsToSearch) {
                         ps.setLong(index, id)
                         ++index
                     }

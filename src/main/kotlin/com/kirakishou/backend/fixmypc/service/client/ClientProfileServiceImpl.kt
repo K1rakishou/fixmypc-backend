@@ -1,4 +1,4 @@
-package com.kirakishou.backend.fixmypc.service.profile
+package com.kirakishou.backend.fixmypc.service.client
 
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.repository.ClientProfileRepository

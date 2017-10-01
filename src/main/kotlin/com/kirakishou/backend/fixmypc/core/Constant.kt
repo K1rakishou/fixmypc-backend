@@ -8,10 +8,11 @@ object Constant {
     object Paths {
         const val LOGIN_CONTROLLER_PATH = "/v1/api/login"
         const val SIGNUP_CONTROLLER_PATH = "/v1/api/signup"
-        const val DAMAGE_CLAIM_CONTROLLER_PATH = "/v1/api/damage_claim_request"
+        const val DAMAGE_CLAIM_CONTROLLER_PATH = "/v1/api/damage_claim"
         const val DAMAGE_CLAIM_PHOTO_CONTROLLER_PATH = "/v1/api/damage_claim_photo"
         const val IMAGE_CONTROLLER_PATH = "/v1/api/image"
-        const val CLIENT_PROFILE_CONTROLLER_PATH = "/v1/api/profile"
+        const val CLIENT_CONTROLLER_PATH = "/v1/api/client"
+        const val SPECIALIST_CONTROLLER_PATH = "/v1/api/specialist"
     }
 
     object SerializedNames {
