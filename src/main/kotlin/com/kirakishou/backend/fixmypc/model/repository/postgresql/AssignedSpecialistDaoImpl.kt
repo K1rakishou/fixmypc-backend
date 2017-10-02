@@ -6,8 +6,10 @@ import com.kirakishou.backend.fixmypc.extension.prepareStatementScrollable
 import com.kirakishou.backend.fixmypc.model.entity.AssignedSpecialist
 import com.kirakishou.backend.fixmypc.util.TextUtils
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
 import javax.sql.DataSource
 
+@Component
 class AssignedSpecialistDaoImpl : AssignedSpecialistDao {
 
     @Autowired
@@ -18,7 +20,7 @@ class AssignedSpecialistDaoImpl : AssignedSpecialistDao {
     override fun saveOne(assignedSpecialist: AssignedSpecialist): Either<Throwable, Boolean> {
         try {
             hikariCP.connection.use { connection ->
-                connection.prepareStatement("INSERT INTO $TABLE_NAME (damage_claim_id, user_id, is_active) VALUES (?, ?, true)").use { ps ->
+                connection.prepareStatement("INSERT INTO $TABLE_NAME (damage_claim_id, user_id, is_work_done) VALUES (?, ?, false)").use { ps ->
                     ps.setLong(1, assignedSpecialist.damageClaimId)
                     ps.setLong(2, assignedSpecialist.userId)
 
@@ -32,21 +34,21 @@ class AssignedSpecialistDaoImpl : AssignedSpecialistDao {
         return Either.Value(true)
     }
 
-    override fun findOne(damageClaimId: Long, isActive: Boolean): Either<Throwable, Fickle<AssignedSpecialist>> {
+    override fun findOne(damageClaimId: Long, isWorkDone: Boolean): Either<Throwable, Fickle<AssignedSpecialist>> {
         var assignedSpecialist = Fickle.empty<AssignedSpecialist>()
 
         try {
             hikariCP.connection.use { connection ->
-                connection.prepareStatementScrollable("SELECT user_id FROM $TABLE_NAME WHERE damage_claim_id = ? AND is_active = ?").use { ps ->
+                connection.prepareStatementScrollable("SELECT user_id FROM $TABLE_NAME WHERE damage_claim_id = ? AND is_work_done = ?").use { ps ->
                     ps.setLong(1, damageClaimId)
-                    ps.setBoolean(2, isActive)
+                    ps.setBoolean(2, isWorkDone)
 
                     ps.executeQuery().use { rs ->
                         if (rs.first()) {
                             assignedSpecialist = Fickle.of(AssignedSpecialist(
                                     damageClaimId,
                                     rs.getLong("user_id"),
-                                    isActive))
+                                    isWorkDone))
                         }
                     }
                 }
@@ -58,9 +60,9 @@ class AssignedSpecialistDaoImpl : AssignedSpecialistDao {
         return Either.Value(assignedSpecialist)
     }
 
-    override fun findMany(damageClaimIdList: List<Long>, isActive: Boolean): Either<Throwable, List<AssignedSpecialist>> {
+    override fun findMany(damageClaimIdList: List<Long>, isWorkDone: Boolean): Either<Throwable, List<AssignedSpecialist>> {
         val idsStatement = TextUtils.createStatementForList(damageClaimIdList.size)
-        val sql = "SELECT user_id FROM $TABLE_NAME WHERE damage_claim_id IN ($idsStatement) AND is_active = ?"
+        val sql = "SELECT user_id FROM $TABLE_NAME WHERE damage_claim_id IN ($idsStatement) AND is_work_done = ?"
         val assignedSpecialistList = mutableListOf<AssignedSpecialist>()
 
         try {
@@ -73,7 +75,7 @@ class AssignedSpecialistDaoImpl : AssignedSpecialistDao {
                         ++index
                     }
 
-                    ps.setBoolean(index + 1, isActive)
+                    ps.setBoolean(index + 1, isWorkDone)
 
                     ps.executeQuery().use { rs ->
                         index = 0
@@ -82,7 +84,7 @@ class AssignedSpecialistDaoImpl : AssignedSpecialistDao {
                             assignedSpecialistList += AssignedSpecialist(
                                     damageClaimIdList[index],
                                     rs.getLong("user_id"),
-                                    isActive)
+                                    isWorkDone)
 
                             ++index
                         }

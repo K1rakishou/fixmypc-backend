@@ -41,6 +41,6 @@ class ClientProfileCacheImpl : ClientProfileCache {
     }
 
     /*override fun deleteOne(userId: Long) {
-        clientProfileCache.remove(userId)
+        assignedSpecialistCache.remove(userId)
     }*/
 }

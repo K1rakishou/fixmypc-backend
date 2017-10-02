@@ -4,4 +4,4 @@ import java.io.Serializable
 
 data class AssignedSpecialist(val damageClaimId: Long,
                               val userId: Long,
-                              val isActive: Boolean) : Serializable
+                              val isWorkDone: Boolean) : Serializable

@@ -7,8 +7,10 @@ import com.kirakishou.backend.fixmypc.model.entity.AssignedSpecialist
 import com.kirakishou.backend.fixmypc.model.repository.ignite.AssignedSpecialistCache
 import com.kirakishou.backend.fixmypc.model.repository.postgresql.AssignedSpecialistDao
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
 import java.util.stream.Collectors
 
+@Component
 class AssignedSpecialistRepositoryImpl : AssignedSpecialistRepository {
 
     @Autowired
@@ -34,13 +36,13 @@ class AssignedSpecialistRepositoryImpl : AssignedSpecialistRepository {
         return true
     }
 
-    override fun findOne(damageClaimId: Long, isActive: Boolean): Fickle<AssignedSpecialist> {
-        val cacheResult = cache.findOne(damageClaimId, isActive)
+    override fun findOne(damageClaimId: Long, isWorkDone: Boolean): Fickle<AssignedSpecialist> {
+        val cacheResult = cache.findOne(damageClaimId, isWorkDone)
         if (cacheResult.isPresent()) {
             return cacheResult
         }
 
-        val daoResult = dao.findOne(damageClaimId, isActive)
+        val daoResult = dao.findOne(damageClaimId, isWorkDone)
         if (daoResult is Either.Error) {
             log.e(daoResult.error)
             return Fickle.empty()
@@ -54,8 +56,8 @@ class AssignedSpecialistRepositoryImpl : AssignedSpecialistRepository {
         return daoResult.value
     }
 
-    override fun findMany(damageClaimIdList: List<Long>, isActive: Boolean): List<AssignedSpecialist> {
-        val cacheResult = cache.findMany(damageClaimIdList, isActive)
+    override fun findMany(damageClaimIdList: List<Long>, isWorkDone: Boolean): List<AssignedSpecialist> {
+        val cacheResult = cache.findMany(damageClaimIdList, isWorkDone)
         if (cacheResult.size == damageClaimIdList.size) {
             return cacheResult
         }
@@ -64,7 +66,7 @@ class AssignedSpecialistRepositoryImpl : AssignedSpecialistRepository {
                 .filter { !contains(cacheResult, it) }
                 .collect(Collectors.toList())
 
-        val daoResult = dao.findMany(notInCache, isActive)
+        val daoResult = dao.findMany(notInCache, isWorkDone)
         if (daoResult is Either.Error) {
             log.e(daoResult.error)
             return cacheResult

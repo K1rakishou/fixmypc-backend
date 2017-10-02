@@ -5,7 +5,7 @@ import com.kirakishou.backend.fixmypc.core.ServerErrorCode
 import com.kirakishou.backend.fixmypc.model.net.request.PickSpecialistRequest
 import com.kirakishou.backend.fixmypc.model.net.response.SpecialistsListResponse
 import com.kirakishou.backend.fixmypc.model.net.response.StatusResponse
-import com.kirakishou.backend.fixmypc.service.specialist.ClientChooseSpecialistService
+import com.kirakishou.backend.fixmypc.service.specialist.ClientAssignSpecialistService
 import com.kirakishou.backend.fixmypc.service.specialist.GetRespondedSpecialistsService
 import io.reactivex.Single
 import org.springframework.beans.factory.annotation.Autowired
@@ -22,7 +22,7 @@ class SpecialistController {
     lateinit var mGetRespondedSpecialistsService: GetRespondedSpecialistsService
 
     @Autowired
-    lateinit var mClientChooseSpecialistService: ClientChooseSpecialistService
+    lateinit var mClientAssignSpecialistService: ClientAssignSpecialistService
 
     @RequestMapping(path = arrayOf("${Constant.Paths.SPECIALIST_CONTROLLER_PATH}/profile/{damage_claim_id}/{skip}/{count}"),
             method = arrayOf(RequestMethod.GET))
@@ -72,16 +72,42 @@ class SpecialistController {
                 }
     }
 
-    @RequestMapping(path = arrayOf("${Constant.Paths.SPECIALIST_CONTROLLER_PATH}/choose"),
+    @RequestMapping(path = arrayOf("${Constant.Paths.SPECIALIST_CONTROLLER_PATH}/assign"),
             method = arrayOf(RequestMethod.POST))
-    fun clientChooseSpecialist(@RequestHeader(value = "session_id", defaultValue = "") sessionId: String,
-                             @RequestBody request: PickSpecialistRequest): Single<ResponseEntity<StatusResponse>> {
+    fun clientAssignSpecialist(@RequestHeader(value = "session_id", defaultValue = "") sessionId: String,
+                               @RequestBody request: PickSpecialistRequest): Single<ResponseEntity<StatusResponse>> {
 
-        return mClientChooseSpecialistService.chooseSpecialist(request.userId)
+        return mClientAssignSpecialistService.assignSpecialist(sessionId, request.userId, request.damageClaimId)
                 .map { result ->
                     when (result) {
-                        is ClientChooseSpecialistService.Get.Result.Ok -> {
-                            return@map ResponseEntity(StatusResponse(ServerErrorCode.SEC_OK.value), HttpStatus.OK)
+                        is ClientAssignSpecialistService.Get.Result.Ok -> {
+                            return@map ResponseEntity(StatusResponse(ServerErrorCode.SEC_OK.value),
+                                    HttpStatus.OK)
+                        }
+
+                        is ClientAssignSpecialistService.Get.Result.CouldNotRemoveRespondedSpecialists -> {
+                            return@map ResponseEntity(StatusResponse(ServerErrorCode.SEC_COULD_NOT_REMOVE_RESPONDED_SPECIALISTS.value),
+                                    HttpStatus.INTERNAL_SERVER_ERROR)
+                        }
+
+                        is ClientAssignSpecialistService.Get.Result.BadAccountType -> {
+                            return@map ResponseEntity(StatusResponse(ServerErrorCode.SEC_BAD_ACCOUNT_TYPE.value),
+                                    HttpStatus.UNPROCESSABLE_ENTITY)
+                        }
+
+                        is ClientAssignSpecialistService.Get.Result.DamageClaimDoesNotBelongToUser -> {
+                            return@map ResponseEntity(StatusResponse(ServerErrorCode.SEC_DAMAGE_CLAIM_DOES_NOT_BELONG_TO_USER.value),
+                                    HttpStatus.FORBIDDEN)
+                        }
+
+                        is ClientAssignSpecialistService.Get.Result.DamageClaimDoesNotExist -> {
+                            return@map ResponseEntity(StatusResponse(ServerErrorCode.SEC_DAMAGE_CLAIM_DOES_NOT_EXIST.value),
+                                    HttpStatus.UNPROCESSABLE_ENTITY)
+                        }
+
+                        is ClientAssignSpecialistService.Get.Result.SessionIdExpired -> {
+                            return@map ResponseEntity(StatusResponse(ServerErrorCode.SEC_SESSION_ID_EXPIRED.value),
+                                    HttpStatus.UNAUTHORIZED)
                         }
 
                         else -> throw IllegalArgumentException("Unknown result")

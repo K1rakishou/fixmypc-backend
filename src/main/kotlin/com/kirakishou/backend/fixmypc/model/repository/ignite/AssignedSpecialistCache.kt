@@ -6,6 +6,6 @@ import com.kirakishou.backend.fixmypc.model.entity.AssignedSpecialist
 interface AssignedSpecialistCache {
     fun saveOne(assignedSpecialist: AssignedSpecialist)
     fun saveMany(assignedSpecialistList: List<AssignedSpecialist>)
-    fun findOne(damageClaimId: Long, isActive: Boolean): Fickle<AssignedSpecialist>
-    fun findMany(damageClaimIdList: List<Long>, isActive: Boolean): List<AssignedSpecialist>
+    fun findOne(damageClaimId: Long, isWorkDone: Boolean): Fickle<AssignedSpecialist>
+    fun findMany(damageClaimIdList: List<Long>, isWorkDone: Boolean): List<AssignedSpecialist>
 }

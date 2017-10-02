@@ -9,16 +9,18 @@ import org.apache.ignite.IgniteCache
 import org.apache.ignite.cache.CacheMode
 import org.apache.ignite.configuration.CacheConfiguration
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
 import java.util.stream.Collectors
 import javax.annotation.PostConstruct
 import javax.cache.expiry.Duration
 
+@Component
 class AssignedSpecialistCacheImpl : AssignedSpecialistCache {
 
     @Autowired
     lateinit var ignite: Ignite
 
-    lateinit var clientProfileCache: IgniteCache<Long, AssignedSpecialist>
+    lateinit var assignedSpecialistCache: IgniteCache<Long, AssignedSpecialist>
 
     @PostConstruct
     fun init() {
@@ -28,11 +30,11 @@ class AssignedSpecialistCacheImpl : AssignedSpecialistCache {
         cacheConfig.cacheMode = CacheMode.PARTITIONED
         cacheConfig.setExpiryPolicyFactory(MyExpiryPolicyFactory(Duration.THIRTY_MINUTES, Duration.THIRTY_MINUTES, Duration.THIRTY_MINUTES))
 
-        clientProfileCache = ignite.createCache(cacheConfig)
+        assignedSpecialistCache = ignite.createCache(cacheConfig)
     }
 
     override fun saveOne(assignedSpecialist: AssignedSpecialist) {
-        clientProfileCache.put(assignedSpecialist.damageClaimId, assignedSpecialist)
+        assignedSpecialistCache.put(assignedSpecialist.damageClaimId, assignedSpecialist)
     }
 
     override fun saveMany(assignedSpecialistList: List<AssignedSpecialist>) {
@@ -42,31 +44,31 @@ class AssignedSpecialistCacheImpl : AssignedSpecialistCache {
             assignedSpecialistMap.put(assignedSpecialist.damageClaimId, assignedSpecialist)
         }
 
-        clientProfileCache.putAll(assignedSpecialistMap)
+        assignedSpecialistCache.putAll(assignedSpecialistMap)
     }
 
-    override fun findOne(damageClaimId: Long, isActive: Boolean): Fickle<AssignedSpecialist> {
-        val assignedSpecialist = clientProfileCache[damageClaimId]
+    override fun findOne(damageClaimId: Long, isWorkDone: Boolean): Fickle<AssignedSpecialist> {
+        val assignedSpecialist = assignedSpecialistCache[damageClaimId]
         if (assignedSpecialist == null) {
             return Fickle.empty()
         }
 
-        if (assignedSpecialist.isActive != isActive) {
+        if (assignedSpecialist.isWorkDone != isWorkDone) {
             return Fickle.empty()
         }
 
         return Fickle.of(assignedSpecialist)
     }
 
-    override fun findMany(damageClaimIdList: List<Long>, isActive: Boolean): List<AssignedSpecialist> {
-        val assignedSpecialistList = clientProfileCache.getAll(damageClaimIdList.toSet())
+    override fun findMany(damageClaimIdList: List<Long>, isWorkDone: Boolean): List<AssignedSpecialist> {
+        val assignedSpecialistList = assignedSpecialistCache.getAll(damageClaimIdList.toSet())
         if (assignedSpecialistList == null || assignedSpecialistList.isEmpty()) {
             return emptyList()
         }
 
         return assignedSpecialistList.values
                 .stream()
-                .filter { it.isActive == isActive }
+                .filter { it.isWorkDone == isWorkDone }
                 .collect(Collectors.toList())
     }
 }
