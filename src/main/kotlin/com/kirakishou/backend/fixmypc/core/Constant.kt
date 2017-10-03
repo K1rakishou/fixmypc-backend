@@ -52,8 +52,9 @@ object Constant {
         val PHOTO_TO_USER_AFFINITY_CACHE = "photo_to_user_affinity_cache"
         val CLIENT_PROFILE_CACHE_NAME = "client_profile_cache"
         val SPECIALIST_PROFILE_CACHE_NAME = "specialist_profile_cache"
-        val DAMAGE_CLAIM_ASSIGNED_SPECIALIST = "damage_claim_assigned_specialist"
-        val RESPONDED_SPECIALISTS = "responded_specialists"
+        val DAMAGE_CLAIM_ASSIGNED_SPECIALIST_CACHE = "damage_claim_assigned_specialist_cache"
+        val RESPONDED_SPECIALISTS_CACHE = "responded_specialists_cache"
+        val PROFILE_PHOTO_CACHE = "profile_photo_cache"
     }
 
     object RedisNames {

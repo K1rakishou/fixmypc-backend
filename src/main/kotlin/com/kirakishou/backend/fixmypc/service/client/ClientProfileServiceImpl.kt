@@ -2,6 +2,7 @@ package com.kirakishou.backend.fixmypc.service.client
 
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.repository.ClientProfileRepository
+import com.kirakishou.backend.fixmypc.model.repository.ProfilePhotoRepository
 import com.kirakishou.backend.fixmypc.model.repository.ignite.UserCache
 import io.reactivex.Single
 import org.springframework.beans.factory.annotation.Autowired
@@ -12,6 +13,9 @@ class ClientProfileServiceImpl : ClientProfileService {
 
     @Autowired
     private lateinit var clientProfileRepository: ClientProfileRepository
+
+    @Autowired
+    private lateinit var profilePhotoRepository: ProfilePhotoRepository
 
     @Autowired
     private lateinit var userCache: UserCache
@@ -26,11 +30,21 @@ class ClientProfileServiceImpl : ClientProfileService {
             return Single.just(ClientProfileService.Get.Result.SessionIdExpired())
         }
 
-        val repoResult = clientProfileRepository.findOne(userId)
-        if (!repoResult.isPresent()) {
+        val clientProfileFickle = clientProfileRepository.findOne(userId)
+        if (!clientProfileFickle.isPresent()) {
             return Single.just(ClientProfileService.Get.Result.CouldNotFindProfile())
         }
 
-        return Single.just(ClientProfileService.Get.Result.Ok(repoResult.get()))
+        val clientProfile = clientProfileFickle.get()
+
+        val profilePhotoFickle = profilePhotoRepository.findOne(userId)
+        if (profilePhotoFickle.isPresent()) {
+            val profilePhoto = profilePhotoFickle.get()
+
+            clientProfile.photoFolder = profilePhoto.photoFolder
+            clientProfile.photoName = profilePhoto.photoName
+        }
+
+        return Single.just(ClientProfileService.Get.Result.Ok(clientProfile))
     }
 }

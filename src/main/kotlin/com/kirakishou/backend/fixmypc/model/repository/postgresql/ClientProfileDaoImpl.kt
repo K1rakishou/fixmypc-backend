@@ -51,6 +51,8 @@ class ClientProfileDaoImpl : ClientProfileDao {
                                     userId,
                                     rs.getString("name"),
                                     rs.getString("phone"),
+                                    "",
+                                    "",
                                     rs.getBoolean("is_profile_filled_out"))
                         }
                     }

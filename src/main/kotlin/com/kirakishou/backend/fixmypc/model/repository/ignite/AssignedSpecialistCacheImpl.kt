@@ -26,7 +26,7 @@ class AssignedSpecialistCacheImpl : AssignedSpecialistCache {
     fun init() {
         val cacheConfig = CacheConfiguration<Long, AssignedSpecialist>()
         cacheConfig.backups = 0
-        cacheConfig.name = Constant.IgniteNames.DAMAGE_CLAIM_ASSIGNED_SPECIALIST
+        cacheConfig.name = Constant.IgniteNames.DAMAGE_CLAIM_ASSIGNED_SPECIALIST_CACHE
         cacheConfig.cacheMode = CacheMode.PARTITIONED
         cacheConfig.setExpiryPolicyFactory(MyExpiryPolicyFactory(Duration.THIRTY_MINUTES, Duration.THIRTY_MINUTES, Duration.THIRTY_MINUTES))
 

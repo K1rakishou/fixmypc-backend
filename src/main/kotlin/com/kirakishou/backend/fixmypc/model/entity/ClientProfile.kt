@@ -13,5 +13,11 @@ data class ClientProfile(@SerializedName("user_id")
                          @SerializedName("phone")
                          val phone: String = "",
 
+                         @SerializedName("photo_folder")
+                         var photoFolder: String = "",
+
+                         @SerializedName("photo_name")
+                         var photoName: String = "",
+
                          @Transient
                          val isFilledOut: Boolean = false) : Serializable

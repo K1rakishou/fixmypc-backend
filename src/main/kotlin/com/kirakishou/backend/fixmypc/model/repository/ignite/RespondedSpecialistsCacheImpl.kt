@@ -27,7 +27,7 @@ class RespondedSpecialistsCacheImpl : RespondedSpecialistsCache {
     fun init() {
         val cacheConfig = CacheConfiguration<Long, MutableSet<RespondedSpecialist>>()
         cacheConfig.backups = 0
-        cacheConfig.name = Constant.IgniteNames.RESPONDED_SPECIALISTS
+        cacheConfig.name = Constant.IgniteNames.RESPONDED_SPECIALISTS_CACHE
         cacheConfig.cacheMode = CacheMode.PARTITIONED
         cacheConfig.atomicityMode = CacheAtomicityMode.TRANSACTIONAL
         cacheConfig.setExpiryPolicyFactory(MyExpiryPolicyFactory(Duration.TEN_MINUTES, Duration.TEN_MINUTES, Duration.TEN_MINUTES))
