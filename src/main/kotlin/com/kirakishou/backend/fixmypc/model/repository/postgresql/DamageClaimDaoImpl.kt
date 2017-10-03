@@ -27,19 +27,18 @@ class DamageClaimDaoImpl : DamageClaimDao {
 
     override fun saveOne(damageClaim: DamageClaim): Either<Throwable, Boolean> {
         try {
-            hikariCP.connection.use { connection ->
+            hikariCP.connection.transactionalUse { connection ->
                 connection.prepareStatement("INSERT INTO $TABLE_NAME (owner_id, category, description, " +
-                        "folder_name, lat, lon, is_active, created_on, deleted_on) " +
+                        "lat, lon, is_active, created_on, deleted_on) " +
                         "VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL)", Statement.RETURN_GENERATED_KEYS).use { ps ->
 
                     ps.setLong(1, damageClaim.ownerId)
                     ps.setInt(2, damageClaim.category)
                     ps.setString(3, damageClaim.description)
-                    ps.setString(4, damageClaim.folderName)
-                    ps.setDouble(5, damageClaim.lat)
-                    ps.setDouble(6, damageClaim.lon)
-                    ps.setBoolean(7, damageClaim.isActive)
-                    ps.setTimestamp(8, Timestamp(damageClaim.createdOn))
+                    ps.setDouble(4, damageClaim.lat)
+                    ps.setDouble(5, damageClaim.lon)
+                    ps.setBoolean(6, damageClaim.isActive)
+                    ps.setTimestamp(7, Timestamp(damageClaim.createdOn))
                     ps.executeUpdate()
 
                     ps.generatedKeys.use {
@@ -50,13 +49,14 @@ class DamageClaimDaoImpl : DamageClaimDao {
                 }
 
                 connection.prepareStatement("INSERT INTO $PHOTOS_TABLE_NAME (damage_claim_id, " +
-                        "photo_name, photo_type, deleted_on) " +
-                        "VALUES (?, ?, ?, NULL)").use { ps ->
+                        "photo_name, photo_type, photo_folder, deleted_on) " +
+                        "VALUES (?, ?, ?, ?, NULL)").use { ps ->
 
                     for (imageName in damageClaim.imageNamesList) {
                         ps.setLong(1, damageClaim.id)
                         ps.setString(2, imageName)
                         ps.setInt(3, Constant.ImageTypes.IMAGE_TYPE_MALFUNCTION_PHOTO)
+                        ps.setString(4, damageClaim.photoFolder)
 
                         ps.addBatch()
                     }
@@ -88,7 +88,7 @@ class DamageClaimDaoImpl : DamageClaimDao {
                                     rs.getLong("id"),
                                     rs.getLong("owner_id"),
                                     true,
-                                    rs.getString("folder_name"),
+                                    "",
                                     rs.getInt("category"),
                                     rs.getString("description"),
                                     rs.getDouble("lat"),
@@ -115,7 +115,7 @@ class DamageClaimDaoImpl : DamageClaimDao {
 
         try {
             hikariCP.connection.use { connection ->
-                connection.prepareStatement("SELECT id, category, description, created_on, folder_name, " +
+                connection.prepareStatement("SELECT id, category, description, created_on, " +
                         "lat, lon FROM $TABLE_NAME WHERE owner_id = ? AND is_active = ? AND " +
                         "deleted_on IS NULL ORDER BY id ASC OFFSET ? LIMIT ?").use { ps ->
 
@@ -131,7 +131,7 @@ class DamageClaimDaoImpl : DamageClaimDao {
                                     rs.getLong("id"),
                                     ownerId,
                                     isActive,
-                                    rs.getString("folder_name"),
+                                    "",
                                     rs.getInt("category"),
                                     rs.getString("description"),
                                     rs.getDouble("lat"),
@@ -156,7 +156,7 @@ class DamageClaimDaoImpl : DamageClaimDao {
     override fun findManyByIdList(isActive: Boolean, idsToSearch: List<Long>): Either<Throwable, List<DamageClaim>> {
         val damageClaimsList = arrayListOf<DamageClaim>()
         val ids = TextUtils.createStatementForList(idsToSearch.size)
-        val sql = "SELECT id, owner_id, category, is_active, description, created_on, folder_name, lat, lon " +
+        val sql = "SELECT id, owner_id, category, is_active, description, created_on, lat, lon " +
                 "FROM $TABLE_NAME WHERE id IN ($ids) AND is_active = ? AND deleted_on IS NULL ORDER BY id ASC"
 
         try {
@@ -177,7 +177,7 @@ class DamageClaimDaoImpl : DamageClaimDao {
                                     rs.getLong("id"),
                                     rs.getLong("owner_id"),
                                     isActive,
-                                    rs.getString("folder_name"),
+                                    "",
                                     rs.getInt("category"),
                                     rs.getString("description"),
                                     rs.getDouble("lat"),
@@ -203,7 +203,7 @@ class DamageClaimDaoImpl : DamageClaimDao {
 
         try {
             hikariCP.connection.use { connection ->
-                connection.prepareStatement("SELECT id, category, description, created_on, folder_name, lat, lon " +
+                connection.prepareStatement("SELECT id, category, description, created_on, lat, lon " +
                         "FROM $TABLE_NAME WHERE owner_id = ? AND is_active = ? AND deleted_on IS NULL ORDER BY id ASC").use { ps ->
 
                     ps.setLong(1, ownerId)
@@ -216,7 +216,7 @@ class DamageClaimDaoImpl : DamageClaimDao {
                                     rs.getLong("id"),
                                     ownerId,
                                     isActive,
-                                    rs.getString("folder_name"),
+                                    "",
                                     rs.getInt("category"),
                                     rs.getString("description"),
                                     rs.getDouble("lat"),
@@ -301,7 +301,7 @@ class DamageClaimDaoImpl : DamageClaimDao {
         val malfunctionIdsCount = damageClaimIdList.size
         val idsToSearch = TextUtils.createStatementForList(malfunctionIdsCount)
 
-        val sql = "SELECT damage_claim_id, photo_name FROM $PHOTOS_TABLE_NAME WHERE damage_claim_id IN ($idsToSearch) " +
+        val sql = "SELECT damage_claim_id, photo_name, photo_folder FROM $PHOTOS_TABLE_NAME WHERE damage_claim_id IN ($idsToSearch) " +
                 "AND deleted_on IS NULL"
 
         connection.prepareStatement(sql).use { ps ->
@@ -313,13 +313,15 @@ class DamageClaimDaoImpl : DamageClaimDao {
                 while (rs.next()) {
                     val id = rs.getLong("damage_claim_id")
                     val imageName = rs.getString("photo_name")
+                    val photoFolder = rs.getString("photo_folder")
 
-                    val malfunction = damageClaims.firstOrNull { it.id == id }
-                    if (malfunction == null) {
+                    val damageClaim = damageClaims.firstOrNull { it.id == id }
+                    if (damageClaim == null) {
                         throw NullPointerException("MalfunctionIdList does not contain this id: $id")
                     }
 
-                    malfunction.imageNamesList.add(imageName)
+                    damageClaim.imageNamesList.add(imageName)
+                    damageClaim.photoFolder = photoFolder
                 }
             }
         }

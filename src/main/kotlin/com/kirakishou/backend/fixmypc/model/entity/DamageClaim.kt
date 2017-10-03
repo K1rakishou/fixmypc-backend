@@ -7,7 +7,7 @@ import java.io.Serializable
 data class DamageClaim(@SerializedName("id") var id: Long = 0L,
                        @SerializedName("owner_id") var ownerId: Long = 0L,
                        @SerializedName("is_active") var isActive: Boolean = false,
-                       @Transient var folderName: String = "",
+                       @Transient var photoFolder: String = "",
                        @SerializedName("category") var category: Int = 0,
                        @SerializedName("description") var description: String = "",
                        @SerializedName("lat") var lat: Double = 0.0,

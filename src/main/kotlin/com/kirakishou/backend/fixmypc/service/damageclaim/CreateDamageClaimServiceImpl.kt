@@ -86,7 +86,7 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
 
         val user = userFickle.get()
         val ownerId = user.id
-        val malfunctionRequestId = generator.generateMalfunctionRequestId()
+        val folderName = generator.generateMalfunctionRequestId()
 
         //return error code if user somehow sent a request without any images
         if (uploadingFiles.isEmpty()) {
@@ -139,19 +139,19 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
                 .subscribeOn(Schedulers.io())
                 //send all images
                 .flatMap { filesAndServers ->
-                    return@flatMap sendFiles(imageType, ownerId, malfunctionRequestId, filesAndServers, uploadingFiles)
+                    return@flatMap sendFiles(imageType, ownerId, folderName, filesAndServers, uploadingFiles)
                 }
                 //collect all responses
                 .toList()
                 .map { results ->
-                    return@map handleResponses(results, ownerId, request, malfunctionRequestId)
+                    return@map handleResponses(results, ownerId, request, folderName)
                 }
 
         return resultList
     }
 
     private fun handleResponses(results: List<CreateDamageClaimService.Post.Result>, ownerId: Long,
-                                request: CreateDamageClaimRequest, malfunctionRequestId: String): CreateDamageClaimService.Post.Result {
+                                request: CreateDamageClaimRequest, folderName: String): CreateDamageClaimService.Post.Result {
         //whatever the responses are - do not forget to delete temp files
         tempFileService.deleteAllTempFiles()
 
@@ -175,7 +175,7 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
                 lat = request.lat,
                 lon = request.lon,
                 isActive = true,
-                folderName = malfunctionRequestId,
+                photoFolder = folderName,
                 createdOn = ServerUtils.getTimeFast(),
                 imageNamesList = imageNamesList)
 
@@ -187,7 +187,7 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
                 val extractedImageInfo = TextUtils.parseImageName(imageName)
                 val host = fileServerManager.getHostById(extractedImageInfo.serverId)
 
-                fileServerService.deleteDamageClaimImages(ownerId, host, malfunctionRequestId, imageName)
+                fileServerService.deleteDamageClaimImages(ownerId, host, folderName, imageName)
             }
 
             return CreateDamageClaimService.Post.Result.DatabaseError()
@@ -197,7 +197,7 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
         return CreateDamageClaimService.Post.Result.Ok()
     }
 
-    private fun sendFiles(imageType: Int, ownerId: Long, malfunctionRequestId: String, filesAndServers: List<Pair<MultipartFile, FileServersManagerImpl.ServerWithId>>,
+    private fun sendFiles(imageType: Int, ownerId: Long, folderName: String, filesAndServers: List<Pair<MultipartFile, FileServersManagerImpl.ServerWithId>>,
                           uploadingFiles: Array<MultipartFile>): Flowable<out CreateDamageClaimService.Post.Result> {
 
         val responses = arrayListOf<Flowable<FileServerAnswerWrapper>>()
@@ -205,7 +205,7 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
         //send all images and retrieve responds
         for ((multipartFile, fileServerInfo) in filesAndServers) {
             val tempFile = tempFileService.fromMultipartFile(multipartFile)
-            responses += storeImage(imageType, ownerId, malfunctionRequestId, fileServerInfo, tempFile, multipartFile)
+            responses += storeImage(imageType, ownerId, folderName, fileServerInfo, tempFile, multipartFile)
         }
 
         //TODO: Would be nice to get rid of the blockingGet() but dunno how to do that atm
@@ -269,7 +269,7 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
             val tempFile = tempFileService.fromMultipartFile(multipartFile)
             log.d("Trying to resend a file. fileIndex = ${index}, serverId = ${fileServer.id}")
 
-            val response = storeImage(imageType, ownerId, malfunctionRequestId, fileServer, tempFile, multipartFile)
+            val response = storeImage(imageType, ownerId, folderName, fileServer, tempFile, multipartFile)
                     .blockingFirst()
 
             val errorCode = FileServerErrorCode.from(response.answer.errorCode)
@@ -291,11 +291,11 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
         return Flowable.just(CreateDamageClaimService.Post.Result.AllImagesUploaded(newImagesNames))
     }
 
-    private fun storeImage(imageType: Int, ownerId: Long, malfunctionRequestId: String, server: FileServersManagerImpl.ServerWithId,
+    private fun storeImage(imageType: Int, ownerId: Long, folderName: String, server: FileServersManagerImpl.ServerWithId,
                            tempFile: String, uploadingFile: MultipartFile): Flowable<FileServerAnswerWrapper> {
 
         val responseFlowable = fileServerService.saveDamageClaimImage(server.id, server.fileServerInfo.host, tempFile,
-                uploadingFile.originalFilename, imageType, ownerId, malfunctionRequestId)
+                uploadingFile.originalFilename, imageType, ownerId, folderName)
                 //max request waiting time
                 .timeout(Constant.FILE_SERVER_REQUEST_TIMEOUT, TimeUnit.SECONDS)
                 .onErrorResumeNext({ error: Throwable ->

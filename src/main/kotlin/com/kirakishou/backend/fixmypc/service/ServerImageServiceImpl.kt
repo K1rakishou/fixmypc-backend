@@ -40,7 +40,7 @@ class ServerImageServiceImpl : ServerImageService {
 
         val host = fileServerManager.getHostById(imageNameInfo.serverId)
 
-        return fileServerService.serveDamageClaimImage(photoInfo.ownerId, host, photoInfo.folderName, imageName, photoInfo.imageType, size)
+        return fileServerService.serveDamageClaimImage(photoInfo.ownerId, host, photoInfo.photoFolder, imageName, photoInfo.imageType, size)
                 .map { ServerImageService.Get.Result.Ok(it) as ServerImageService.Get.Result }
                 .onErrorResumeNext { error ->
                     if (error is TimeoutException || error.cause is ConnectException) {
