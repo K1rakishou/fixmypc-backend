@@ -9,9 +9,11 @@ import org.apache.ignite.IgniteCache
 import org.apache.ignite.cache.CacheMode
 import org.apache.ignite.configuration.CacheConfiguration
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
 import javax.annotation.PostConstruct
 import javax.cache.expiry.Duration
 
+@Component
 class ProfilePhotoCacheImpl : ProfilePhotoCache {
 
     @Autowired

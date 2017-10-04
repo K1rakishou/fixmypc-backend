@@ -9,6 +9,7 @@ import java.security.SecureRandom
 
 @Component
 class GeneratorImpl : Generator {
+
     private val numericAlphabeticSpecialSymbols = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_!@#$%^&*()"
     private val numericAlphabetic = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
     private val random = SecureRandom()
@@ -33,6 +34,10 @@ class GeneratorImpl : Generator {
 
     override fun generateImageName(): String {
         return generateRandomString(64, numericAlphabetic)
+    }
+
+    override fun generateTempFileName(): String {
+        return generateRandomString(96, numericAlphabetic)
     }
 
     override fun generateMalfunctionRequestId(): String {

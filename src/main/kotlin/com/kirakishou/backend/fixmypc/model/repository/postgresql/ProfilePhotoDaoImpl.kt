@@ -5,8 +5,10 @@ import com.kirakishou.backend.fixmypc.core.Fickle
 import com.kirakishou.backend.fixmypc.extension.prepareStatementScrollable
 import com.kirakishou.backend.fixmypc.model.entity.ProfilePhoto
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
 import javax.sql.DataSource
 
+@Component
 class ProfilePhotoDaoImpl : ProfilePhotoDao {
 
     @Autowired

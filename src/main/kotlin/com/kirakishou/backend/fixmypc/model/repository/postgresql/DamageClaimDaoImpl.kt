@@ -30,7 +30,7 @@ class DamageClaimDaoImpl : DamageClaimDao {
             hikariCP.connection.transactionalUse { connection ->
                 connection.prepareStatement("INSERT INTO $TABLE_NAME (owner_id, category, description, " +
                         "lat, lon, is_active, created_on, deleted_on) " +
-                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, NULL)", Statement.RETURN_GENERATED_KEYS).use { ps ->
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, NULL)", Statement.RETURN_GENERATED_KEYS).use { ps ->
 
                     ps.setLong(1, damageClaim.ownerId)
                     ps.setInt(2, damageClaim.category)

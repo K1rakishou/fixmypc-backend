@@ -7,7 +7,9 @@ import com.kirakishou.backend.fixmypc.model.entity.ProfilePhoto
 import com.kirakishou.backend.fixmypc.model.repository.ignite.ProfilePhotoCache
 import com.kirakishou.backend.fixmypc.model.repository.postgresql.ProfilePhotoDao
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
 
+@Component
 class ProfilePhotoRepositoryImpl : ProfilePhotoRepository {
 
     @Autowired

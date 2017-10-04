@@ -3,6 +3,7 @@ package com.kirakishou.backend.fixmypc.config
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.log.FileLogImpl
 import com.zaxxer.hikari.HikariDataSource
+import org.apache.hadoop.fs.FileSystem
 import org.apache.ignite.Ignite
 import org.apache.ignite.Ignition
 import org.apache.ignite.configuration.IgniteConfiguration
@@ -57,6 +58,13 @@ class AppConfig {
         igniteConfiguration.metricsLogFrequency = 0
 
         return Ignition.start(igniteConfiguration)
+    }
+
+    @Bean
+    fun provideFileSystem(): FileSystem {
+        val conf = org.apache.hadoop.conf.Configuration()
+        //conf.set("fs.defaultFS", host)
+        return FileSystem.newInstance(conf)
     }
 
     @Bean
