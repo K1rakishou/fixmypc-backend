@@ -95,7 +95,7 @@ class DamageClaimController {
                                     HttpStatus.INTERNAL_SERVER_ERROR)
                         }
 
-                        is CreateDamageClaimService.Post.Result.DatabaseError -> {
+                        is CreateDamageClaimService.Post.Result.RepositoryError -> {
                             return@map ResponseEntity(CreateDamageClaimResponse(
                                     ServerErrorCode.SEC_DATABASE_ERROR.ordinal),
                                     HttpStatus.INTERNAL_SERVER_ERROR)

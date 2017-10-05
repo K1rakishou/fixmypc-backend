@@ -17,7 +17,7 @@ interface CreateDamageClaimService {
             class RequestSizeExceeded : Result
             class AllFileServersAreNotWorking : Result
             class AllImagesUploaded(val names: List<String>) : Result
-            class DatabaseError : Result
+            class RepositoryError : Result
             class UnknownError : Result
             class CouldNotUploadImages : Result
         }
