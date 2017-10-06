@@ -50,7 +50,7 @@ class ImageServiceImpl : ImageService {
                     }
 
                     val imageNameWithoutExtension = imageName.substring(0, imageName.length - extension.length - 1)
-                    val fullPathToImage = Path("${fs.homeDirectory}/${imageNameWithoutExtension}_$size.$extension")
+                    val fullPathToImage = Path("${fs.homeDirectory}/img/$userId/${imageNameWithoutExtension}_$size.$extension")
 
                     if (!fs.exists(fullPathToImage)) {
                         return@map ImageService.Get.Result.NotFound()
