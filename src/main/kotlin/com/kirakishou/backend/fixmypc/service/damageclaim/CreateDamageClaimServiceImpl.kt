@@ -4,25 +4,21 @@ import com.kirakishou.backend.fixmypc.core.AccountType
 import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.entity.DamageClaim
+import com.kirakishou.backend.fixmypc.model.exception.*
 import com.kirakishou.backend.fixmypc.model.net.request.CreateDamageClaimRequest
 import com.kirakishou.backend.fixmypc.model.repository.DamageClaimRepository
 import com.kirakishou.backend.fixmypc.model.repository.ignite.UserCache
-import com.kirakishou.backend.fixmypc.service.Generator
 import com.kirakishou.backend.fixmypc.service.ImageService
-import com.kirakishou.backend.fixmypc.service.TempFilesService
 import com.kirakishou.backend.fixmypc.util.ServerUtils
 import com.kirakishou.backend.fixmypc.util.TextUtils
 import io.reactivex.Flowable
 import io.reactivex.Single
 import io.reactivex.rxkotlin.Singles
-import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.FileSystem
-import org.apache.hadoop.fs.LocalFileSystem
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import org.springframework.web.multipart.MultipartFile
-import javax.annotation.PostConstruct
 
 @Component
 class CreateDamageClaimServiceImpl : CreateDamageClaimService {
@@ -33,26 +29,11 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
     @Value("\${spring.http.multipart.max-request-size}")
     private var maxRequestSize: Long = 0
 
-    @Value("\${fixmypc.backend.images.temp-dir}")
-    private lateinit var tempImagesDir: String
-
-    private val tempFilesDir = "D:/img/tmp"
-    private val imagesDir = "D:/img/images"
-
-    @Autowired
-    lateinit var generator: Generator
-
     @Autowired
     private lateinit var log: FileLog
 
     @Autowired
     private lateinit var fs: FileSystem
-
-    @Autowired
-    private lateinit var localFs: FileSystem
-
-    @Autowired
-    private lateinit var tempFileService: TempFilesService
 
     @Autowired
     private lateinit var damageClaimRepository: DamageClaimRepository
@@ -65,13 +46,6 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
 
     private val allowedExtensions = listOf("png", "jpg", "jpeg", "PNG", "JPG", "JPEG")
 
-    @PostConstruct
-    fun init() {
-        localFs = LocalFileSystem.newInstance(Configuration())
-        localFs.setVerifyChecksum(false)
-        localFs.setWriteChecksum(false)
-    }
-
     override fun createDamageClaim(uploadingFiles: Array<MultipartFile>, imageType: Int,
                                    request: CreateDamageClaimRequest, sessionId: String): Single<CreateDamageClaimService.Post.Result> {
 
@@ -81,7 +55,6 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
                     val userFickle = userCache.findOne(params.sessionId)
                     if (!userFickle.isPresent()) {
                         log.d("sessionId ${params.sessionId} was not found in the cache")
-                        //return@map CreateDamageClaimService.Post.Result.SessionIdExpired()
                         throw SessionIdExpiredException()
                     }
 
@@ -96,14 +69,12 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
                     //return error code if user somehow sent a request without any images
                     if (params.uploadingFiles.isEmpty()) {
                         log.e("No files to upload")
-                        //return@map CreateDamageClaimService.Post.Result.NoFilesToUpload()
                         throw NoFilesToUploadException()
                     }
 
                     //return error code if user somehow sent more than "maxImagesPerRequest" images
                     if (params.uploadingFiles.size > Constant.DAMAGE_CLAIM_MAX_IMAGES_PER_REQUEST) {
                         log.e("Too many files to upload (uploadingFiles.size > maxImagesPerRequest)")
-                        //return@map CreateDamageClaimService.Post.Result.ImagesCountExceeded()
                         throw ImagesCountExceededException()
                     }
 
@@ -157,7 +128,21 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
                         throw RepositoryErrorException()
                     }
 
-                    return@map CreateDamageClaimService.Post.Result.Ok()
+                    return@map CreateDamageClaimService.Post.Result.Ok() as CreateDamageClaimService.Post.Result
+                }
+                .onErrorReturn { exception ->
+                    return@onErrorReturn when (exception) {
+                        is SessionIdExpiredException -> CreateDamageClaimService.Post.Result.SessionIdExpired()
+                        is NoFilesToUploadException -> CreateDamageClaimService.Post.Result.NoFilesToUpload()
+                        is ImagesCountExceededException -> CreateDamageClaimService.Post.Result.ImagesCountExceeded()
+                        is BadAccountTypeException -> CreateDamageClaimService.Post.Result.BadAccountType()
+                        is BadFileOriginalNameException -> CreateDamageClaimService.Post.Result.BadFileOriginalName()
+                        is FileSizeExceededException -> CreateDamageClaimService.Post.Result.FileSizeExceeded()
+                        is RequestSizeExceededException -> CreateDamageClaimService.Post.Result.RequestSizeExceeded()
+                        is CouldNotUploadImagesException -> CreateDamageClaimService.Post.Result.CouldNotUploadImages()
+                        is RepositoryErrorException -> CreateDamageClaimService.Post.Result.RepositoryError()
+                        else -> CreateDamageClaimService.Post.Result.UnknownError()
+                    }
                 }
     }
 
@@ -166,7 +151,6 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
             val extension = TextUtils.extractExtension(name)
 
             if (extension !in allowedExtensions) {
-                //return CreateDamageClaimService.Post.Result.BadFileOriginalName()
                 throw BadFileOriginalNameException()
             }
         }
@@ -177,7 +161,6 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
 
         for (uploadingFile in uploadingFiles) {
             if (uploadingFile.size > maxFileSize) {
-                //return CreateDamageClaimService.Post.Result.FileSizeExceeded()
                 throw FileSizeExceededException()
             }
 
@@ -185,7 +168,6 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
         }
 
         if (totalSize > maxRequestSize) {
-            //return CreateDamageClaimService.Post.Result.RequestSizeExceeded()
             throw RequestSizeExceededException()
         }
     }
@@ -193,16 +175,6 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
     private fun checkRequestCorrectness(request: CreateDamageClaimRequest) {
         //do nothing for now
     }
-
-    class SessionIdExpiredException : Exception()
-    class NoFilesToUploadException : Exception()
-    class ImagesCountExceededException : Exception()
-    class BadAccountTypeException : Exception()
-    class BadFileOriginalNameException: Exception()
-    class FileSizeExceededException : Exception()
-    class RequestSizeExceededException : Exception()
-    class CouldNotUploadImagesException : Exception()
-    class RepositoryErrorException : Exception()
 
     class Params(val uploadingFiles: Array<MultipartFile>,
                  val imageType: Int,

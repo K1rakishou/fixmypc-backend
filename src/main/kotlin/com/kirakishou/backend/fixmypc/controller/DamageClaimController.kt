@@ -53,6 +53,8 @@ class DamageClaimController {
                                     HttpStatus.OK)
                         }
 
+                        //TODO: BadAccountType
+
                         is CreateDamageClaimService.Post.Result.SessionIdExpired -> {
                             return@map ResponseEntity(CreateDamageClaimResponse(
                                     ServerErrorCode.SEC_SESSION_ID_EXPIRED.value),

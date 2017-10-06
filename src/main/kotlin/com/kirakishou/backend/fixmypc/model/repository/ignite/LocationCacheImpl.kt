@@ -54,36 +54,32 @@ class LocationCacheImpl : LocationCache {
     }
 
     private fun warmUpCache() {
-        var totalLoaded = 0L
         log.d("=== Loading damage claims' ids and locations in the cache ===")
+        var totalLoaded = 0L
 
         val time = measureTimeMillis {
             var offset = 0L
             val count = 1000L
+            val mapOfItems = mutableMapOf<Long, Point>()
 
-            try {
-                val mapOfItems = mutableMapOf<Long, Point>()
-
-                while (true) {
-                    val itemsFromDb = damageClaimDao.findAllIdsWithLocations(offset, count)
-                    totalLoaded += itemsFromDb.size
-
-                    if (itemsFromDb.isEmpty()) {
-                        break
-                    }
-
-                    for ((id, location) in itemsFromDb) {
-                        mapOfItems.put(id, Point(location.lon, location.lat))
-                    }
-
-                    offset += count
+            while (true) {
+                val itemsFromDb = damageClaimDao.findAllIdsWithLocations(offset, count)
+                if (itemsFromDb.isEmpty()) {
+                    break
                 }
 
-                template.opsForGeo().geoAdd(Constant.RedisNames.LOCATION_CACHE_NAME, mapOfItems)
-            } catch (e: Throwable) {
-                log.e(e)
+                totalLoaded += itemsFromDb.size
+
+                for ((id, location) in itemsFromDb) {
+                    mapOfItems.put(id, Point(location.lon, location.lat))
+                }
+
+                offset += count
             }
 
+            if (mapOfItems.isNotEmpty()) {
+                template.opsForGeo().geoAdd(Constant.RedisNames.LOCATION_CACHE_NAME, mapOfItems)
+            }
         }
 
         log.d("=== Done in $time ms, totalLoaded = $totalLoaded ===")

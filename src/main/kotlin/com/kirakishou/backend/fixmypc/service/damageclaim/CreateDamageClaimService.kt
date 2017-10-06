@@ -13,6 +13,7 @@ interface CreateDamageClaimService {
             class SessionIdExpired : Result
             class NoFilesToUpload : Result
             class ImagesCountExceeded : Result
+            class BadAccountType : Result
             class FileSizeExceeded : Result
             class RequestSizeExceeded : Result
             class AllFileServersAreNotWorking : Result
