@@ -23,7 +23,7 @@ class PhotoToUserAffinityDaoImpl : PhotoToUserAffinityDao {
 
         try {
             hikariCP.connection.use { connection ->
-                connection.prepareStatementScrollable("SELECT damage_claim_id, photo_type, photo_folder FROM $PHOTOS_TABLE_NAME " +
+                connection.prepareStatementScrollable("SELECT damage_claim_id, photo_type FROM $PHOTOS_TABLE_NAME " +
                         "WHERE photo_name = ? AND deleted_on IS NULL").use { ps ->
                     ps.setString(1, imageName)
 
@@ -31,7 +31,6 @@ class PhotoToUserAffinityDaoImpl : PhotoToUserAffinityDao {
                         if (rs.first()) {
                             damageClaimId = rs.getLong("damage_claim_id")
                             photoInfo.imageType = rs.getInt("photo_type")
-                            photoInfo.photoFolder = rs.getString("photo_folder")
                         }
                     }
                 }
@@ -54,7 +53,7 @@ class PhotoToUserAffinityDaoImpl : PhotoToUserAffinityDao {
             return Either.Error(e)
         }
 
-        if (photoInfo.ownerId == -1L || photoInfo.photoFolder.isEmpty() || photoInfo.imageType == -1) {
+        if (photoInfo.ownerId == -1L || photoInfo.imageType == -1) {
             return Either.Value(Fickle.empty())
         }
 

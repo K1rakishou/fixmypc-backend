@@ -50,7 +50,7 @@ class DamageClaimStoreImplTest {
 
     @Test
     fun testSaveOne() {
-        val malfunction = DamageClaim(0, 0, true, "436erydfyu", 0, "test description", 55.6, 44.2, ServerUtils.getTimeFast(), arrayListOf())
+        val malfunction = DamageClaim(0, 0, true, 0, "test description", 55.6, 44.2, ServerUtils.getTimeFast(), arrayListOf())
 
         cache.saveOne(malfunction)
         val malfunctionFromStore = cache.findOne(malfunction.id)
@@ -61,8 +61,8 @@ class DamageClaimStoreImplTest {
 
     @Test
     fun testSaveMany() {
-        val malfunction = DamageClaim(0, 0, true, "436erydfyu", 0, "test description", 55.6, 44.2, ServerUtils.getTimeFast(), arrayListOf())
-        val malfunction2 = DamageClaim(1, 0, true, "436erydfawryu", 0, "test description2", 55.6, 44.2, ServerUtils.getTimeFast(), arrayListOf())
+        val malfunction = DamageClaim(0, 0, true, 0, "test description", 55.6, 44.2, ServerUtils.getTimeFast(), arrayListOf())
+        val malfunction2 = DamageClaim(1, 0, true, 0, "test description2", 55.6, 44.2, ServerUtils.getTimeFast(), arrayListOf())
 
         cache.saveMany(listOf(malfunction, malfunction2))
         val malfunctionsFromStore = cache.findMany(true, listOf(0, 1))
@@ -108,7 +108,7 @@ class DamageClaimStoreImplTest {
 
     @Test
     fun testDeleteOne() {
-        val malfunction = DamageClaim(0, 0, true, "436erydfyu", 0, "test description", 55.6, 44.2, ServerUtils.getTimeFast(), arrayListOf())
+        val malfunction = DamageClaim(0, 0, true, 0, "test description", 55.6, 44.2, ServerUtils.getTimeFast(), arrayListOf())
 
         cache.saveOne(malfunction)
         val malfunctionFromStore = cache.findOne(malfunction.id)
@@ -124,8 +124,8 @@ class DamageClaimStoreImplTest {
 
     @Test
     fun testDeleteMany() {
-        val malfunction = DamageClaim(0, 0, true, "436erydfyu", 0, "test description", 55.6, 44.2, ServerUtils.getTimeFast(), arrayListOf())
-        val malfunction2 = DamageClaim(1, 0, true, "436erydfawryu", 0, "test description2", 55.6, 44.2, ServerUtils.getTimeFast(), arrayListOf())
+        val malfunction = DamageClaim(0, 0, true, 0, "test description", 55.6, 44.2, ServerUtils.getTimeFast(), arrayListOf())
+        val malfunction2 = DamageClaim(1, 0, true, 0, "test description2", 55.6, 44.2, ServerUtils.getTimeFast(), arrayListOf())
 
         cache.saveMany(listOf(malfunction, malfunction2))
         val malfunctionsFromStore = cache.findMany(true, listOf(0, 1))

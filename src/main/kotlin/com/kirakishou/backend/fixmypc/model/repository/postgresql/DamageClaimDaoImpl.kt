@@ -49,14 +49,13 @@ class DamageClaimDaoImpl : DamageClaimDao {
                 }
 
                 connection.prepareStatement("INSERT INTO $PHOTOS_TABLE_NAME (damage_claim_id, " +
-                        "photo_name, photo_type, photo_folder, deleted_on) " +
-                        "VALUES (?, ?, ?, ?, NULL)").use { ps ->
+                        "photo_name, photo_type, deleted_on) " +
+                        "VALUES (?, ?, ?, NULL)").use { ps ->
 
                     for (imageName in damageClaim.imageNamesList) {
                         ps.setLong(1, damageClaim.id)
                         ps.setString(2, imageName)
                         ps.setInt(3, Constant.ImageTypes.IMAGE_TYPE_MALFUNCTION_PHOTO)
-                        ps.setString(4, damageClaim.photoFolder)
 
                         ps.addBatch()
                     }
@@ -88,7 +87,6 @@ class DamageClaimDaoImpl : DamageClaimDao {
                                     rs.getLong("id"),
                                     rs.getLong("owner_id"),
                                     true,
-                                    "",
                                     rs.getInt("category"),
                                     rs.getString("description"),
                                     rs.getDouble("lat"),
@@ -131,7 +129,6 @@ class DamageClaimDaoImpl : DamageClaimDao {
                                     rs.getLong("id"),
                                     ownerId,
                                     isActive,
-                                    "",
                                     rs.getInt("category"),
                                     rs.getString("description"),
                                     rs.getDouble("lat"),
@@ -177,7 +174,6 @@ class DamageClaimDaoImpl : DamageClaimDao {
                                     rs.getLong("id"),
                                     rs.getLong("owner_id"),
                                     isActive,
-                                    "",
                                     rs.getInt("category"),
                                     rs.getString("description"),
                                     rs.getDouble("lat"),
@@ -216,7 +212,6 @@ class DamageClaimDaoImpl : DamageClaimDao {
                                     rs.getLong("id"),
                                     ownerId,
                                     isActive,
-                                    "",
                                     rs.getInt("category"),
                                     rs.getString("description"),
                                     rs.getDouble("lat"),
@@ -301,7 +296,7 @@ class DamageClaimDaoImpl : DamageClaimDao {
         val malfunctionIdsCount = damageClaimIdList.size
         val idsToSearch = TextUtils.createStatementForList(malfunctionIdsCount)
 
-        val sql = "SELECT damage_claim_id, photo_name, photo_folder FROM $PHOTOS_TABLE_NAME WHERE damage_claim_id IN ($idsToSearch) " +
+        val sql = "SELECT damage_claim_id, photo_name FROM $PHOTOS_TABLE_NAME WHERE damage_claim_id IN ($idsToSearch) " +
                 "AND deleted_on IS NULL"
 
         connection.prepareStatement(sql).use { ps ->
@@ -313,7 +308,6 @@ class DamageClaimDaoImpl : DamageClaimDao {
                 while (rs.next()) {
                     val id = rs.getLong("damage_claim_id")
                     val imageName = rs.getString("photo_name")
-                    val photoFolder = rs.getString("photo_folder")
 
                     val damageClaim = damageClaims.firstOrNull { it.id == id }
                     if (damageClaim == null) {
@@ -321,7 +315,6 @@ class DamageClaimDaoImpl : DamageClaimDao {
                     }
 
                     damageClaim.imageNamesList.add(imageName)
-                    damageClaim.photoFolder = photoFolder
                 }
             }
         }

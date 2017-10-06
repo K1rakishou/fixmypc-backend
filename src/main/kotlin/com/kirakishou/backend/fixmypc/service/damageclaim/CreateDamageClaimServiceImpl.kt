@@ -118,7 +118,6 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
                             lat = params.request.lat,
                             lon = params.request.lon,
                             isActive = true,
-                            photoFolder = "",
                             createdOn = ServerUtils.getTimeFast(),
                             imageNamesList = mutableListOf())
 
@@ -126,7 +125,7 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
                 }
                 .flatMap { (damageClaim, _) ->
                     val serverFilePath = "${fs.homeDirectory}/img/${damageClaim.ownerId}/"
-                    val responseList = mutableListOf<Flowable<MutableList<String>>>()
+                    val responseList = mutableListOf<Flowable<ImageService.Post.Result>>()
 
                     for (uploadingFile in uploadingFiles) {
                         responseList += imageService.uploadImage(serverFilePath, uploadingFile)
@@ -136,9 +135,23 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
                             .toList(), Single.just(damageClaim))
                 }
                 .map { (responseList, damageClaim) ->
-                    if (responseList.size != uploadingFiles.size) {
+                    var isAllFilesUploaded = true
+                    val imagesNames = mutableListOf<String>()
+
+                    for (response in responseList) {
+                        if (response is ImageService.Post.Result.CouldNotUploadImage) {
+                            isAllFilesUploaded = false
+                            break
+                        } else {
+                            imagesNames += (response as ImageService.Post.Result.Ok).imageName
+                        }
+                    }
+
+                    if (!isAllFilesUploaded) {
                         throw CouldNotUploadImagesException()
                     }
+
+                    damageClaim.imageNamesList = imagesNames
 
                     if (!damageClaimRepository.saveOne(damageClaim)) {
                         throw RepositoryErrorException()

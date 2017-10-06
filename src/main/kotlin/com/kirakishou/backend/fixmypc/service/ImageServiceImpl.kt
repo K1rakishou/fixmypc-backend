@@ -5,6 +5,7 @@ import com.kirakishou.backend.fixmypc.extension.deleteOnExitScope
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.util.TextUtils
 import io.reactivex.Flowable
+import io.reactivex.rxkotlin.Flowables
 import net.coobird.thumbnailator.Thumbnails
 import org.apache.commons.io.IOUtils
 import org.apache.hadoop.fs.FileSystem
@@ -31,32 +32,35 @@ class ImageServiceImpl : ImageService {
     @Autowired
     private lateinit var fs: FileSystem
 
-    override fun uploadImage(serverHomeDirectory: String, multipartFile: MultipartFile): Flowable<MutableList<String>> {
+    override fun uploadImage(serverHomeDirectory: String, multipartFile: MultipartFile): Flowable<ImageService.Post.Result> {
         return resize(serverHomeDirectory, multipartFile)
                 .flatMap {
                     val largeFileUploadObservable = upload(it.serverHomeDirectory, it.fileExtension, it.resizedImageLarge, it.resizedImageLargeName)
                     val mediumFileUploadObservable = upload(it.serverHomeDirectory, it.fileExtension, it.resizedImageMedium, it.resizedImageMediumName)
                     val smallFileUploadObservable = upload(it.serverHomeDirectory, it.fileExtension, it.resizedImageSmall, it.resizedImageSmallName)
+                    val mergedStream = Flowable.merge(largeFileUploadObservable, mediumFileUploadObservable, smallFileUploadObservable)
+                            .toList()
+                            .toFlowable()
 
-                    return@flatMap Flowable.merge(largeFileUploadObservable, mediumFileUploadObservable, smallFileUploadObservable)
+                    return@flatMap Flowables.zip(mergedStream, Flowable.just(it.originalImageName))
                 }
-                .toList()
-                .map { uploadResponseList ->
-                    val successfullyUploaded = mutableListOf<String>()
+                .map { (uploadedImagesList, originalImageName) ->
+                    var isSuccess = true
 
-                    for (response in uploadResponseList) {
+                    for (response in uploadedImagesList) {
                         if (response.success) {
-                            successfullyUploaded += response.uploadedImageName
                             response.tempFile.delete()
                         } else {
-                            val fullPath = "$serverHomeDirectory${response.uploadedImageName}"
-                            fs.delete(Path(fullPath), false)
+                            isSuccess = false
                         }
                     }
 
-                    return@map successfullyUploaded
+                    if (!isSuccess) {
+                        return@map ImageService.Post.Result.CouldNotUploadImage()
+                    }
+
+                    return@map ImageService.Post.Result.Ok(originalImageName)
                 }
-                .toFlowable()
     }
 
     private fun resize(serverHomeDirectory: String, multipartFile: MultipartFile): Flowable<ResizedImageInfo> {
@@ -64,16 +68,18 @@ class ImageServiceImpl : ImageService {
                 .map { (serverHomeDir, originalFile) ->
                     val tempFile = File.createTempFile("o_temp", ".tmp", tempDir)
                     val extension = TextUtils.extractExtension(multipartFile.originalFilename)
+                    val imageName = generator.generateTempFileName()
 
                     val resizedImage = ResizedImageInfo(
                             serverHomeDir,
                             extension,
+                            "$imageName.$extension",
                             File.createTempFile("l_temp", ".tmp", tempDir),
-                            "${generator.generateTempFileName()}_l",
+                            "${imageName}_l",
                             File.createTempFile("m_temp", ".tmp", tempDir),
-                            "${generator.generateTempFileName()}_m",
+                            "${imageName}_m",
                             File.createTempFile("s_temp", ".tmp", tempDir),
-                            "${generator.generateTempFileName()}_s")
+                            "${imageName}_s")
 
                     tempFile.deleteOnExitScope { tempFileContainer ->
                         //copy original image
@@ -148,6 +154,7 @@ class ImageServiceImpl : ImageService {
 
     data class ResizedImageInfo(val serverHomeDirectory: String,
                                 val fileExtension: String,
+                                val originalImageName: String,
                                 val resizedImageLarge: File,
                                 val resizedImageLargeName: String,
                                 val resizedImageMedium: File,
