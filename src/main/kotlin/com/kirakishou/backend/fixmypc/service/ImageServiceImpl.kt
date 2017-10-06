@@ -2,9 +2,11 @@ package com.kirakishou.backend.fixmypc.service
 
 import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.extension.deleteOnExitScope
+import com.kirakishou.backend.fixmypc.extension.getFileExtension
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.util.TextUtils
 import io.reactivex.Flowable
+import io.reactivex.Single
 import io.reactivex.rxkotlin.Flowables
 import net.coobird.thumbnailator.Thumbnails
 import org.apache.commons.io.IOUtils
@@ -31,6 +33,32 @@ class ImageServiceImpl : ImageService {
 
     @Autowired
     private lateinit var fs: FileSystem
+
+    override fun serveImage(userId: Long, imageNameParam: String, imageSizeParam: String): Single<ImageService.Get.Result> {
+        return Single.just(ImageToServeParams(imageNameParam, imageSizeParam))
+                .map { (imageName, imageSize) ->
+                    val size = when (imageSize) {
+                        "large" -> "l"
+                        "medium" -> "m"
+                        "small" -> "s"
+                        else -> "m"
+                    }
+
+                    val extension = imageName.getFileExtension()
+                    if (extension.isEmpty()) {
+                        return@map ImageService.Get.Result.BadFileName()
+                    }
+
+                    val imageNameWithoutExtension = imageName.substring(0, imageName.length - extension.length - 1)
+                    val fullPathToImage = Path("${fs.homeDirectory}/${imageNameWithoutExtension}_$size.$extension")
+
+                    if (!fs.exists(fullPathToImage)) {
+                        return@map ImageService.Get.Result.NotFound()
+                    }
+
+                    return@map ImageService.Get.Result.Ok(fs.open(fullPathToImage).wrappedStream)
+                }
+    }
 
     override fun uploadImage(serverHomeDirectory: String, multipartFile: MultipartFile): Flowable<ImageService.Post.Result> {
         return resize(serverHomeDirectory, multipartFile)
@@ -64,7 +92,7 @@ class ImageServiceImpl : ImageService {
     }
 
     private fun resize(serverHomeDirectory: String, multipartFile: MultipartFile): Flowable<ResizedImageInfo> {
-        return Flowable.just(ImageParams(serverHomeDirectory, multipartFile))
+        return Flowable.just(ImageToUploadParams(serverHomeDirectory, multipartFile))
                 .map { (serverHomeDir, originalFile) ->
                     val tempFile = File.createTempFile("o_temp", ".tmp", tempDir)
                     val extension = TextUtils.extractExtension(multipartFile.originalFilename)
@@ -144,15 +172,18 @@ class ImageServiceImpl : ImageService {
         }
     }
 
-    data class ImageParams(val serverFilePath: String,
-                           val multipartFile: MultipartFile)
+    private data class ImageToServeParams(val imageName: String,
+                                  val imageSize: String)
 
-    data class FileToUpload(val serverHomeDirectory: String,
+    private data class ImageToUploadParams(val serverFilePath: String,
+                                   val multipartFile: MultipartFile)
+
+    private data class FileToUpload(val serverHomeDirectory: String,
                             val fileExtension: String,
                             val imageFile: File,
                             val imageName: String)
 
-    data class ResizedImageInfo(val serverHomeDirectory: String,
+    private data class ResizedImageInfo(val serverHomeDirectory: String,
                                 val fileExtension: String,
                                 val originalImageName: String,
                                 val resizedImageLarge: File,
@@ -162,7 +193,7 @@ class ImageServiceImpl : ImageService {
                                 val resizedImageSmall: File,
                                 val resizedImageSmallName: String)
 
-    data class UploadResponse(val success: Boolean,
+    private data class UploadResponse(val success: Boolean,
                               val uploadedImageName: String,
                               val tempFile: File)
 }
