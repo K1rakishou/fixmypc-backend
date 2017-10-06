@@ -42,7 +42,7 @@ class SpecialistController {
                         is GetRespondedSpecialistsService.Get.Result.BadAccountType -> {
                             return@map ResponseEntity(SpecialistsListResponse(emptyList(),
                                     ServerErrorCode.SEC_BAD_ACCOUNT_TYPE.value),
-                                    HttpStatus.UNPROCESSABLE_ENTITY)
+                                    HttpStatus.FORBIDDEN)
                         }
 
                         is GetRespondedSpecialistsService.Get.Result.DamageClaimDoesNotExist -> {
@@ -92,7 +92,7 @@ class SpecialistController {
 
                         is ClientAssignSpecialistService.Get.Result.BadAccountType -> {
                             return@map ResponseEntity(StatusResponse(ServerErrorCode.SEC_BAD_ACCOUNT_TYPE.value),
-                                    HttpStatus.UNPROCESSABLE_ENTITY)
+                                    HttpStatus.FORBIDDEN)
                         }
 
                         is ClientAssignSpecialistService.Get.Result.DamageClaimDoesNotBelongToUser -> {

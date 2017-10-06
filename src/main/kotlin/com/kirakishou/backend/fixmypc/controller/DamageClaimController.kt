@@ -53,7 +53,11 @@ class DamageClaimController {
                                     HttpStatus.OK)
                         }
 
-                        //TODO: BadAccountType
+                        is CreateDamageClaimService.Post.Result.BadAccountType -> {
+                            return@map ResponseEntity(CreateDamageClaimResponse(
+                                    ServerErrorCode.SEC_BAD_ACCOUNT_TYPE.value),
+                                    HttpStatus.FORBIDDEN)
+                        }
 
                         is CreateDamageClaimService.Post.Result.SessionIdExpired -> {
                             return@map ResponseEntity(CreateDamageClaimResponse(
@@ -171,7 +175,7 @@ class DamageClaimController {
 
                         is DamageClaimResponseService.Get.Result.BadAccountType -> {
                             return@map ResponseEntity(HasAlreadyRespondedResponse(null, ServerErrorCode.SEC_BAD_ACCOUNT_TYPE.value),
-                                    HttpStatus.UNPROCESSABLE_ENTITY)
+                                    HttpStatus.FORBIDDEN)
                         }
 
                         else -> throw IllegalArgumentException("Unknown result")
@@ -219,7 +223,7 @@ class DamageClaimController {
 
                         is DamageClaimResponseService.Post.Result.BadAccountType -> {
                             return@map ResponseEntity(StatusResponse(ServerErrorCode.SEC_BAD_ACCOUNT_TYPE.value),
-                                    HttpStatus.UNPROCESSABLE_ENTITY)
+                                    HttpStatus.FORBIDDEN)
                         }
 
                         else -> throw IllegalArgumentException("Unknown result")
@@ -249,7 +253,7 @@ class DamageClaimController {
 
                         is GetUserDamageClaimListService.Get.Result.BadAccountType -> {
                             return@map ResponseEntity(DamageClaimsResponse(emptyList(),
-                                    ServerErrorCode.SEC_BAD_ACCOUNT_TYPE.value), HttpStatus.UNPROCESSABLE_ENTITY)
+                                    ServerErrorCode.SEC_BAD_ACCOUNT_TYPE.value), HttpStatus.FORBIDDEN)
                         }
 
                         is GetUserDamageClaimListService.Get.Result.SessionIdExpired -> {
