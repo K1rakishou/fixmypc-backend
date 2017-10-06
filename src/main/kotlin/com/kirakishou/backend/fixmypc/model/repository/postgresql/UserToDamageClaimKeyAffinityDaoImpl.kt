@@ -60,7 +60,7 @@ class UserToDamageClaimKeyAffinityDaoImpl : UserToDamageClaimKeyAffinityDao {
 
         try {
             hikariCP.connection.prepareStatementScrollable("SELECT damage_claim_id FROM $TABLE_NAME WHERE " +
-                    "owner_id = ? AND deleted_on IS NULL ORDER BY id ASC").use { ps ->
+                    "owner_id = ? AND deleted_on IS NULL").use { ps ->
                 ps.setLong(1, ownerId)
 
                 ps.executeQuery().use { rs ->
