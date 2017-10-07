@@ -154,10 +154,6 @@ class ImageServiceImpl : ImageService {
     private fun resizeAndSaveImageOnDisk(originalImageFile: File, newMaxSize: Dimension, resizedImageFile: File, extension: String) {
         val imageToResize = ImageIO.read(originalImageFile)
 
-        if (imageToResize == null) {
-            println("imageToResize is null!!!")
-        }
-
         //original image size should be bigger than the new size, otherwise we don't need to resize image, just copy it
         if (imageToResize.width > newMaxSize.width || imageToResize.height > newMaxSize.height) {
             val resizedImage = Thumbnails.of(imageToResize)

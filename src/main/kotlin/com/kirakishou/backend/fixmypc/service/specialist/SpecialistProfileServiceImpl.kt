@@ -6,7 +6,9 @@ import com.kirakishou.backend.fixmypc.model.repository.SpecialistProfileReposito
 import com.kirakishou.backend.fixmypc.model.repository.ignite.UserCache
 import io.reactivex.Single
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
 
+@Component
 class SpecialistProfileServiceImpl : SpecialistProfileService {
 
     @Autowired
@@ -26,7 +28,7 @@ class SpecialistProfileServiceImpl : SpecialistProfileService {
         }
 
         val user = userFickle.get()
-        if (user.accountType != AccountType.Client) {
+        if (user.accountType != AccountType.Specialist) {
             log.d("Bad accountType ${user.accountType}")
             return Single.just(SpecialistProfileService.Get.Result.BadAccountType())
         }

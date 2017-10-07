@@ -151,7 +151,7 @@ class DamageClaimDaoImpl : DamageClaimDao {
         try {
             hikariCP.connection.use { connection ->
                 connection.prepareStatement(sql).use { ps ->
-                    var index = 0
+                    var index = 1
 
                     for (id in idsToSearch) {
                         ps.setLong(index, id)

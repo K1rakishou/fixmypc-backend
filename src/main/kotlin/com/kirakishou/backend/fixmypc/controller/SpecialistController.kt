@@ -149,7 +149,7 @@ class SpecialistController {
 
                         is SpecialistProfileService.Get.Result.NotFound -> {
                             return@map ResponseEntity(SpecialistProfileResponse(null,
-                                    ServerErrorCode.SEC_COULD_NOT_FILE_PROFILE_WITH_USER_ID.value), HttpStatus.UNPROCESSABLE_ENTITY)
+                                    ServerErrorCode.REC_COULD_NOT_FIND_PROFILE_WITH_USER_ID.value), HttpStatus.UNPROCESSABLE_ENTITY)
                         }
 
                         else -> throw IllegalArgumentException("Unknown result")
