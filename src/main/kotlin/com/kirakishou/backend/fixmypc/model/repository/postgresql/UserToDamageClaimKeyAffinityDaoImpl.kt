@@ -1,7 +1,6 @@
 package com.kirakishou.backend.fixmypc.model.repository.postgresql
 
 import com.kirakishou.backend.fixmypc.core.Either
-import com.kirakishou.backend.fixmypc.extension.prepareStatementScrollable
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import javax.sql.DataSource
@@ -36,15 +35,18 @@ class UserToDamageClaimKeyAffinityDaoImpl : UserToDamageClaimKeyAffinityDao {
         val idsList = arrayListOf<Long>()
 
         try {
-            hikariCP.connection.prepareStatementScrollable("SELECT damage_claim_id FROM $TABLE_NAME WHERE " +
-                    "owner_id = ? AND deleted_on IS NULL OFFSET ? LIMIT ? ORDER BY id ASC").use { ps ->
-                ps.setLong(1, ownerId)
-                ps.setLong(2, offset)
-                ps.setLong(3, count)
+            hikariCP.connection.use { connection ->
+                connection.prepareStatement("SELECT damage_claim_id FROM $TABLE_NAME WHERE " +
+                        "owner_id = ? AND deleted_on IS NULL OFFSET ? LIMIT ? ORDER BY id ASC").use { ps ->
 
-                ps.executeQuery().use { rs ->
-                    while (rs.next()) {
-                        idsList += rs.getLong("damage_claim_id")
+                    ps.setLong(1, ownerId)
+                    ps.setLong(2, offset)
+                    ps.setLong(3, count)
+
+                    ps.executeQuery().use { rs ->
+                        while (rs.next()) {
+                            idsList += rs.getLong("damage_claim_id")
+                        }
                     }
                 }
             }
@@ -59,13 +61,15 @@ class UserToDamageClaimKeyAffinityDaoImpl : UserToDamageClaimKeyAffinityDao {
         val idsList = arrayListOf<Long>()
 
         try {
-            hikariCP.connection.prepareStatementScrollable("SELECT damage_claim_id FROM $TABLE_NAME WHERE " +
-                    "owner_id = ? AND deleted_on IS NULL").use { ps ->
-                ps.setLong(1, ownerId)
+            hikariCP.connection.use { connection ->
+                connection.prepareStatement("SELECT damage_claim_id FROM $TABLE_NAME WHERE " +
+                        "owner_id = ? AND deleted_on IS NULL").use { ps ->
+                    ps.setLong(1, ownerId)
 
-                ps.executeQuery().use { rs ->
-                    while (rs.next()) {
-                        idsList += rs.getLong("damage_claim_id")
+                    ps.executeQuery().use { rs ->
+                        while (rs.next()) {
+                            idsList += rs.getLong("damage_claim_id")
+                        }
                     }
                 }
             }

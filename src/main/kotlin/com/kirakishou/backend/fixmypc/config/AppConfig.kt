@@ -74,8 +74,8 @@ class AppConfig {
         dataSource.jdbcUrl = "jdbc:postgresql://192.168.99.100:9499/postgres"
         dataSource.username = "postgres"
         dataSource.password = "4e7d2dfx"
-        /*dataSource.maximumPoolSize = 128
-        dataSource.leakDetectionThreshold = 2000
+        dataSource.maximumPoolSize = 1
+        /*dataSource.leakDetectionThreshold = 2000
         dataSource.connectionTimeout = 20000*/
 
         return dataSource

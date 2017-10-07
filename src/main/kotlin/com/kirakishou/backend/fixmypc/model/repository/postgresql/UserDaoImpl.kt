@@ -60,6 +60,7 @@ class UserDaoImpl : UserDao {
             hikariCP.connection.use { connection ->
                 connection.prepareStatementScrollable("SELECT * FROM $TABLE_NAME WHERE login = ? AND deleted_on IS NULL LIMIT 1").use { ps ->
                     ps.setString(1, login)
+
                     ps.executeQuery().use { rs ->
                         if (rs.first()) {
                             user = User(
