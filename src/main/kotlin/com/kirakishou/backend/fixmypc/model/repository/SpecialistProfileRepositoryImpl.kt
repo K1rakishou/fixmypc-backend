@@ -87,6 +87,21 @@ class SpecialistProfileRepositoryImpl : SpecialistProfileRepository {
         return result
     }
 
+    override fun update(userId: Long, name: String, phone: String, photoName: String): Boolean {
+        val daoResult = dao.update(userId, name, phone, photoName)
+        if (daoResult is Either.Error) {
+            log.e(daoResult.error)
+            return false
+        } else {
+            if (!(daoResult as Either.Value).value) {
+                return false
+            }
+        }
+
+        cache.update(userId, name, phone, photoName)
+        return true
+    }
+
     private fun contains(list: List<SpecialistProfile>, id: Long): Boolean {
         return list.firstOrNull { it.userId == id } != null
     }

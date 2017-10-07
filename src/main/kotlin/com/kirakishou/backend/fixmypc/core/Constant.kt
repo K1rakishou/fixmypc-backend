@@ -43,6 +43,9 @@ object Constant {
         const val SPECIALIST_PROFILES_LIST = "specialist_profiles_list"
         const val SPECIALIST_PROFILE = "specialist_profile"
 
+        const val PROFILE_NAME = "profile_name"
+        const val PROFILE_PHOTO = "profile_photo"
+
         const val HAS_SPECIALIST_ALREADY_RESPONDED = "responded"
     }
 
@@ -62,26 +65,13 @@ object Constant {
         val LOCATION_CACHE_NAME = "malfunction_location_cache"
     }
 
-    object ImageTypes {
-        val IMAGE_TYPE_MALFUNCTION_PHOTO = 0
-    }
-
-    object Url {
-        //"http://$host/v1/api/upload_image"
-        val SAVE_DAMAGE_CLAIM_IMAGE_URL = "http://%s${Paths.DAMAGE_CLAIM_PHOTO_CONTROLLER_PATH}"
-
-        //"http://$host/v1/api/malfunction_image/${ownerId}/${folderName}"
-        val DELETE_DAMAGE_CLAIM_IMAGES_URL = "http://%s${Paths.DAMAGE_CLAIM_PHOTO_CONTROLLER_PATH}/%d/%s"
-
-        //"/v1/api/damage_claim_photo/{image_type}/{owner_id}/{folder_name}/{image_name:.+}"
-        val GET_DAMAGE_CLAIM_IMAGE_URL = "http://%s${Paths.DAMAGE_CLAIM_PHOTO_CONTROLLER_PATH}/%d/%d/%s/%s/%s"
-    }
-
     object TextLength {
         val MAX_LOGIN_LENGTH = 32
         val MIN_PASSWORD_LENGTH = 10
         val MAX_PASSWORD_LENGTH = 20
         val MAX_DESCRIPTION_LENGTH = 500
+        val MAX_PROFILE_NAME_LENGTH = 50
+        val MAX_PHONE_LENGTH = 15
     }
 
     val DAMAGE_CLAIM_MAX_IMAGES_PER_REQUEST = 4

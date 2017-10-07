@@ -6,16 +6,16 @@ data class SpecialistProfile(@SerializedName("user_id")
                              val userId: Long,
 
                              @SerializedName("name")
-                             val name: String,
+                             var name: String,
 
                              @SerializedName("rating")
                              val rating: Float,
 
-                             @SerializedName("photo_folder")
-                             var photoFolder: String = "",
-
                              @SerializedName("photo_name")
                              var photoName: String = "",
+
+                             @SerializedName("phone")
+                             var phone: String = "",
 
                              @SerializedName("registered_on")
                              val registeredOn: Long,

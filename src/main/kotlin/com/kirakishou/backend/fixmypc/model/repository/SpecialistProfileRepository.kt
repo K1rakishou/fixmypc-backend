@@ -7,4 +7,5 @@ interface SpecialistProfileRepository {
     fun saveOne(specialistProfile: SpecialistProfile): Boolean
     fun findOne(userId: Long): Fickle<SpecialistProfile>
     fun findMany(userIdList: List<Long>): List<SpecialistProfile>
+    fun update(userId: Long, name: String, phone: String, photoName: String): Boolean
 }

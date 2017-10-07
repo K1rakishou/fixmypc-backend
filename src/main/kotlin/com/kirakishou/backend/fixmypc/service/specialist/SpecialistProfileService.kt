@@ -1,7 +1,9 @@
 package com.kirakishou.backend.fixmypc.service.specialist
 
 import com.kirakishou.backend.fixmypc.model.entity.SpecialistProfile
+import com.kirakishou.backend.fixmypc.model.net.request.SpecialistProfileRequest
 import io.reactivex.Single
+import org.springframework.web.multipart.MultipartFile
 
 interface SpecialistProfileService {
 
@@ -14,5 +16,18 @@ interface SpecialistProfileService {
         }
     }
 
+    interface Post {
+        interface Result {
+            class Ok : Result
+            class SessionIdExpired : Result
+            class BadAccountType : Result
+            class NotFound : Result
+            class CouldNotUploadImage : Result
+            class RepositoryError: Result
+            class UnknownError : Result
+        }
+    }
+
     fun getProfile(sessionId: String): Single<Get.Result>
+    fun updateProfile(sessionId: String, profilePhoto: MultipartFile, request: SpecialistProfileRequest): Single<Post.Result>
 }

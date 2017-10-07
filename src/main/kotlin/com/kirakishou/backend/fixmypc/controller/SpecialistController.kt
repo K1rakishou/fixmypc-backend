@@ -3,6 +3,7 @@ package com.kirakishou.backend.fixmypc.controller
 import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.core.ServerErrorCode
 import com.kirakishou.backend.fixmypc.model.net.request.PickSpecialistRequest
+import com.kirakishou.backend.fixmypc.model.net.request.SpecialistProfileRequest
 import com.kirakishou.backend.fixmypc.model.net.response.SpecialistProfileResponse
 import com.kirakishou.backend.fixmypc.model.net.response.SpecialistsListResponse
 import com.kirakishou.backend.fixmypc.model.net.response.StatusResponse
@@ -15,6 +16,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.multipart.MultipartFile
 
 @Controller
 @RequestMapping
@@ -159,6 +161,15 @@ class SpecialistController {
                     return@onErrorReturn ResponseEntity(SpecialistProfileResponse(null,
                             ServerErrorCode.SEC_UNKNOWN_SERVER_ERROR.value), HttpStatus.INTERNAL_SERVER_ERROR)
                 }
+    }
+
+    @RequestMapping(path = arrayOf("${Constant.Paths.SPECIALIST_CONTROLLER_PATH}/profile"),
+            method = arrayOf(RequestMethod.POST))
+    fun updateSpecialistProfile(@RequestHeader(value = "session_id", defaultValue = "") sessionId: String,
+                                @RequestPart("photos") profilePhoto: MultipartFile,
+                                @RequestPart("request") request: SpecialistProfileRequest): Single<ResponseEntity<StatusResponse>> {
+
+        return mSpecialistProfileService.updateProfile(sessionId, profilePhoto, request)
     }
 }
 

@@ -21,15 +21,17 @@ class SpecialistProfileDaoImpl : SpecialistProfileDao {
     override fun saveOne(specialistProfile: SpecialistProfile): Either<Throwable, Boolean> {
         try {
             hikariCP.connection.use { connection ->
-                connection.prepareStatement("INSERT INTO $TABLE_NAME (user_id, name, rating, " +
+                connection.prepareStatement("INSERT INTO $TABLE_NAME (user_id, name, rating, photo_name, phone," +
                         "registered_on, success_repairs, fail_repairs) VALUES (?, ?, ?, ?, ?, ?, ?)").use { ps ->
 
                     ps.setLong(1, specialistProfile.userId)
                     ps.setString(2, specialistProfile.name)
                     ps.setFloat(3, specialistProfile.rating)
-                    ps.setTimestamp(4, Timestamp(specialistProfile.registeredOn))
-                    ps.setInt(5, specialistProfile.successRepairs)
-                    ps.setInt(6, specialistProfile.failRepairs)
+                    ps.setString(4, specialistProfile.photoName)
+                    ps.setString(5, specialistProfile.phone)
+                    ps.setTimestamp(6, Timestamp(specialistProfile.registeredOn))
+                    ps.setInt(7, specialistProfile.successRepairs)
+                    ps.setInt(8, specialistProfile.failRepairs)
 
                     ps.executeUpdate()
                 }
@@ -47,7 +49,7 @@ class SpecialistProfileDaoImpl : SpecialistProfileDao {
 
         try {
             hikariCP.connection.use { connection ->
-                connection.prepareStatementScrollable("SELECT name, rating, registered_on, success_repairs, fail_repairs " +
+                connection.prepareStatementScrollable("SELECT name, rating, photo_name, phone, registered_on, success_repairs, fail_repairs " +
                         "FROM $TABLE_NAME WHERE user_id = ?").use { ps ->
                     ps.setLong(1, userId)
 
@@ -57,8 +59,8 @@ class SpecialistProfileDaoImpl : SpecialistProfileDao {
                                     userId,
                                     rs.getString("name"),
                                     rs.getFloat("rating"),
-                                    "",
-                                    "",
+                                    rs.getString("photo_name"),
+                                    rs.getString("phone"),
                                     rs.getTimestamp("registered_on").time,
                                     rs.getInt("success_repairs"),
                                     rs.getInt("fail_repairs")))
@@ -76,7 +78,7 @@ class SpecialistProfileDaoImpl : SpecialistProfileDao {
     override fun findMany(userIdList: List<Long>): Either<Throwable, List<SpecialistProfile>> {
         val profileList = arrayListOf<SpecialistProfile>()
         val ids = TextUtils.createStatementForList(userIdList.size)
-        val sql = "SELECT name, rating, registered_on, success_repairs, fail_repairs FROM $TABLE_NAME " +
+        val sql = "SELECT name, rating, photo_name, phone, registered_on, success_repairs, fail_repairs FROM $TABLE_NAME " +
                 "WHERE user_id IN ($ids)"
 
         try {
@@ -94,8 +96,8 @@ class SpecialistProfileDaoImpl : SpecialistProfileDao {
                                     userIdList[index],
                                     rs.getString("name"),
                                     rs.getFloat("rating"),
-                                    "",
-                                    "",
+                                    rs.getString("photo_name"),
+                                    rs.getString("phone"),
                                     rs.getTimestamp("registered_on").time,
                                     rs.getInt("success_repairs"),
                                     rs.getInt("fail_repairs"))
@@ -110,6 +112,24 @@ class SpecialistProfileDaoImpl : SpecialistProfileDao {
         }
 
         return Either.Value(profileList)
+    }
+
+    override fun update(userId: Long, name: String, phone: String, photoName: String): Either<Throwable, Boolean> {
+        try {
+            hikariCP.connection.use { connection ->
+                connection.prepareStatement("UPDATE $TABLE_NAME SET photo_name = ?, phone = ? WHERE user_id = ?").use { ps ->
+                    ps.setString(1, photoName)
+                    ps.setString(2, phone)
+                    ps.setString(3, name)
+
+                    ps.executeUpdate()
+                }
+            }
+        } catch (e: Throwable) {
+            return Either.Error(e)
+        }
+
+        return Either.Value(true)
     }
 
     /*override fun deleteOne(userId: Long): Either<Throwable, Boolean> {
