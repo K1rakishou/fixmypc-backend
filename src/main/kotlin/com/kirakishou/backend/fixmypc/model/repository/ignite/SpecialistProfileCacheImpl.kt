@@ -1,6 +1,7 @@
 package com.kirakishou.backend.fixmypc.model.repository.ignite
 
 import com.kirakishou.backend.fixmypc.core.Constant
+import com.kirakishou.backend.fixmypc.core.Fickle
 import com.kirakishou.backend.fixmypc.core.MyExpiryPolicyFactory
 import com.kirakishou.backend.fixmypc.model.entity.SpecialistProfile
 import org.apache.ignite.Ignite
@@ -44,6 +45,10 @@ class SpecialistProfileCacheImpl : SpecialistProfileCache {
         }
 
         cache.putAll(map)
+    }
+
+    override fun findOne(userId: Long): Fickle<SpecialistProfile> {
+        return Fickle.of(cache.get(userId))
     }
 
     override fun findMany(userIdList: List<Long>): List<SpecialistProfile> {

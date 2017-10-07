@@ -56,8 +56,4 @@ class ClientController {
                             HttpStatus.INTERNAL_SERVER_ERROR)
                 }
     }
-
-    fun getSpecialistProfile() {
-
-    }
 }

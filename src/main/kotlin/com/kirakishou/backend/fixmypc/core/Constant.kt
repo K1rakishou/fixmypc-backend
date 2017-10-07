@@ -41,6 +41,7 @@ object Constant {
 
         const val DAMAGE_CLAIM_ID = "damage_claim_id"
         const val SPECIALIST_PROFILES_LIST = "specialist_profiles_list"
+        const val SPECIALIST_PROFILE = "specialist_profile"
 
         const val HAS_SPECIALIST_ALREADY_RESPONDED = "responded"
     }

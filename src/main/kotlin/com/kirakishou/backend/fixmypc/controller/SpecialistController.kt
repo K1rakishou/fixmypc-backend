@@ -3,10 +3,12 @@ package com.kirakishou.backend.fixmypc.controller
 import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.core.ServerErrorCode
 import com.kirakishou.backend.fixmypc.model.net.request.PickSpecialistRequest
+import com.kirakishou.backend.fixmypc.model.net.response.SpecialistProfileResponse
 import com.kirakishou.backend.fixmypc.model.net.response.SpecialistsListResponse
 import com.kirakishou.backend.fixmypc.model.net.response.StatusResponse
 import com.kirakishou.backend.fixmypc.service.specialist.ClientAssignSpecialistService
 import com.kirakishou.backend.fixmypc.service.specialist.GetRespondedSpecialistsService
+import com.kirakishou.backend.fixmypc.service.specialist.SpecialistProfileService
 import io.reactivex.Single
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
@@ -23,6 +25,9 @@ class SpecialistController {
 
     @Autowired
     lateinit var mClientAssignSpecialistService: ClientAssignSpecialistService
+
+    @Autowired
+    lateinit var mSpecialistProfileService: SpecialistProfileService
 
     @RequestMapping(path = arrayOf("${Constant.Paths.SPECIALIST_CONTROLLER_PATH}/profile/{damage_claim_id}/{skip}/{count}"),
             method = arrayOf(RequestMethod.GET))
@@ -117,6 +122,42 @@ class SpecialistController {
                     return@onErrorReturn ResponseEntity(StatusResponse(
                             ServerErrorCode.SEC_UNKNOWN_SERVER_ERROR.value),
                             HttpStatus.INTERNAL_SERVER_ERROR)
+                }
+    }
+
+    @RequestMapping(path = arrayOf("${Constant.Paths.SPECIALIST_CONTROLLER_PATH}/profile"),
+            method = arrayOf(RequestMethod.GET))
+    fun getSpecialistProfile(@RequestHeader(value = "session_id", defaultValue = "") sessionId: String): Single<ResponseEntity<SpecialistProfileResponse>> {
+
+        return mSpecialistProfileService.getProfile(sessionId)
+                .map { result ->
+                    when (result) {
+                        is SpecialistProfileService.Get.Result.Ok -> {
+                            return@map ResponseEntity(SpecialistProfileResponse(result.profile,
+                                    ServerErrorCode.SEC_OK.value), HttpStatus.OK)
+                        }
+
+                        is SpecialistProfileService.Get.Result.SessionIdExpired -> {
+                            return@map ResponseEntity(SpecialistProfileResponse(null,
+                                    ServerErrorCode.SEC_SESSION_ID_EXPIRED.value), HttpStatus.UNAUTHORIZED)
+                        }
+
+                        is SpecialistProfileService.Get.Result.BadAccountType -> {
+                            return@map ResponseEntity(SpecialistProfileResponse(null,
+                                    ServerErrorCode.SEC_BAD_ACCOUNT_TYPE.value), HttpStatus.FORBIDDEN)
+                        }
+
+                        is SpecialistProfileService.Get.Result.NotFound -> {
+                            return@map ResponseEntity(SpecialistProfileResponse(null,
+                                    ServerErrorCode.SEC_COULD_NOT_FILE_PROFILE_WITH_USER_ID.value), HttpStatus.UNPROCESSABLE_ENTITY)
+                        }
+
+                        else -> throw IllegalArgumentException("Unknown result")
+                    }
+                }
+                .onErrorReturn {
+                    return@onErrorReturn ResponseEntity(SpecialistProfileResponse(null,
+                            ServerErrorCode.SEC_UNKNOWN_SERVER_ERROR.value), HttpStatus.INTERNAL_SERVER_ERROR)
                 }
     }
 }
