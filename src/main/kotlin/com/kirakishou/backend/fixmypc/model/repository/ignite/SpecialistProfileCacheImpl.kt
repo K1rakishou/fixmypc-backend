@@ -6,6 +6,7 @@ import com.kirakishou.backend.fixmypc.core.MyExpiryPolicyFactory
 import com.kirakishou.backend.fixmypc.model.entity.SpecialistProfile
 import org.apache.ignite.Ignite
 import org.apache.ignite.IgniteCache
+import org.apache.ignite.cache.CacheAtomicityMode
 import org.apache.ignite.cache.CacheMode
 import org.apache.ignite.configuration.CacheConfiguration
 import org.springframework.beans.factory.annotation.Autowired
@@ -28,6 +29,7 @@ class SpecialistProfileCacheImpl : SpecialistProfileCache {
         cacheConfig.backups = 0
         cacheConfig.name = Constant.IgniteNames.SPECIALIST_PROFILE_CACHE_NAME
         cacheConfig.cacheMode = CacheMode.PARTITIONED
+        cacheConfig.atomicityMode = CacheAtomicityMode.TRANSACTIONAL
         cacheConfig.setExpiryPolicyFactory(MyExpiryPolicyFactory(Duration.TEN_MINUTES, Duration.TEN_MINUTES, Duration.TEN_MINUTES))
 
         cache = ignite.createCache(cacheConfig)

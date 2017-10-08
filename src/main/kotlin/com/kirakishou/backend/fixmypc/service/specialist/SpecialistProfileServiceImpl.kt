@@ -118,7 +118,11 @@ class SpecialistProfileServiceImpl : SpecialistProfileService {
                         is NotFoundException -> SpecialistProfileService.Post.Result.NotFound()
                         is CouldNotUploadImagesException -> SpecialistProfileService.Post.Result.CouldNotUploadImage()
                         is RepositoryErrorException -> SpecialistProfileService.Post.Result.RepositoryError()
-                        else -> SpecialistProfileService.Post.Result.UnknownError()
+                        
+                        else -> {
+                            log.e(exception)
+                            SpecialistProfileService.Post.Result.UnknownError()
+                        }
                     }
                 }
     }
