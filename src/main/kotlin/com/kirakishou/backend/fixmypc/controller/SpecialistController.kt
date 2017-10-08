@@ -166,7 +166,7 @@ class SpecialistController {
     @RequestMapping(path = arrayOf("${Constant.Paths.SPECIALIST_CONTROLLER_PATH}/profile"),
             method = arrayOf(RequestMethod.POST))
     fun updateSpecialistProfile(@RequestHeader(value = "session_id", defaultValue = "") sessionId: String,
-                                @RequestPart("photos") profilePhoto: MultipartFile,
+                                @RequestPart("photo") profilePhoto: MultipartFile,
                                 @RequestPart("request") request: SpecialistProfileRequest): Single<ResponseEntity<StatusResponse>> {
 
         return mSpecialistProfileService.updateProfile(sessionId, profilePhoto, request)

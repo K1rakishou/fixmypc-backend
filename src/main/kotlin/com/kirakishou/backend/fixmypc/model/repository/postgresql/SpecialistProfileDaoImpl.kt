@@ -117,10 +117,11 @@ class SpecialistProfileDaoImpl : SpecialistProfileDao {
     override fun update(userId: Long, name: String, phone: String, photoName: String): Either<Throwable, Boolean> {
         try {
             hikariCP.connection.use { connection ->
-                connection.prepareStatement("UPDATE $TABLE_NAME SET photo_name = ?, phone = ? WHERE user_id = ?").use { ps ->
+                connection.prepareStatement("UPDATE $TABLE_NAME SET photo_name = ?, phone = ?, name = ? WHERE user_id = ?").use { ps ->
                     ps.setString(1, photoName)
                     ps.setString(2, phone)
                     ps.setString(3, name)
+                    ps.setLong(4, userId)
 
                     ps.executeUpdate()
                 }
