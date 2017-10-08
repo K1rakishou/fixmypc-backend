@@ -53,7 +53,10 @@ class SpecialistProfileServiceImpl : SpecialistProfileService {
             return Single.just(SpecialistProfileService.Get.Result.NotFound())
         }
 
-        return Single.just(SpecialistProfileService.Get.Result.Ok(profileFickle.get()))
+        val profile = profileFickle.get()
+        profile.isFilledIn = (profile.name.isNotEmpty() && profile.phone.isNotEmpty() && profile.photoName.isNotEmpty())
+
+        return Single.just(SpecialistProfileService.Get.Result.Ok(profile))
     }
 
     override fun updateProfile(sessionId: String, profilePhoto: MultipartFile, request: SpecialistProfileRequest):
@@ -80,6 +83,10 @@ class SpecialistProfileServiceImpl : SpecialistProfileService {
                     }
 
                     val serverFilePath = "${fs.homeDirectory}/img/profile/${user.id}/"
+                    val profile = profileFickle.get()
+
+                    //TODO: delete old profile image before uploading a new one
+
                     val uploadingImageSingle = mImageService.uploadImage(serverFilePath, profilePhoto)
                             .first(ImageService.Post.Result.CouldNotUploadImage())
 
@@ -98,6 +105,7 @@ class SpecialistProfileServiceImpl : SpecialistProfileService {
 
                     if (!mSpecialistProfileRepository.update(userId, name, phone, photoName)) {
                         //TODO delete photo
+                        log.d("Error while trying to update profile in the repository")
                         throw RepositoryErrorException()
                     }
 

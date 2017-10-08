@@ -12,10 +12,10 @@ data class SpecialistProfile(@SerializedName("user_id")
                              val rating: Float,
 
                              @SerializedName("photo_name")
-                             var photoName: String = "",
+                             var photoName: String,
 
                              @SerializedName("phone")
-                             var phone: String = "",
+                             var phone: String,
 
                              @SerializedName("registered_on")
                              val registeredOn: Long,
@@ -24,4 +24,7 @@ data class SpecialistProfile(@SerializedName("user_id")
                              val successRepairs: Int,
 
                              @SerializedName("fail_repairs")
-                             val failRepairs: Int)
+                             val failRepairs: Int,
+
+                             @SerializedName("is_filled_in")
+                             var isFilledIn: Boolean = false)

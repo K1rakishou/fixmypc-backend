@@ -57,10 +57,10 @@ class SpecialistProfileDaoImpl : SpecialistProfileDao {
                         if (rs.first()) {
                             specialistProfile = Fickle.of(SpecialistProfile(
                                     userId,
-                                    rs.getString("name"),
+                                    rs.getString("name") ?: "",
                                     rs.getFloat("rating"),
-                                    rs.getString("photo_name"),
-                                    rs.getString("phone"),
+                                    rs.getString("photo_name") ?: "",
+                                    rs.getString("phone") ?: "",
                                     rs.getTimestamp("registered_on").time,
                                     rs.getInt("success_repairs"),
                                     rs.getInt("fail_repairs")))
@@ -94,10 +94,10 @@ class SpecialistProfileDaoImpl : SpecialistProfileDao {
                         while (rs.next()) {
                             profileList += SpecialistProfile(
                                     userIdList[index],
-                                    rs.getString("name"),
+                                    rs.getString("name") ?: "",
                                     rs.getFloat("rating"),
-                                    rs.getString("photo_name"),
-                                    rs.getString("phone"),
+                                    rs.getString("photo_name") ?: "",
+                                    rs.getString("phone") ?: "",
                                     rs.getTimestamp("registered_on").time,
                                     rs.getInt("success_repairs"),
                                     rs.getInt("fail_repairs"))
