@@ -152,7 +152,7 @@ class SpecialistController {
 
                         is SpecialistProfileService.Get.Result.NotFound -> {
                             return@map ResponseEntity(SpecialistProfileResponse(null,
-                                    ServerErrorCode.REC_COULD_NOT_FIND_PROFILE_WITH_USER_ID.value), HttpStatus.UNPROCESSABLE_ENTITY)
+                                    ServerErrorCode.SEC_COULD_NOT_FIND_PROFILE_WITH_USER_ID.value), HttpStatus.UNPROCESSABLE_ENTITY)
                         }
 
                         else -> throw IllegalArgumentException("Unknown result")
@@ -190,17 +190,22 @@ class SpecialistController {
 
                         is SpecialistProfileService.Post.Result.NotFound -> {
                             return@map ResponseEntity(UpdateSpecialistProfileResponse("",
-                                    ServerErrorCode.REC_COULD_NOT_FIND_PROFILE_WITH_USER_ID.value), HttpStatus.NOT_FOUND)
+                                    ServerErrorCode.SEC_COULD_NOT_FIND_PROFILE_WITH_USER_ID.value), HttpStatus.NOT_FOUND)
                         }
 
                         is SpecialistProfileService.Post.Result.CouldNotUploadImage -> {
                             return@map ResponseEntity(UpdateSpecialistProfileResponse("",
-                                    ServerErrorCode.REC_COULD_NOT_UPLOAD_IMAGE.value), HttpStatus.INTERNAL_SERVER_ERROR)
+                                    ServerErrorCode.SEC_COULD_NOT_UPLOAD_IMAGE.value), HttpStatus.INTERNAL_SERVER_ERROR)
+                        }
+
+                        is SpecialistProfileService.Post.Result.CouldNotDeleteOldImage -> {
+                            return@map ResponseEntity(UpdateSpecialistProfileResponse("",
+                                    ServerErrorCode.SEC_COULD_NOT_DELETE_OLD_IMAGE.value), HttpStatus.INTERNAL_SERVER_ERROR)
                         }
 
                         is SpecialistProfileService.Post.Result.RepositoryError -> {
                             return@map ResponseEntity(UpdateSpecialistProfileResponse("",
-                                    ServerErrorCode.REC_REPOSITORY_ERROR.value), HttpStatus.INTERNAL_SERVER_ERROR)
+                                    ServerErrorCode.SEC_REPOSITORY_ERROR.value), HttpStatus.INTERNAL_SERVER_ERROR)
                         }
 
                         is SpecialistProfileService.Post.Result.UnknownError -> {

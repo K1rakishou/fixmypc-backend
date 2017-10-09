@@ -135,6 +135,7 @@ class SpecialistProfileServiceImpl : SpecialistProfileService {
                         is NotFoundException -> SpecialistProfileService.Post.Result.NotFound()
                         is CouldNotUploadImagesException -> SpecialistProfileService.Post.Result.CouldNotUploadImage()
                         is RepositoryErrorException -> SpecialistProfileService.Post.Result.RepositoryError()
+                        is CouldNotDeleteImageException -> SpecialistProfileService.Post.Result.CouldNotDeleteOldImage()
 
                         else -> {
                             log.e(exception)

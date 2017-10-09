@@ -23,6 +23,7 @@ interface SpecialistProfileService {
             class BadAccountType : Result
             class NotFound : Result
             class CouldNotUploadImage : Result
+            class CouldNotDeleteOldImage : Result
             class RepositoryError: Result
             class UnknownError : Result
         }
