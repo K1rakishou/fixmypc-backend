@@ -95,7 +95,7 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
                     return@map DamageClaimAndParams(damageClaim, params)
                 }
                 .flatMap { (damageClaim, _) ->
-                    val serverFilePath = "${fs.homeDirectory}/img/${damageClaim.ownerId}/"
+                    val serverFilePath = "${fs.homeDirectory}/img/damage_claim/${damageClaim.ownerId}/"
                     val responseList = mutableListOf<Flowable<ImageService.Post.Result>>()
 
                     for (uploadingFile in uploadingFiles) {

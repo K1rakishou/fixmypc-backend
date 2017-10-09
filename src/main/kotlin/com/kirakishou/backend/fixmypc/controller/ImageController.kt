@@ -45,7 +45,7 @@ class ImageController {
                         }
 
                         is ImageService.Get.Result.BadImageType -> {
-                            TODO()
+                            return@map ResponseEntity<Resource>(null, HttpStatus.UNPROCESSABLE_ENTITY)
                         }
 
                         is ImageService.Get.Result.BadFileName -> {
