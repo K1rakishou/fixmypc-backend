@@ -18,10 +18,11 @@ interface ImageService {
         interface Result {
             class Ok(val inputStream: InputStream) : Result
             class BadFileName : Result
+            class BadImageType : Result
             class NotFound : Result
         }
     }
 
     fun uploadImage(serverHomeDirectory: String, multipartFile: MultipartFile): Flowable<Post.Result>
-    fun serveImage(userId: Long, imageNameParam: String, imageSizeParam: String): Single<Get.Result>
+    fun serveImage(userId: Long, imageType: Int, imageNameParam: String, imageSizeParam: String): Single<Get.Result>
 }

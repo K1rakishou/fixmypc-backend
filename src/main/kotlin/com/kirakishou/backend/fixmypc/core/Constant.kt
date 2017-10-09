@@ -46,6 +46,8 @@ object Constant {
         const val PROFILE_NAME = "profile_name"
         const val PROFILE_PHOTO = "profile_photo"
 
+        const val NEW_SPECIALIST_PROFILE_PHOTO_NAME = "nsp_photo_name"
+
         const val HAS_SPECIALIST_ALREADY_RESPONDED = "responded"
     }
 

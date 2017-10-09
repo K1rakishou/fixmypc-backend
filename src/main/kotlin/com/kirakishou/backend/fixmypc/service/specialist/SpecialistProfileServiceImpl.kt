@@ -2,7 +2,7 @@ package com.kirakishou.backend.fixmypc.service.specialist
 
 import com.kirakishou.backend.fixmypc.core.AccountType
 import com.kirakishou.backend.fixmypc.core.Constant
-import com.kirakishou.backend.fixmypc.extension.crop
+import com.kirakishou.backend.fixmypc.extension.limit
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.exception.*
 import com.kirakishou.backend.fixmypc.model.net.request.SpecialistProfileRequest
@@ -99,8 +99,8 @@ class SpecialistProfileServiceImpl : SpecialistProfileService {
                     }
 
                     val profileRequest = params.request
-                    val name = profileRequest.profileName.crop(Constant.TextLength.MAX_PROFILE_NAME_LENGTH)
-                    val phone = profileRequest.profilePhone.crop(Constant.TextLength.MAX_PHONE_LENGTH)
+                    val name = profileRequest.profileName.limit(Constant.TextLength.MAX_PROFILE_NAME_LENGTH)
+                    val phone = profileRequest.profilePhone.limit(Constant.TextLength.MAX_PHONE_LENGTH)
                     val photoName = response.imageName
 
                     if (!mSpecialistProfileRepository.update(userId, name, phone, photoName)) {
@@ -109,7 +109,7 @@ class SpecialistProfileServiceImpl : SpecialistProfileService {
                         throw RepositoryErrorException()
                     }
 
-                    return@map SpecialistProfileService.Post.Result.Ok() as SpecialistProfileService.Post.Result
+                    return@map SpecialistProfileService.Post.Result.Ok(photoName) as SpecialistProfileService.Post.Result
                 }
                 .onErrorReturn { exception ->
                     return@onErrorReturn when (exception) {
@@ -118,7 +118,7 @@ class SpecialistProfileServiceImpl : SpecialistProfileService {
                         is NotFoundException -> SpecialistProfileService.Post.Result.NotFound()
                         is CouldNotUploadImagesException -> SpecialistProfileService.Post.Result.CouldNotUploadImage()
                         is RepositoryErrorException -> SpecialistProfileService.Post.Result.RepositoryError()
-                        
+
                         else -> {
                             log.e(exception)
                             SpecialistProfileService.Post.Result.UnknownError()

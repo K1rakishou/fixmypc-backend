@@ -22,6 +22,6 @@ fun String.getFileExtension(): String {
     return sb.toString()
 }
 
-fun String.crop(maxLen: Int): String {
+fun String.limit(maxLen: Int): String {
     return this.substring(0, Math.min(this.length, maxLen))
 }

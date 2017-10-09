@@ -34,7 +34,7 @@ class ImageServiceImpl : ImageService {
     @Autowired
     private lateinit var fs: FileSystem
 
-    override fun serveImage(userId: Long, imageNameParam: String, imageSizeParam: String): Single<ImageService.Get.Result> {
+    override fun serveImage(userId: Long, imageType: Int, imageNameParam: String, imageSizeParam: String): Single<ImageService.Get.Result> {
         return Single.just(ImageToServeParams(imageNameParam, imageSizeParam))
                 .map { (imageName, imageSize) ->
                     val size = when (imageSize) {
@@ -44,13 +44,19 @@ class ImageServiceImpl : ImageService {
                         else -> "m"
                     }
 
+                    val folderName = when (imageType) {
+                        0 -> "damage_claim"
+                        1 -> "profile"
+                        else -> return@map ImageService.Get.Result.BadFileName()
+                    }
+
                     val extension = imageName.getFileExtension()
                     if (extension.isEmpty()) {
                         return@map ImageService.Get.Result.BadFileName()
                     }
 
                     val imageNameWithoutExtension = imageName.substring(0, imageName.length - extension.length - 1)
-                    val fullPathToImage = Path("${fs.homeDirectory}/img/$userId/${imageNameWithoutExtension}_$size.$extension")
+                    val fullPathToImage = Path("${fs.homeDirectory}/img/$folderName/$userId/${imageNameWithoutExtension}_$size.$extension")
 
                     if (!fs.exists(fullPathToImage)) {
                         return@map ImageService.Get.Result.NotFound()

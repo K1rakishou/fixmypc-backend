@@ -18,7 +18,7 @@ interface SpecialistProfileService {
 
     interface Post {
         interface Result {
-            class Ok : Result
+            class Ok(val newPhotoName: String) : Result
             class SessionIdExpired : Result
             class BadAccountType : Result
             class NotFound : Result

@@ -7,6 +7,7 @@ import com.kirakishou.backend.fixmypc.model.net.request.SpecialistProfileRequest
 import com.kirakishou.backend.fixmypc.model.net.response.SpecialistProfileResponse
 import com.kirakishou.backend.fixmypc.model.net.response.SpecialistsListResponse
 import com.kirakishou.backend.fixmypc.model.net.response.StatusResponse
+import com.kirakishou.backend.fixmypc.model.net.response.UpdateSpecialistProfileResponse
 import com.kirakishou.backend.fixmypc.service.specialist.ClientAssignSpecialistService
 import com.kirakishou.backend.fixmypc.service.specialist.GetRespondedSpecialistsService
 import com.kirakishou.backend.fixmypc.service.specialist.SpecialistProfileService
@@ -167,43 +168,43 @@ class SpecialistController {
             method = arrayOf(RequestMethod.POST))
     fun updateSpecialistProfile(@RequestHeader(value = "session_id", defaultValue = "") sessionId: String,
                                 @RequestPart("photo") profilePhoto: MultipartFile,
-                                @RequestPart("request") request: SpecialistProfileRequest): Single<ResponseEntity<StatusResponse>> {
+                                @RequestPart("request") request: SpecialistProfileRequest): Single<ResponseEntity<UpdateSpecialistProfileResponse>> {
 
         return mSpecialistProfileService.updateProfile(sessionId, profilePhoto, request)
                 .map { result ->
                     when (result) {
                         is SpecialistProfileService.Post.Result.Ok -> {
-                            return@map ResponseEntity(StatusResponse(
+                            return@map ResponseEntity(UpdateSpecialistProfileResponse(result.newPhotoName,
                                     ServerErrorCode.SEC_OK.value), HttpStatus.OK)
                         }
 
                         is SpecialistProfileService.Post.Result.SessionIdExpired -> {
-                            return@map ResponseEntity(StatusResponse(
+                            return@map ResponseEntity(UpdateSpecialistProfileResponse("",
                                     ServerErrorCode.SEC_SESSION_ID_EXPIRED.value), HttpStatus.UNAUTHORIZED)
                         }
 
                         is SpecialistProfileService.Post.Result.BadAccountType -> {
-                            return@map ResponseEntity(StatusResponse(
+                            return@map ResponseEntity(UpdateSpecialistProfileResponse("",
                                     ServerErrorCode.SEC_BAD_ACCOUNT_TYPE.value), HttpStatus.FORBIDDEN)
                         }
 
                         is SpecialistProfileService.Post.Result.NotFound -> {
-                            return@map ResponseEntity(StatusResponse(
+                            return@map ResponseEntity(UpdateSpecialistProfileResponse("",
                                     ServerErrorCode.REC_COULD_NOT_FIND_PROFILE_WITH_USER_ID.value), HttpStatus.NOT_FOUND)
                         }
 
                         is SpecialistProfileService.Post.Result.CouldNotUploadImage -> {
-                            return@map ResponseEntity(StatusResponse(
+                            return@map ResponseEntity(UpdateSpecialistProfileResponse("",
                                     ServerErrorCode.REC_COULD_NOT_UPLOAD_IMAGE.value), HttpStatus.INTERNAL_SERVER_ERROR)
                         }
 
                         is SpecialistProfileService.Post.Result.RepositoryError -> {
-                            return@map ResponseEntity(StatusResponse(
+                            return@map ResponseEntity(UpdateSpecialistProfileResponse("",
                                     ServerErrorCode.REC_REPOSITORY_ERROR.value), HttpStatus.INTERNAL_SERVER_ERROR)
                         }
 
                         is SpecialistProfileService.Post.Result.UnknownError -> {
-                            return@map ResponseEntity(StatusResponse(
+                            return@map ResponseEntity(UpdateSpecialistProfileResponse("",
                                     ServerErrorCode.SEC_UNKNOWN_SERVER_ERROR.value), HttpStatus.INTERNAL_SERVER_ERROR)
                         }
 
@@ -211,7 +212,7 @@ class SpecialistController {
                     }
                 }
                 .onErrorReturn {
-                    return@onErrorReturn ResponseEntity(StatusResponse(ServerErrorCode.SEC_UNKNOWN_SERVER_ERROR.value),
+                    return@onErrorReturn ResponseEntity(UpdateSpecialistProfileResponse("", ServerErrorCode.SEC_UNKNOWN_SERVER_ERROR.value),
                             HttpStatus.INTERNAL_SERVER_ERROR)
                 }
     }
