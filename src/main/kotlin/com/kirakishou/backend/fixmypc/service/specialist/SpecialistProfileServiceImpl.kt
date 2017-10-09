@@ -84,13 +84,21 @@ class SpecialistProfileServiceImpl : SpecialistProfileService {
 
                     val serverFilePath = "${fs.homeDirectory}/img/profile/${user.id}/"
                     val profile = profileFickle.get()
+                    val deleteImageSingle = mImageService.deleteImage(serverFilePath, profile.photoName)
 
-                    //TODO: delete old profile image before uploading a new one
+                    return@flatMap Singles.zip(deleteImageSingle, Single.just(params), Single.just(user.id))
+                }
+                .flatMap { (deleteResponse, params, userId) ->
+                    if (deleteResponse !is ImageService.Delete.Result.Ok) {
+                        log.d("Error while trying to delete image")
+                        throw CouldNotDeleteImageException()
+                    }
 
+                    val serverFilePath = "${fs.homeDirectory}/img/profile/$userId/"
                     val uploadingImageSingle = mImageService.uploadImage(serverFilePath, profilePhoto)
                             .first(ImageService.Post.Result.CouldNotUploadImage())
 
-                    return@flatMap Singles.zip(uploadingImageSingle, Single.just(params), Single.just(user.id))
+                    return@flatMap Singles.zip(uploadingImageSingle, Single.just(params), Single.just(userId))
                 }
                 .map { (response, params, userId) ->
                     if (response !is ImageService.Post.Result.Ok) {
@@ -104,7 +112,11 @@ class SpecialistProfileServiceImpl : SpecialistProfileService {
                     val photoName = response.imageName
 
                     if (!mSpecialistProfileRepository.update(userId, name, phone, photoName)) {
-                        //TODO delete photo
+                        val serverFilePath = "${fs.homeDirectory}/img/profile/$userId/"
+
+                        //fire and forget
+                        mImageService.deleteImage(serverFilePath, photoName)
+
                         log.d("Error while trying to update profile in the repository")
                         throw RepositoryErrorException()
                     }

@@ -34,6 +34,33 @@ class ImageServiceImpl : ImageService {
     @Autowired
     private lateinit var fs: FileSystem
 
+    override fun deleteImage(serverHomeDirectory: String, imageName: String): Single<ImageService.Delete.Result> {
+        return Single.just(ImageToDeleteParams(serverHomeDirectory, imageName))
+                .map { (serverHomeDir, imgName) ->
+                    val extension = imgName.getFileExtension()
+                    if (extension.isEmpty()) {
+                        log.e("Bad file extension")
+                        return@map ImageService.Delete.Result.BadFileName()
+                    }
+
+                    val imageNameWithoutExtension = imgName.substring(0, imgName.length - extension.length - 1)
+
+                    val smallImage = "$serverHomeDir/${imageNameWithoutExtension}_s.$extension"
+                    val mediumImage = "$serverHomeDir/${imageNameWithoutExtension}_m.$extension"
+                    val largeImage = "$serverHomeDir/${imageNameWithoutExtension}_l.$extension"
+
+                    fs.delete(Path(smallImage), false)
+                    fs.delete(Path(mediumImage), false)
+                    fs.delete(Path(largeImage), false)
+
+                    return@map ImageService.Delete.Result.Ok() as ImageService.Delete.Result
+                }
+                .onErrorReturn {
+                    log.e(it)
+                    ImageService.Delete.Result.CouldNotDeleteImage()
+                }
+    }
+
     override fun serveImage(userId: Long, imageType: Int, imageNameParam: String, imageSizeParam: String): Single<ImageService.Get.Result> {
         return Single.just(ImageToServeParams(imageNameParam, imageSizeParam))
                 .map { (imageName, imageSize) ->
@@ -47,11 +74,15 @@ class ImageServiceImpl : ImageService {
                     val folderName = when (imageType) {
                         0 -> "damage_claim"
                         1 -> "profile"
-                        else -> return@map ImageService.Get.Result.BadFileName()
+                        else -> {
+                            log.e("Bad image type: $imageType")
+                            return@map ImageService.Get.Result.BadImageType()
+                        }
                     }
 
                     val extension = imageName.getFileExtension()
                     if (extension.isEmpty()) {
+                        log.e("Bad file extension")
                         return@map ImageService.Get.Result.BadFileName()
                     }
 
@@ -59,6 +90,7 @@ class ImageServiceImpl : ImageService {
                     val fullPathToImage = Path("${fs.homeDirectory}/img/$folderName/$userId/${imageNameWithoutExtension}_$size.$extension")
 
                     if (!fs.exists(fullPathToImage)) {
+                        log.e("File does not exist")
                         return@map ImageService.Get.Result.NotFound()
                     }
 
@@ -90,6 +122,7 @@ class ImageServiceImpl : ImageService {
                     }
 
                     if (!isSuccess) {
+                        log.e("Could not upload image")
                         return@map ImageService.Post.Result.CouldNotUploadImage()
                     }
 
@@ -153,7 +186,10 @@ class ImageServiceImpl : ImageService {
                     return@map UploadResponse(true, fileNameWithExtension, imageFile)
                 }
                 .timeout(Constant.HADOOP_TIMEOUT, TimeUnit.SECONDS)
-                .onErrorReturn { UploadResponse(false, "", imageFileParam) }
+                .onErrorReturn {
+                    log.e(it)
+                    UploadResponse(false, "", imageFileParam)
+                }
     }
 
     @Throws(Exception::class)
@@ -174,28 +210,31 @@ class ImageServiceImpl : ImageService {
         }
     }
 
+    private data class ImageToDeleteParams(val serverHomeDirectory: String,
+                                           val imageName: String)
+
     private data class ImageToServeParams(val imageName: String,
-                                  val imageSize: String)
+                                          val imageSize: String)
 
     private data class ImageToUploadParams(val serverFilePath: String,
-                                   val multipartFile: MultipartFile)
+                                           val multipartFile: MultipartFile)
 
     private data class FileToUpload(val serverHomeDirectory: String,
-                            val fileExtension: String,
-                            val imageFile: File,
-                            val imageName: String)
+                                    val fileExtension: String,
+                                    val imageFile: File,
+                                    val imageName: String)
 
     private data class ResizedImageInfo(val serverHomeDirectory: String,
-                                val fileExtension: String,
-                                val originalImageName: String,
-                                val resizedImageLarge: File,
-                                val resizedImageLargeName: String,
-                                val resizedImageMedium: File,
-                                val resizedImageMediumName: String,
-                                val resizedImageSmall: File,
-                                val resizedImageSmallName: String)
+                                        val fileExtension: String,
+                                        val originalImageName: String,
+                                        val resizedImageLarge: File,
+                                        val resizedImageLargeName: String,
+                                        val resizedImageMedium: File,
+                                        val resizedImageMediumName: String,
+                                        val resizedImageSmall: File,
+                                        val resizedImageSmallName: String)
 
     private data class UploadResponse(val success: Boolean,
-                              val uploadedImageName: String,
-                              val tempFile: File)
+                                      val uploadedImageName: String,
+                                      val tempFile: File)
 }
