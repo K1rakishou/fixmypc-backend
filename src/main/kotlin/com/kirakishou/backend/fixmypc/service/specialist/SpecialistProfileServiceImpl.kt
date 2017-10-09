@@ -84,7 +84,12 @@ class SpecialistProfileServiceImpl : SpecialistProfileService {
 
                     val serverFilePath = "${fs.homeDirectory}/img/profile/${user.id}/"
                     val profile = profileFickle.get()
-                    val deleteImageSingle = mImageService.deleteImage(serverFilePath, profile.photoName)
+
+                    val deleteImageSingle = if (profile.photoName.isNotEmpty()) {
+                        mImageService.deleteImage(serverFilePath, profile.photoName)
+                    } else {
+                        Single.just(ImageService.Delete.Result.Ok())
+                    }
 
                     return@flatMap Singles.zip(deleteImageSingle, Single.just(params), Single.just(user.id))
                 }
