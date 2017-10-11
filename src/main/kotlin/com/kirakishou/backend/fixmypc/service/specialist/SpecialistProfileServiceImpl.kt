@@ -59,11 +59,53 @@ class SpecialistProfileServiceImpl : SpecialistProfileService {
         return Single.just(SpecialistProfileService.Get.Result.Ok(profile))
     }
 
-    override fun updateProfile(sessionId: String, profilePhoto: MultipartFile, request: SpecialistProfileRequest):
-            Single<SpecialistProfileService.Post.Result> {
+    override fun updateProfileInfo(sessionIdParam: String, requestParam: SpecialistProfileRequest):
+            Single<SpecialistProfileService.Post.ResultInfo> {
 
-        return Single.just(UpdatingProfileParams(sessionId, profilePhoto, request))
-                .flatMap { params ->
+        return Single.just(UpdatingProfileParams(sessionIdParam, requestParam))
+                .map { (sessionId, request) ->
+                    val userFickle = mUserCache.findOne(sessionId)
+                    if (!userFickle.isPresent()) {
+                        log.d("SessionId $sessionId was not found in the cache")
+                        throw SessionIdExpiredException()
+                    }
+
+                    val user = userFickle.get()
+                    if (user.accountType != AccountType.Specialist) {
+                        log.d("Bad accountType ${user.accountType}")
+                        throw BadAccountTypeException()
+                    }
+
+                    val name = request.profileName.limit(Constant.TextLength.MAX_PROFILE_NAME_LENGTH)
+                    val phone = request.profilePhone.limit(Constant.TextLength.MAX_PHONE_LENGTH)
+                    val userId = user.id
+
+                    //do not update the photo
+                    if (!mSpecialistProfileRepository.updateInfo(userId, name, phone)) {
+                        log.d("Error while trying to update profile info in the repository")
+                        throw RepositoryErrorException()
+                    }
+
+                    return@map SpecialistProfileService.Post.ResultInfo.Ok() as SpecialistProfileService.Post.ResultInfo
+                }
+                .onErrorReturn { exception ->
+                    return@onErrorReturn when (exception) {
+                        is SessionIdExpiredException -> SpecialistProfileService.Post.ResultInfo.SessionIdExpired()
+                        is BadAccountTypeException -> SpecialistProfileService.Post.ResultInfo.BadAccountType()
+                        is NotFoundException -> SpecialistProfileService.Post.ResultInfo.NotFound()
+                        is RepositoryErrorException -> SpecialistProfileService.Post.ResultInfo.RepositoryError()
+
+                        else -> {
+                            log.e(exception)
+                            SpecialistProfileService.Post.ResultInfo.UnknownError()
+                        }
+                    }
+                }
+    }
+
+    override fun updateProfilePhoto(sessionIdParam: String, profilePhotoParam: MultipartFile): Single<SpecialistProfileService.Post.ResultPhoto> {
+        return Single.just(UpdateProfilePhotoParams(sessionIdParam, profilePhotoParam))
+                .flatMap { (sessionId, newProfilePhoto) ->
                     val userFickle = mUserCache.findOne(sessionId)
                     if (!userFickle.isPresent()) {
                         log.d("SessionId $sessionId was not found in the cache")
@@ -82,8 +124,8 @@ class SpecialistProfileServiceImpl : SpecialistProfileService {
                         throw NotFoundException()
                     }
 
-                    val serverFilePath = "${fs.homeDirectory}/img/profile/${user.id}/"
                     val profile = profileFickle.get()
+                    val serverFilePath = "${fs.homeDirectory}/img/profile/${user.id}/"
 
                     val deleteImageSingle = if (profile.photoName.isNotEmpty()) {
                         mImageService.deleteImage(serverFilePath, profile.photoName)
@@ -91,63 +133,57 @@ class SpecialistProfileServiceImpl : SpecialistProfileService {
                         Single.just(ImageService.Delete.Result.Ok())
                     }
 
-                    return@flatMap Singles.zip(deleteImageSingle, Single.just(params), Single.just(user.id))
+                    return@flatMap Singles.zip(deleteImageSingle, Single.just(newProfilePhoto), Single.just(user.id))
                 }
-                .flatMap { (deleteResponse, params, userId) ->
+                .flatMap { (deleteResponse, newProfilePhoto, userId) ->
                     if (deleteResponse !is ImageService.Delete.Result.Ok) {
                         log.d("Error while trying to delete image")
                         throw CouldNotDeleteImageException()
                     }
 
                     val serverFilePath = "${fs.homeDirectory}/img/profile/$userId/"
-                    val uploadingImageSingle = mImageService.uploadImage(serverFilePath, profilePhoto)
+                    val uploadingImageSingle = mImageService.uploadImage(serverFilePath, newProfilePhoto)
                             .first(ImageService.Post.Result.CouldNotUploadImage())
 
-                    return@flatMap Singles.zip(uploadingImageSingle, Single.just(params), Single.just(userId))
+                    return@flatMap Singles.zip(uploadingImageSingle, Single.just(userId))
                 }
-                .map { (response, params, userId) ->
+                .map { (response, userId) ->
                     if (response !is ImageService.Post.Result.Ok) {
                         log.d("Error while trying to upload image")
                         throw CouldNotUploadImagesException()
                     }
 
-                    val profileRequest = params.request
-                    val name = profileRequest.profileName.limit(Constant.TextLength.MAX_PROFILE_NAME_LENGTH)
-                    val phone = profileRequest.profilePhone.limit(Constant.TextLength.MAX_PHONE_LENGTH)
                     val photoName = response.imageName
 
-                    if (!mSpecialistProfileRepository.update(userId, name, phone, photoName)) {
-                        val serverFilePath = "${fs.homeDirectory}/img/profile/$userId/"
-
-                        //fire and forget
-                        mImageService.deleteImage(serverFilePath, photoName)
-
-                        log.d("Error while trying to update profile in the repository")
+                    if (!mSpecialistProfileRepository.updatePhoto(userId, photoName)) {
+                        log.d("Error while trying to update profile photo in the repository")
                         throw RepositoryErrorException()
                     }
 
-                    return@map SpecialistProfileService.Post.Result.Ok(photoName) as SpecialistProfileService.Post.Result
+                    return@map SpecialistProfileService.Post.ResultPhoto.Ok(photoName) as SpecialistProfileService.Post.ResultPhoto
                 }
                 .onErrorReturn { exception ->
                     return@onErrorReturn when (exception) {
-                        is SessionIdExpiredException -> SpecialistProfileService.Post.Result.SessionIdExpired()
-                        is BadAccountTypeException -> SpecialistProfileService.Post.Result.BadAccountType()
-                        is NotFoundException -> SpecialistProfileService.Post.Result.NotFound()
-                        is CouldNotUploadImagesException -> SpecialistProfileService.Post.Result.CouldNotUploadImage()
-                        is RepositoryErrorException -> SpecialistProfileService.Post.Result.RepositoryError()
-                        is CouldNotDeleteImageException -> SpecialistProfileService.Post.Result.CouldNotDeleteOldImage()
+                        is SessionIdExpiredException -> SpecialistProfileService.Post.ResultPhoto.SessionIdExpired()
+                        is BadAccountTypeException -> SpecialistProfileService.Post.ResultPhoto.BadAccountType()
+                        is NotFoundException -> SpecialistProfileService.Post.ResultPhoto.NotFound()
+                        is CouldNotUploadImagesException -> SpecialistProfileService.Post.ResultPhoto.CouldNotUploadImage()
+                        is RepositoryErrorException -> SpecialistProfileService.Post.ResultPhoto.RepositoryError()
+                        is CouldNotDeleteImageException -> SpecialistProfileService.Post.ResultPhoto.CouldNotDeleteOldImage()
 
                         else -> {
                             log.e(exception)
-                            SpecialistProfileService.Post.Result.UnknownError()
+                            SpecialistProfileService.Post.ResultPhoto.UnknownError()
                         }
                     }
                 }
     }
 
     data class UpdatingProfileParams(val sessionId: String,
-                                     val profilePhoto: MultipartFile,
                                      val request: SpecialistProfileRequest)
+
+    data class UpdateProfilePhotoParams(val sessionId: String,
+                                        val profilePhoto: MultipartFile)
 }
 
 

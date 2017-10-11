@@ -17,18 +17,28 @@ interface SpecialistProfileService {
     }
 
     interface Post {
-        interface Result {
-            class Ok(val newPhotoName: String) : Result
-            class SessionIdExpired : Result
-            class BadAccountType : Result
-            class NotFound : Result
-            class CouldNotUploadImage : Result
-            class CouldNotDeleteOldImage : Result
-            class RepositoryError: Result
-            class UnknownError : Result
+        interface ResultInfo {
+            class Ok : ResultInfo
+            class SessionIdExpired : ResultInfo
+            class BadAccountType : ResultInfo
+            class NotFound : ResultInfo
+            class RepositoryError: ResultInfo
+            class UnknownError : ResultInfo
+        }
+
+        interface ResultPhoto {
+            class Ok(val newPhotoName: String) : ResultPhoto
+            class SessionIdExpired : ResultPhoto
+            class BadAccountType : ResultPhoto
+            class CouldNotUploadImage : ResultPhoto
+            class CouldNotDeleteOldImage : ResultPhoto
+            class NotFound : ResultPhoto
+            class RepositoryError: ResultPhoto
+            class UnknownError : ResultPhoto
         }
     }
 
     fun getProfile(sessionId: String): Single<Get.Result>
-    fun updateProfile(sessionId: String, profilePhoto: MultipartFile, request: SpecialistProfileRequest): Single<Post.Result>
+    fun updateProfileInfo(sessionIdParam: String, requestParam: SpecialistProfileRequest): Single<Post.ResultInfo>
+    fun updateProfilePhoto(sessionIdParam: String, profilePhotoParam: MultipartFile): Single<Post.ResultPhoto>
 }

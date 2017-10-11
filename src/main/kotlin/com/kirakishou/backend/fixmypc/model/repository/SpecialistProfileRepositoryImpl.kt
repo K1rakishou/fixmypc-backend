@@ -87,8 +87,8 @@ class SpecialistProfileRepositoryImpl : SpecialistProfileRepository {
         return result
     }
 
-    override fun update(userId: Long, name: String, phone: String, photoName: String): Boolean {
-        val daoResult = dao.update(userId, name, phone, photoName)
+    override fun updateInfo(userId: Long, name: String, phone: String): Boolean {
+        val daoResult = dao.updateInfo(userId, name, phone)
         if (daoResult is Either.Error) {
             log.e(daoResult.error)
             return false
@@ -98,7 +98,22 @@ class SpecialistProfileRepositoryImpl : SpecialistProfileRepository {
             }
         }
 
-        cache.update(userId, name, phone, photoName)
+        cache.updateInfo(userId, name, phone)
+        return true
+    }
+
+    override fun updatePhoto(userId: Long, photoName: String): Boolean {
+        val daoResult = dao.updatePhoto(userId, photoName)
+        if (daoResult is Either.Error) {
+            log.e(daoResult.error)
+            return false
+        } else {
+            if (!(daoResult as Either.Value).value) {
+                return false
+            }
+        }
+
+        cache.updatePhoto(userId, photoName)
         return true
     }
 

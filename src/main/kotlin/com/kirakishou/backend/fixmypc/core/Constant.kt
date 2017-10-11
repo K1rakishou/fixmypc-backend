@@ -44,7 +44,7 @@ object Constant {
         const val SPECIALIST_PROFILE = "specialist_profile"
 
         const val PROFILE_NAME = "profile_name"
-        const val PROFILE_PHOTO = "profile_photo"
+        const val PROFILE_PHONE = "profile_phone"
 
         const val NEW_SPECIALIST_PROFILE_PHOTO_NAME = "nsp_photo_name"
 

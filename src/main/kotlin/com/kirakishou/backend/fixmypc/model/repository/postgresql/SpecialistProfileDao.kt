@@ -8,6 +8,6 @@ interface SpecialistProfileDao {
     fun saveOne(specialistProfile: SpecialistProfile): Either<Throwable, Boolean>
     fun findOne(userId: Long): Either<Throwable, Fickle<SpecialistProfile>>
     fun findMany(userIdList: List<Long>): Either<Throwable, List<SpecialistProfile>>
-    fun update(userId: Long, name: String, phone: String, photoName: String): Either<Throwable, Boolean>
-    //fun deleteOne(userId: Long): Either<Throwable, Boolean>
+    fun updateInfo(userId: Long, name: String, phone: String): Either<Throwable, Boolean>
+    fun updatePhoto(userId: Long, photoName: String): Either<Throwable, Boolean>
 }

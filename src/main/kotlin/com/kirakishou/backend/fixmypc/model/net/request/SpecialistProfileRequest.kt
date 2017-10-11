@@ -6,5 +6,5 @@ import com.kirakishou.backend.fixmypc.core.Constant
 class SpecialistProfileRequest(@SerializedName(Constant.SerializedNames.PROFILE_NAME)
                                val profileName: String,
 
-                               @SerializedName(Constant.SerializedNames.PROFILE_PHOTO)
+                               @SerializedName(Constant.SerializedNames.PROFILE_PHONE)
                                val profilePhone: String)

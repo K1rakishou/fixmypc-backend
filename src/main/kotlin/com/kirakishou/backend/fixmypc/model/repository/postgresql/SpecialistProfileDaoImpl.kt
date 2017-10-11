@@ -114,14 +114,30 @@ class SpecialistProfileDaoImpl : SpecialistProfileDao {
         return Either.Value(profileList)
     }
 
-    override fun update(userId: Long, name: String, phone: String, photoName: String): Either<Throwable, Boolean> {
+    override fun updateInfo(userId: Long, name: String, phone: String): Either<Throwable, Boolean> {
         try {
             hikariCP.connection.use { connection ->
-                connection.prepareStatement("UPDATE $TABLE_NAME SET photo_name = ?, phone = ?, name = ? WHERE user_id = ?").use { ps ->
+                connection.prepareStatement("UPDATE $TABLE_NAME SET phone = ?, name = ? WHERE user_id = ?").use { ps ->
+                    ps.setString(1, phone)
+                    ps.setString(2, name)
+                    ps.setLong(3, userId)
+
+                    ps.executeUpdate()
+                }
+            }
+        } catch (e: Throwable) {
+            return Either.Error(e)
+        }
+
+        return Either.Value(true)
+    }
+
+    override fun updatePhoto(userId: Long, photoName: String): Either<Throwable, Boolean> {
+        try {
+            hikariCP.connection.use { connection ->
+                connection.prepareStatement("UPDATE $TABLE_NAME SET photo_name = ? WHERE user_id = ?").use { ps ->
                     ps.setString(1, photoName)
-                    ps.setString(2, phone)
-                    ps.setString(3, name)
-                    ps.setLong(4, userId)
+                    ps.setLong(2, userId)
 
                     ps.executeUpdate()
                 }

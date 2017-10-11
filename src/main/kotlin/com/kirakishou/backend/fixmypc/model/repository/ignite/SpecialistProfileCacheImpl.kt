@@ -59,17 +59,27 @@ class SpecialistProfileCacheImpl : SpecialistProfileCache {
                 .collect(Collectors.toList())
     }
 
-    override fun update(userId: Long, name: String, phone: String, photoName: String) {
+    override fun updateInfo(userId: Long, name: String, phone: String) {
         val lock = cache.lock(userId)
         lock.lock()
 
         try {
             val profile = cache.get(userId) ?: return
-
             profile.phone = phone
             profile.name = name
-            profile.photoName = photoName
+            cache.put(userId, profile)
+        } finally {
+            lock.unlock()
+        }
+    }
 
+    override fun updatePhoto(userId: Long, photoName: String) {
+        val lock = cache.lock(userId)
+        lock.lock()
+
+        try {
+            val profile = cache.get(userId) ?: return
+            profile.photoName = photoName
             cache.put(userId, profile)
         } finally {
             lock.unlock()

@@ -8,5 +8,6 @@ interface SpecialistProfileCache {
     fun saveMany(specialistProfileList: List<SpecialistProfile>)
     fun findOne(userId: Long): Fickle<SpecialistProfile>
     fun findMany(userIdList: List<Long>): List<SpecialistProfile>
-    fun update(userId: Long, name: String, phone: String, photoName: String)
+    fun updateInfo(userId: Long, name: String, phone: String)
+    fun updatePhoto(userId: Long, photoName: String)
 }

@@ -167,48 +167,94 @@ class SpecialistController {
     @RequestMapping(path = arrayOf("${Constant.Paths.SPECIALIST_CONTROLLER_PATH}/profile"),
             method = arrayOf(RequestMethod.POST))
     fun updateSpecialistProfile(@RequestHeader(value = "session_id", defaultValue = "") sessionId: String,
-                                @RequestPart("photo") profilePhoto: MultipartFile,
-                                @RequestPart("request") request: SpecialistProfileRequest): Single<ResponseEntity<UpdateSpecialistProfileResponse>> {
+                                @RequestPart("request") request: SpecialistProfileRequest): Single<ResponseEntity<StatusResponse>> {
 
-        return mSpecialistProfileService.updateProfile(sessionId, profilePhoto, request)
+        return mSpecialistProfileService.updateProfileInfo(sessionId, request)
                 .map { result ->
                     when (result) {
-                        is SpecialistProfileService.Post.Result.Ok -> {
+                        is SpecialistProfileService.Post.ResultInfo.Ok -> {
+                            return@map ResponseEntity(StatusResponse(
+                                    ServerErrorCode.SEC_OK.value), HttpStatus.OK)
+                        }
+
+                        is SpecialistProfileService.Post.ResultInfo.SessionIdExpired -> {
+                            return@map ResponseEntity(StatusResponse(
+                                    ServerErrorCode.SEC_SESSION_ID_EXPIRED.value), HttpStatus.UNAUTHORIZED)
+                        }
+
+                        is SpecialistProfileService.Post.ResultInfo.BadAccountType -> {
+                            return@map ResponseEntity(StatusResponse(
+                                    ServerErrorCode.SEC_BAD_ACCOUNT_TYPE.value), HttpStatus.FORBIDDEN)
+                        }
+
+                        is SpecialistProfileService.Post.ResultInfo.NotFound -> {
+                            return@map ResponseEntity(StatusResponse(
+                                    ServerErrorCode.SEC_COULD_NOT_FIND_PROFILE_WITH_USER_ID.value), HttpStatus.NOT_FOUND)
+                        }
+
+                        is SpecialistProfileService.Post.ResultInfo.RepositoryError -> {
+                            return@map ResponseEntity(StatusResponse(
+                                    ServerErrorCode.SEC_REPOSITORY_ERROR.value), HttpStatus.INTERNAL_SERVER_ERROR)
+                        }
+
+                        is SpecialistProfileService.Post.ResultInfo.UnknownError -> {
+                            return@map ResponseEntity(StatusResponse(
+                                    ServerErrorCode.SEC_UNKNOWN_SERVER_ERROR.value), HttpStatus.INTERNAL_SERVER_ERROR)
+                        }
+
+                        else -> throw IllegalArgumentException("Unknown result")
+                    }
+                }
+                .onErrorReturn {
+                    return@onErrorReturn ResponseEntity(StatusResponse(ServerErrorCode.SEC_UNKNOWN_SERVER_ERROR.value),
+                            HttpStatus.INTERNAL_SERVER_ERROR)
+                }
+    }
+
+    @RequestMapping(path = arrayOf("${Constant.Paths.SPECIALIST_CONTROLLER_PATH}/profile/photo"),
+            method = arrayOf(RequestMethod.POST))
+    fun updateSpecialistProfilePhoto(@RequestHeader(value = "session_id", defaultValue = "") sessionId: String,
+                                @RequestPart("photo") profilePhoto: MultipartFile): Single<ResponseEntity<UpdateSpecialistProfileResponse>> {
+
+        return mSpecialistProfileService.updateProfilePhoto(sessionId, profilePhoto)
+                .map { result ->
+                    when (result) {
+                        is SpecialistProfileService.Post.ResultPhoto.Ok -> {
                             return@map ResponseEntity(UpdateSpecialistProfileResponse(result.newPhotoName,
                                     ServerErrorCode.SEC_OK.value), HttpStatus.OK)
                         }
 
-                        is SpecialistProfileService.Post.Result.SessionIdExpired -> {
+                        is SpecialistProfileService.Post.ResultPhoto.SessionIdExpired -> {
                             return@map ResponseEntity(UpdateSpecialistProfileResponse("",
                                     ServerErrorCode.SEC_SESSION_ID_EXPIRED.value), HttpStatus.UNAUTHORIZED)
                         }
 
-                        is SpecialistProfileService.Post.Result.BadAccountType -> {
+                        is SpecialistProfileService.Post.ResultPhoto.BadAccountType -> {
                             return@map ResponseEntity(UpdateSpecialistProfileResponse("",
                                     ServerErrorCode.SEC_BAD_ACCOUNT_TYPE.value), HttpStatus.FORBIDDEN)
                         }
 
-                        is SpecialistProfileService.Post.Result.NotFound -> {
+                        is SpecialistProfileService.Post.ResultPhoto.NotFound -> {
                             return@map ResponseEntity(UpdateSpecialistProfileResponse("",
                                     ServerErrorCode.SEC_COULD_NOT_FIND_PROFILE_WITH_USER_ID.value), HttpStatus.NOT_FOUND)
                         }
 
-                        is SpecialistProfileService.Post.Result.CouldNotUploadImage -> {
+                        is SpecialistProfileService.Post.ResultPhoto.CouldNotUploadImage -> {
                             return@map ResponseEntity(UpdateSpecialistProfileResponse("",
                                     ServerErrorCode.SEC_COULD_NOT_UPLOAD_IMAGE.value), HttpStatus.INTERNAL_SERVER_ERROR)
                         }
 
-                        is SpecialistProfileService.Post.Result.CouldNotDeleteOldImage -> {
+                        is SpecialistProfileService.Post.ResultPhoto.CouldNotDeleteOldImage -> {
                             return@map ResponseEntity(UpdateSpecialistProfileResponse("",
                                     ServerErrorCode.SEC_COULD_NOT_DELETE_OLD_IMAGE.value), HttpStatus.INTERNAL_SERVER_ERROR)
                         }
 
-                        is SpecialistProfileService.Post.Result.RepositoryError -> {
+                        is SpecialistProfileService.Post.ResultPhoto.RepositoryError -> {
                             return@map ResponseEntity(UpdateSpecialistProfileResponse("",
                                     ServerErrorCode.SEC_REPOSITORY_ERROR.value), HttpStatus.INTERNAL_SERVER_ERROR)
                         }
 
-                        is SpecialistProfileService.Post.Result.UnknownError -> {
+                        is SpecialistProfileService.Post.ResultPhoto.UnknownError -> {
                             return@map ResponseEntity(UpdateSpecialistProfileResponse("",
                                     ServerErrorCode.SEC_UNKNOWN_SERVER_ERROR.value), HttpStatus.INTERNAL_SERVER_ERROR)
                         }
@@ -217,7 +263,8 @@ class SpecialistController {
                     }
                 }
                 .onErrorReturn {
-                    return@onErrorReturn ResponseEntity(UpdateSpecialistProfileResponse("", ServerErrorCode.SEC_UNKNOWN_SERVER_ERROR.value),
+                    return@onErrorReturn ResponseEntity(UpdateSpecialistProfileResponse("",
+                            ServerErrorCode.SEC_UNKNOWN_SERVER_ERROR.value),
                             HttpStatus.INTERNAL_SERVER_ERROR)
                 }
     }
