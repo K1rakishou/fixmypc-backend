@@ -1,7 +1,6 @@
 package com.kirakishou.backend.fixmypc.model.repository
 
 import com.kirakishou.backend.fixmypc.core.Fickle
-import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.entity.DamageClaim
 import com.kirakishou.backend.fixmypc.model.repository.ignite.DamageClaimStore
 import com.kirakishou.backend.fixmypc.model.repository.ignite.LocationStore
@@ -18,15 +17,8 @@ class DamageClaimRepositoryImpl : DamageClaimRepository {
     @Autowired
     private lateinit var locationStore: LocationStore
 
-    @Autowired
-    private lateinit var userToDamageClaimKeyAffinityRepository: UserToDamageClaimKeyAffinityRepository
-
-    @Autowired
-    private lateinit var log: FileLog
-
     override fun saveOne(damageClaim: DamageClaim): Boolean {
         damageClaimStore.saveOne(damageClaim)
-        userToDamageClaimKeyAffinityRepository.saveOne(damageClaim.ownerId, damageClaim.id)
         return true
     }
 
@@ -35,12 +27,7 @@ class DamageClaimRepositoryImpl : DamageClaimRepository {
     }
 
     override fun findMany(isActive: Boolean, ownerId: Long, offset: Long, count: Long): List<DamageClaim> {
-        val malfunctionIdList = userToDamageClaimKeyAffinityRepository.findMany(ownerId, offset, count)
-        if (malfunctionIdList.isEmpty()) {
-            return emptyList()
-        }
-
-        return damageClaimStore.findMany(isActive, malfunctionIdList)
+        return damageClaimStore.findManyPaged(isActive, ownerId, offset, count)
     }
 
     override fun findMany(isActive: Boolean, idsToSearch: List<Long>): List<DamageClaim> {
@@ -48,7 +35,6 @@ class DamageClaimRepositoryImpl : DamageClaimRepository {
     }
 
     override fun deleteOne(ownerId: Long, damageClaimId: Long): Boolean {
-        userToDamageClaimKeyAffinityRepository.deleteOne(ownerId, damageClaimId)
         locationStore.deleteOne(damageClaimId)
         return true
     }

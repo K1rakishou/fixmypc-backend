@@ -52,12 +52,13 @@ object Constant {
     }
 
     object IgniteNames {
-        val USER_MALFUNCTION_CACHE_NAME = "user_malfunction_cache"
-        val MALFUNCTION_CACHE_NAME = "malfunction_cache"
-        val USER_CACHE_NAME = "user_cache"
+        val USER_DAMAGE_CLAIM_CACHE = "user_damage_claim_cache"
+        val DAMAGE_CLAIM_CACHE = "damage_claim_cache"
+        val DAMAGE_CLAIM_KEYS_CACHE = "damage_claim_keys_cache"
+        val USER_CACHE = "user_cache"
         val PHOTO_TO_USER_AFFINITY_CACHE = "photo_to_user_affinity_cache"
-        val CLIENT_PROFILE_CACHE_NAME = "client_profile_cache"
-        val SPECIALIST_PROFILE_CACHE_NAME = "specialist_profile_cache"
+        val CLIENT_PROFILE_CACHE = "client_profile_cache"
+        val SPECIALIST_PROFILE_CACHE = "specialist_profile_cache"
         val DAMAGE_CLAIM_ASSIGNED_SPECIALIST_CACHE = "damage_claim_assigned_specialist_cache"
         val RESPONDED_SPECIALISTS_CACHE = "responded_specialists_cache"
         val PROFILE_PHOTO_CACHE = "profile_photo_cache"

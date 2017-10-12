@@ -25,7 +25,7 @@ class SpecialistProfileStoreImpl : SpecialistProfileStore {
     fun init() {
         val cacheConfig = CacheConfiguration<Long, SpecialistProfile>()
         cacheConfig.backups = 1
-        cacheConfig.name = Constant.IgniteNames.SPECIALIST_PROFILE_CACHE_NAME
+        cacheConfig.name = Constant.IgniteNames.SPECIALIST_PROFILE_CACHE
         cacheConfig.cacheMode = CacheMode.PARTITIONED
         cacheConfig.atomicityMode = CacheAtomicityMode.TRANSACTIONAL
         cacheConfig.setIndexedTypes(Long::class.java, SpecialistProfile::class.java)

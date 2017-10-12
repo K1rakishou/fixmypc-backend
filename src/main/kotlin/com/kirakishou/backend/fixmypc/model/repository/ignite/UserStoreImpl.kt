@@ -28,7 +28,7 @@ class UserStoreImpl : UserStore {
     fun init() {
         val cacheConfig = CacheConfiguration<String, User>()
         cacheConfig.backups = 1
-        cacheConfig.name = Constant.IgniteNames.USER_CACHE_NAME
+        cacheConfig.name = Constant.IgniteNames.USER_CACHE
         cacheConfig.cacheMode = CacheMode.PARTITIONED
         cacheConfig.setIndexedTypes(String::class.java, User::class.java)
         //cacheConfig.setExpiryPolicyFactory(MyExpiryPolicyFactory(Duration.TEN_MINUTES, Duration.TEN_MINUTES, Duration.TEN_MINUTES))
