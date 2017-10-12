@@ -7,7 +7,7 @@ import com.kirakishou.backend.fixmypc.model.entity.DamageClaim
 import com.kirakishou.backend.fixmypc.model.exception.*
 import com.kirakishou.backend.fixmypc.model.net.request.CreateDamageClaimRequest
 import com.kirakishou.backend.fixmypc.model.repository.DamageClaimRepository
-import com.kirakishou.backend.fixmypc.model.repository.ignite.UserStore
+import com.kirakishou.backend.fixmypc.model.repository.store.UserStore
 import com.kirakishou.backend.fixmypc.service.ImageService
 import com.kirakishou.backend.fixmypc.util.ServerUtils
 import com.kirakishou.backend.fixmypc.util.TextUtils

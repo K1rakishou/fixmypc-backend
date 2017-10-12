@@ -1,4 +1,4 @@
-package com.kirakishou.backend.fixmypc.model.repository.ignite
+package com.kirakishou.backend.fixmypc.model.repository.store
 
 import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.core.Fickle
@@ -25,7 +25,7 @@ class RespondedSpecialistsStoreImpl : RespondedSpecialistsStore {
     fun init() {
         val cacheConfig = CacheConfiguration<Long, MutableSet<RespondedSpecialist>>()
         cacheConfig.backups = 1
-        cacheConfig.name = Constant.IgniteNames.RESPONDED_SPECIALISTS_CACHE
+        cacheConfig.name = Constant.IgniteNames.RESPONDED_SPECIALISTS_STORE
         cacheConfig.cacheMode = CacheMode.PARTITIONED
         cacheConfig.atomicityMode = CacheAtomicityMode.TRANSACTIONAL
         cacheConfig.setIndexedTypes(Long::class.java, MutableSet::class.java)

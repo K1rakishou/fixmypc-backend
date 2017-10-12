@@ -1,4 +1,4 @@
-package com.kirakishou.backend.fixmypc.model.repository.ignite
+package com.kirakishou.backend.fixmypc.model.repository.store
 
 import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.core.Fickle
@@ -23,7 +23,7 @@ class ProfilePhotoStoreImpl : ProfilePhotoStore {
     fun init() {
         val cacheConfig = CacheConfiguration<Long, ProfilePhoto>()
         cacheConfig.backups = 1
-        cacheConfig.name = Constant.IgniteNames.PROFILE_PHOTO_CACHE
+        cacheConfig.name = Constant.IgniteNames.PROFILE_PHOTO_STORE
         cacheConfig.cacheMode = CacheMode.PARTITIONED
         cacheConfig.setIndexedTypes(Long::class.java, ProfilePhoto::class.java)
         //cacheConfig.setExpiryPolicyFactory(MyExpiryPolicyFactory(Duration.TEN_MINUTES, Duration.TEN_MINUTES, Duration.TEN_MINUTES))

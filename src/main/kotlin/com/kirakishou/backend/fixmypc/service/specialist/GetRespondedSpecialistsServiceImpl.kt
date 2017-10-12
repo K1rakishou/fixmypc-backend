@@ -5,7 +5,7 @@ import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.repository.DamageClaimRepository
 import com.kirakishou.backend.fixmypc.model.repository.RespondedSpecialistsRepository
 import com.kirakishou.backend.fixmypc.model.repository.SpecialistProfileRepository
-import com.kirakishou.backend.fixmypc.model.repository.ignite.UserStore
+import com.kirakishou.backend.fixmypc.model.repository.store.UserStore
 import io.reactivex.Single
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component

@@ -5,8 +5,8 @@ import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.entity.LatLon
 import com.kirakishou.backend.fixmypc.model.repository.DamageClaimRepository
-import com.kirakishou.backend.fixmypc.model.repository.ignite.LocationStore
-import com.kirakishou.backend.fixmypc.model.repository.ignite.UserStore
+import com.kirakishou.backend.fixmypc.model.repository.store.LocationStore
+import com.kirakishou.backend.fixmypc.model.repository.store.UserStore
 import io.reactivex.Single
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component

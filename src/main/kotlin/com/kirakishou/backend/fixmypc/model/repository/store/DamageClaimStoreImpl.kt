@@ -1,4 +1,4 @@
-package com.kirakishou.backend.fixmypc.model.repository.ignite
+package com.kirakishou.backend.fixmypc.model.repository.store
 
 import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.core.Fickle
@@ -34,14 +34,14 @@ class DamageClaimStoreImpl : DamageClaimStore {
     fun init() {
         val damageClaimStoreConfig = CacheConfiguration<Long, DamageClaim>()
         damageClaimStoreConfig.backups = 1
-        damageClaimStoreConfig.name = Constant.IgniteNames.DAMAGE_CLAIM_CACHE
+        damageClaimStoreConfig.name = Constant.IgniteNames.DAMAGE_CLAIM_STORE
         damageClaimStoreConfig.cacheMode = CacheMode.PARTITIONED
         damageClaimStoreConfig.setIndexedTypes(Long::class.java, DamageClaim::class.java)
         damageClaimStore = ignite.createCache(damageClaimStoreConfig)
 
         val damageClaimKeyStoreConfig = CacheConfiguration<Long, MutableSet<Long>>()
         damageClaimKeyStoreConfig.backups = 1
-        damageClaimKeyStoreConfig.name = Constant.IgniteNames.DAMAGE_CLAIM_KEYS_CACHE
+        damageClaimKeyStoreConfig.name = Constant.IgniteNames.DAMAGE_CLAIM_KEYS_STORE
         damageClaimKeyStoreConfig.cacheMode = CacheMode.PARTITIONED
         damageClaimKeyStoreConfig.atomicityMode = CacheAtomicityMode.TRANSACTIONAL
         damageClaimKeyStoreConfig.setIndexedTypes(Long::class.java, MutableSet::class.java)

@@ -52,16 +52,16 @@ object Constant {
     }
 
     object IgniteNames {
-        val USER_DAMAGE_CLAIM_CACHE = "user_damage_claim_cache"
-        val DAMAGE_CLAIM_CACHE = "damage_claim_cache"
-        val DAMAGE_CLAIM_KEYS_CACHE = "damage_claim_keys_cache"
-        val USER_CACHE = "user_cache"
-        val PHOTO_TO_USER_AFFINITY_CACHE = "photo_to_user_affinity_cache"
-        val CLIENT_PROFILE_CACHE = "client_profile_cache"
-        val SPECIALIST_PROFILE_CACHE = "specialist_profile_cache"
-        val DAMAGE_CLAIM_ASSIGNED_SPECIALIST_CACHE = "damage_claim_assigned_specialist_cache"
-        val RESPONDED_SPECIALISTS_CACHE = "responded_specialists_cache"
-        val PROFILE_PHOTO_CACHE = "profile_photo_cache"
+        val DAMAGE_CLAIM_STORE = "damage_claim_store"
+        val DAMAGE_CLAIM_KEYS_STORE = "damage_claim_keys_store"
+        val USER_STORE = "user_store"
+        val CLIENT_PROFILE_STORE = "client_profile_store"
+        val SPECIALIST_PROFILE_STORE = "specialist_profile_store"
+        val DAMAGE_CLAIM_ASSIGNED_SPECIALIST_STORE = "damage_claim_assigned_specialist_store"
+        val RESPONDED_SPECIALISTS_STORE = "responded_specialists_store"
+        val PROFILE_PHOTO_STORE = "profile_photo_store"
+
+        val SESSION_CACHE = "session_cache"
     }
 
     object RedisNames {

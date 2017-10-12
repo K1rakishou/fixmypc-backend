@@ -1,4 +1,4 @@
-package com.kirakishou.backend.fixmypc.model.repository.ignite
+package com.kirakishou.backend.fixmypc.model.repository.store
 
 import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.core.Fickle
@@ -24,10 +24,9 @@ class AssignedSpecialistStoreImpl : AssignedSpecialistStore {
     fun init() {
         val cacheConfig = CacheConfiguration<Long, AssignedSpecialist>()
         cacheConfig.backups = 1
-        cacheConfig.name = Constant.IgniteNames.DAMAGE_CLAIM_ASSIGNED_SPECIALIST_CACHE
+        cacheConfig.name = Constant.IgniteNames.DAMAGE_CLAIM_ASSIGNED_SPECIALIST_STORE
         cacheConfig.cacheMode = CacheMode.PARTITIONED
         cacheConfig.setIndexedTypes(Long::class.java, AssignedSpecialist::class.java)
-        //cacheConfig.setExpiryPolicyFactory(MyExpiryPolicyFactory(Duration.THIRTY_MINUTES, Duration.THIRTY_MINUTES, Duration.THIRTY_MINUTES))
 
         assignedSpecialistStore = ignite.createCache(cacheConfig)
     }

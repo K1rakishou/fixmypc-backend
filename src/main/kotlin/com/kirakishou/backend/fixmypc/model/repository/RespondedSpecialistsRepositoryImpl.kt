@@ -2,7 +2,7 @@ package com.kirakishou.backend.fixmypc.model.repository
 
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.entity.RespondedSpecialist
-import com.kirakishou.backend.fixmypc.model.repository.ignite.RespondedSpecialistsStore
+import com.kirakishou.backend.fixmypc.model.repository.store.RespondedSpecialistsStore
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 

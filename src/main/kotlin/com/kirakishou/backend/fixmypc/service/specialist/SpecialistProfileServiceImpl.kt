@@ -7,7 +7,7 @@ import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.exception.*
 import com.kirakishou.backend.fixmypc.model.net.request.SpecialistProfileRequest
 import com.kirakishou.backend.fixmypc.model.repository.SpecialistProfileRepository
-import com.kirakishou.backend.fixmypc.model.repository.ignite.UserStore
+import com.kirakishou.backend.fixmypc.model.repository.store.UserStore
 import com.kirakishou.backend.fixmypc.service.ImageService
 import io.reactivex.Single
 import io.reactivex.rxkotlin.Singles

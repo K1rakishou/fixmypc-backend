@@ -1,4 +1,4 @@
-package com.kirakishou.backend.fixmypc.model.repository.ignite
+package com.kirakishou.backend.fixmypc.model.repository.store
 
 import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.core.Fickle
@@ -25,7 +25,7 @@ class SpecialistProfileStoreImpl : SpecialistProfileStore {
     fun init() {
         val cacheConfig = CacheConfiguration<Long, SpecialistProfile>()
         cacheConfig.backups = 1
-        cacheConfig.name = Constant.IgniteNames.SPECIALIST_PROFILE_CACHE
+        cacheConfig.name = Constant.IgniteNames.SPECIALIST_PROFILE_STORE
         cacheConfig.cacheMode = CacheMode.PARTITIONED
         cacheConfig.atomicityMode = CacheAtomicityMode.TRANSACTIONAL
         cacheConfig.setIndexedTypes(Long::class.java, SpecialistProfile::class.java)

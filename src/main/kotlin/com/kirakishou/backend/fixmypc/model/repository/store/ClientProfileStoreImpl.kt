@@ -1,4 +1,4 @@
-package com.kirakishou.backend.fixmypc.model.repository.ignite
+package com.kirakishou.backend.fixmypc.model.repository.store
 
 import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.core.Fickle
@@ -23,7 +23,7 @@ class ClientProfileStoreImpl : ClientProfileStore {
     fun init() {
         val cacheConfig = CacheConfiguration<Long, ClientProfile>()
         cacheConfig.backups = 1
-        cacheConfig.name = Constant.IgniteNames.CLIENT_PROFILE_CACHE
+        cacheConfig.name = Constant.IgniteNames.CLIENT_PROFILE_STORE
         cacheConfig.cacheMode = CacheMode.PARTITIONED
         cacheConfig.setIndexedTypes(Long::class.java, ClientProfile::class.java)
         //cacheConfig.setExpiryPolicyFactory(MyExpiryPolicyFactory(Duration.TEN_MINUTES, Duration.TEN_MINUTES, Duration.TEN_MINUTES))

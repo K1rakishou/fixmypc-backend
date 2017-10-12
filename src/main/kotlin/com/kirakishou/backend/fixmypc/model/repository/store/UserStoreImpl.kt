@@ -1,4 +1,4 @@
-package com.kirakishou.backend.fixmypc.model.repository.ignite
+package com.kirakishou.backend.fixmypc.model.repository.store
 
 import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.core.Fickle
@@ -28,7 +28,7 @@ class UserStoreImpl : UserStore {
     fun init() {
         val cacheConfig = CacheConfiguration<String, User>()
         cacheConfig.backups = 1
-        cacheConfig.name = Constant.IgniteNames.USER_CACHE
+        cacheConfig.name = Constant.IgniteNames.USER_STORE
         cacheConfig.cacheMode = CacheMode.PARTITIONED
         cacheConfig.setIndexedTypes(String::class.java, User::class.java)
         //cacheConfig.setExpiryPolicyFactory(MyExpiryPolicyFactory(Duration.TEN_MINUTES, Duration.TEN_MINUTES, Duration.TEN_MINUTES))
