@@ -67,6 +67,8 @@ object Constant {
 
         //generator
         val USER_ID_GENERATOR = "user_id_generator"
+        val DAMAGE_CLAIM_GENERATOR = "damage_claim_generator"
+        val RESPONDED_SPECIALIST_ID_GENERATOR = "responded_specialist_id_generator"
     }
 
     object RedisNames {

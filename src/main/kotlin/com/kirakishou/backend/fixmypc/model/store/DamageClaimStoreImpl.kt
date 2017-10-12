@@ -5,10 +5,12 @@ import com.kirakishou.backend.fixmypc.core.Fickle
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.entity.DamageClaim
 import org.apache.ignite.Ignite
+import org.apache.ignite.IgniteAtomicSequence
 import org.apache.ignite.IgniteCache
 import org.apache.ignite.cache.CacheAtomicityMode
 import org.apache.ignite.cache.CacheMode
 import org.apache.ignite.cache.query.SqlQuery
+import org.apache.ignite.configuration.AtomicConfiguration
 import org.apache.ignite.configuration.CacheConfiguration
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -23,6 +25,8 @@ class DamageClaimStoreImpl : DamageClaimStore {
 
     @Autowired
     lateinit var log: FileLog
+
+    lateinit var damageClaimIdGenerator: IgniteAtomicSequence
 
     //damageClaimId, DamageClaim
     lateinit var damageClaimStore: IgniteCache<Long, DamageClaim>
@@ -46,11 +50,18 @@ class DamageClaimStoreImpl : DamageClaimStore {
         damageClaimKeyStoreConfig.atomicityMode = CacheAtomicityMode.TRANSACTIONAL
         damageClaimKeyStoreConfig.setIndexedTypes(Long::class.java, MutableSet::class.java)
         damageClaimKeyStore = ignite.createCache(damageClaimKeyStoreConfig)
+
+        val atomicConfig = AtomicConfiguration()
+        atomicConfig.backups = 3
+        atomicConfig.cacheMode = CacheMode.PARTITIONED
+
+        damageClaimIdGenerator = ignite.atomicSequence(Constant.IgniteNames.DAMAGE_CLAIM_GENERATOR, atomicConfig, 0L, true)
     }
 
     override fun saveOne(damageClaim: DamageClaim) {
         ignite.transactions().txStart().use { transaction ->
             try {
+                damageClaim.id = damageClaimIdGenerator.andIncrement
                 val userId = damageClaim.ownerId
 
                 val lock = damageClaimKeyStore.lock(userId)

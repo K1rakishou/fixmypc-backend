@@ -4,9 +4,11 @@ import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.core.Fickle
 import com.kirakishou.backend.fixmypc.model.entity.RespondedSpecialist
 import org.apache.ignite.Ignite
+import org.apache.ignite.IgniteAtomicSequence
 import org.apache.ignite.IgniteCache
 import org.apache.ignite.cache.CacheAtomicityMode
 import org.apache.ignite.cache.CacheMode
+import org.apache.ignite.configuration.AtomicConfiguration
 import org.apache.ignite.configuration.CacheConfiguration
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -20,6 +22,7 @@ class RespondedSpecialistsStoreImpl : RespondedSpecialistsStore {
     lateinit var ignite: Ignite
 
     lateinit var respondedSpecialistsCache: IgniteCache<Long, MutableSet<RespondedSpecialist>>
+    lateinit var respondedSpecialistIdGenerator: IgniteAtomicSequence
 
     @PostConstruct
     fun init() {
@@ -29,9 +32,12 @@ class RespondedSpecialistsStoreImpl : RespondedSpecialistsStore {
         cacheConfig.cacheMode = CacheMode.PARTITIONED
         cacheConfig.atomicityMode = CacheAtomicityMode.TRANSACTIONAL
         cacheConfig.setIndexedTypes(Long::class.java, MutableSet::class.java)
-        //cacheConfig.setExpiryPolicyFactory(MyExpiryPolicyFactory(Duration.TEN_MINUTES, Duration.TEN_MINUTES, Duration.TEN_MINUTES))
-
         respondedSpecialistsCache = ignite.createCache(cacheConfig)
+
+        val atomicConfig = AtomicConfiguration()
+        atomicConfig.backups = 3
+        atomicConfig.cacheMode = CacheMode.PARTITIONED
+        respondedSpecialistIdGenerator = ignite.atomicSequence(Constant.IgniteNames.RESPONDED_SPECIALIST_ID_GENERATOR, atomicConfig, 0L, true)
     }
 
     override fun saveOne(respondedSpecialist: RespondedSpecialist) {
@@ -39,6 +45,8 @@ class RespondedSpecialistsStoreImpl : RespondedSpecialistsStore {
         lock.lock()
 
         try {
+            respondedSpecialist.id = respondedSpecialistIdGenerator.andIncrement
+
             val allRespondedSpecialists = get(respondedSpecialist.damageClaimId)
             allRespondedSpecialists.add(respondedSpecialist)
             respondedSpecialistsCache.put(respondedSpecialist.damageClaimId, allRespondedSpecialists)

@@ -39,7 +39,6 @@ class UserStoreImpl : UserStore {
         val atomicConfig = AtomicConfiguration()
         atomicConfig.backups = 3
         atomicConfig.cacheMode = CacheMode.PARTITIONED
-
         userIdGenerator = ignite.atomicSequence(Constant.IgniteNames.USER_ID_GENERATOR, atomicConfig, 0L, true)
     }
 
