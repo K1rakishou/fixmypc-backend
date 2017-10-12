@@ -2,7 +2,6 @@ package com.kirakishou.backend.fixmypc.model.repository.ignite
 
 import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.core.Fickle
-import com.kirakishou.backend.fixmypc.core.MyExpiryPolicyFactory
 import com.kirakishou.backend.fixmypc.model.entity.AssignedSpecialist
 import org.apache.ignite.Ignite
 import org.apache.ignite.IgniteCache
@@ -12,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import java.util.stream.Collectors
 import javax.annotation.PostConstruct
-import javax.cache.expiry.Duration
 
 @Component
 class AssignedSpecialistCacheImpl : AssignedSpecialistCache {
@@ -25,10 +23,11 @@ class AssignedSpecialistCacheImpl : AssignedSpecialistCache {
     @PostConstruct
     fun init() {
         val cacheConfig = CacheConfiguration<Long, AssignedSpecialist>()
-        cacheConfig.backups = 0
+        cacheConfig.backups = 1
         cacheConfig.name = Constant.IgniteNames.DAMAGE_CLAIM_ASSIGNED_SPECIALIST_CACHE
         cacheConfig.cacheMode = CacheMode.PARTITIONED
-        cacheConfig.setExpiryPolicyFactory(MyExpiryPolicyFactory(Duration.THIRTY_MINUTES, Duration.THIRTY_MINUTES, Duration.THIRTY_MINUTES))
+        cacheConfig.setIndexedTypes(Long::class.java, AssignedSpecialist::class.java)
+        //cacheConfig.setExpiryPolicyFactory(MyExpiryPolicyFactory(Duration.THIRTY_MINUTES, Duration.THIRTY_MINUTES, Duration.THIRTY_MINUTES))
 
         assignedSpecialistCache = ignite.createCache(cacheConfig)
     }

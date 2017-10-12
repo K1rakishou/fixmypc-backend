@@ -2,11 +2,11 @@ package com.kirakishou.backend.fixmypc.config
 
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.log.FileLogImpl
-import com.zaxxer.hikari.HikariDataSource
 import org.apache.hadoop.fs.FileSystem
 import org.apache.ignite.Ignite
 import org.apache.ignite.Ignition
 import org.apache.ignite.configuration.IgniteConfiguration
+import org.apache.ignite.configuration.PersistentStoreConfiguration
 import org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi
 import org.apache.ignite.spi.discovery.tcp.ipfinder.vm.TcpDiscoveryVmIpFinder
 import org.springframework.beans.factory.annotation.Value
@@ -21,7 +21,6 @@ import org.springframework.http.converter.json.GsonHttpMessageConverter
 import org.springframework.web.client.AsyncRestTemplate
 import redis.clients.jedis.JedisShardInfo
 import java.util.*
-import javax.sql.DataSource
 
 
 
@@ -56,6 +55,7 @@ class AppConfig {
         //igniteConfiguration.discoverySpi = discoSpi
         //igniteConfiguration.deploymentMode = DeploymentMode.SHARED
         igniteConfiguration.metricsLogFrequency = 0
+        igniteConfiguration.persistentStoreConfiguration = PersistentStoreConfiguration()
 
         return Ignition.start(igniteConfiguration)
     }
@@ -67,7 +67,7 @@ class AppConfig {
         return FileSystem.newInstance(conf)
     }
 
-    @Bean
+    /*@Bean
     fun provideDataSource(): DataSource {
         val dataSource = HikariDataSource()
         dataSource.driverClassName = "org.postgresql.Driver"
@@ -79,7 +79,7 @@ class AppConfig {
         dataSource.connectionTimeout = 20000*/
 
         return dataSource
-    }
+    }*/
 
     @Bean
     fun provideJedisConnectionFactory(): JedisConnectionFactory {

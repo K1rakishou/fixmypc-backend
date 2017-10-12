@@ -8,6 +8,7 @@ interface DamageClaimCache {
     fun saveMany(damageClaimList: List<DamageClaim>)
     fun findOne(malfunctionId: Long): Fickle<DamageClaim>
     fun findMany(isActive: Boolean, malfunctionIdList: List<Long>): List<DamageClaim>
+    fun findAll(isActive: Boolean): List<DamageClaim>
     fun deleteOne(malfunctionId: Long)
     fun deleteMany(malfunctionIdList: List<Long>)
     fun clear()

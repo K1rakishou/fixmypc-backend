@@ -3,7 +3,6 @@ package com.kirakishou.backend.fixmypc.model.repository.ignite
 import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.entity.LatLon
-import com.kirakishou.backend.fixmypc.model.repository.postgresql.DamageClaimDao
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.geo.Circle
 import org.springframework.data.geo.Distance
@@ -22,7 +21,7 @@ class LocationCacheImpl : LocationCache {
     lateinit var template: RedisTemplate<String, Long>
 
     @Autowired
-    lateinit var damageClaimDao: DamageClaimDao
+    lateinit var damageClaimCache: DamageClaimCache
 
     @Autowired
     lateinit var log: FileLog
@@ -63,15 +62,15 @@ class LocationCacheImpl : LocationCache {
             val mapOfItems = mutableMapOf<Long, Point>()
 
             while (true) {
-                val itemsFromDb = damageClaimDao.findAllIdsWithLocations(offset, count)
-                if (itemsFromDb.isEmpty()) {
+                val damageClaimsList = damageClaimCache.findAll(true)
+                if (damageClaimsList.isEmpty()) {
                     break
                 }
 
-                totalLoaded += itemsFromDb.size
+                totalLoaded += damageClaimsList.size
 
-                for ((id, location) in itemsFromDb) {
-                    mapOfItems.put(id, Point(location.lon, location.lat))
+                for (damageClaim in damageClaimsList) {
+                    mapOfItems.put(damageClaim.id, Point(damageClaim.lon, damageClaim.lat))
                 }
 
                 offset += count

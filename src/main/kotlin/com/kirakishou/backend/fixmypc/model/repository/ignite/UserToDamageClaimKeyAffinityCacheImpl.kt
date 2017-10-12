@@ -1,7 +1,6 @@
 package com.kirakishou.backend.fixmypc.model.repository.ignite
 
 import com.kirakishou.backend.fixmypc.core.Constant
-import com.kirakishou.backend.fixmypc.core.MyExpiryPolicyFactory
 import org.apache.ignite.Ignite
 import org.apache.ignite.IgniteCache
 import org.apache.ignite.cache.CacheAtomicityMode
@@ -13,7 +12,6 @@ import java.util.SortedSet
 import java.util.TreeSet
 import java.util.stream.Collectors
 import javax.annotation.PostConstruct
-import javax.cache.expiry.Duration
 import kotlin.collections.ArrayList
 
 @Component
@@ -27,11 +25,12 @@ class UserToDamageClaimKeyAffinityCacheImpl : UserToDamageClaimKeyAffinityCache 
     @PostConstruct
     fun init() {
         val cacheConfig = CacheConfiguration<Long, SortedSet<Long>>()
-        cacheConfig.backups = 0
+        cacheConfig.backups = 1
         cacheConfig.name = Constant.IgniteNames.USER_MALFUNCTION_CACHE_NAME
         cacheConfig.cacheMode = CacheMode.PARTITIONED
         cacheConfig.atomicityMode = CacheAtomicityMode.TRANSACTIONAL
-        cacheConfig.setExpiryPolicyFactory(MyExpiryPolicyFactory(Duration.TEN_MINUTES, Duration.TEN_MINUTES, Duration.TEN_MINUTES))
+        cacheConfig.setIndexedTypes(Long::class.java, SortedSet::class.java)
+        //cacheConfig.setExpiryPolicyFactory(MyExpiryPolicyFactory(Duration.TEN_MINUTES, Duration.TEN_MINUTES, Duration.TEN_MINUTES))
 
         userMalfunctionStore = ignite.createCache(cacheConfig)
     }
