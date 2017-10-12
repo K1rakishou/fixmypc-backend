@@ -167,7 +167,7 @@ class SpecialistController {
     @RequestMapping(path = arrayOf("${Constant.Paths.SPECIALIST_CONTROLLER_PATH}/profile"),
             method = arrayOf(RequestMethod.POST))
     fun updateSpecialistProfile(@RequestHeader(value = "session_id", defaultValue = "") sessionId: String,
-                                @RequestPart("request") request: SpecialistProfileRequest): Single<ResponseEntity<StatusResponse>> {
+                                @RequestBody request: SpecialistProfileRequest): Single<ResponseEntity<StatusResponse>> {
 
         return mSpecialistProfileService.updateProfileInfo(sessionId, request)
                 .map { result ->
@@ -214,7 +214,7 @@ class SpecialistController {
     @RequestMapping(path = arrayOf("${Constant.Paths.SPECIALIST_CONTROLLER_PATH}/profile/photo"),
             method = arrayOf(RequestMethod.POST))
     fun updateSpecialistProfilePhoto(@RequestHeader(value = "session_id", defaultValue = "") sessionId: String,
-                                @RequestPart("photo") profilePhoto: MultipartFile): Single<ResponseEntity<UpdateSpecialistProfileResponse>> {
+                                     @RequestPart("photo") profilePhoto: MultipartFile): Single<ResponseEntity<UpdateSpecialistProfileResponse>> {
 
         return mSpecialistProfileService.updateProfilePhoto(sessionId, profilePhoto)
                 .map { result ->
