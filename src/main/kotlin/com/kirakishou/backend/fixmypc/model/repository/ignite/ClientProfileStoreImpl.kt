@@ -2,7 +2,7 @@ package com.kirakishou.backend.fixmypc.model.repository.ignite
 
 import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.core.Fickle
-import com.kirakishou.backend.fixmypc.model.entity.User
+import com.kirakishou.backend.fixmypc.model.entity.ClientProfile
 import org.apache.ignite.Ignite
 import org.apache.ignite.IgniteCache
 import org.apache.ignite.cache.CacheMode
@@ -11,40 +11,35 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import javax.annotation.PostConstruct
 
-
-/**
- * Created by kirakishou on 7/11/2017.
- */
-
 @Component
-class UserCacheImpl : UserCache {
+class ClientProfileStoreImpl : ClientProfileStore {
 
     @Autowired
     lateinit var ignite: Ignite
 
-    lateinit var userStore: IgniteCache<String, User>
+    lateinit var clientProfileStore: IgniteCache<Long, ClientProfile>
 
     @PostConstruct
     fun init() {
-        val cacheConfig = CacheConfiguration<String, User>()
+        val cacheConfig = CacheConfiguration<Long, ClientProfile>()
         cacheConfig.backups = 1
-        cacheConfig.name = Constant.IgniteNames.USER_CACHE_NAME
+        cacheConfig.name = Constant.IgniteNames.CLIENT_PROFILE_CACHE_NAME
         cacheConfig.cacheMode = CacheMode.PARTITIONED
-        cacheConfig.setIndexedTypes(String::class.java, User::class.java)
+        cacheConfig.setIndexedTypes(Long::class.java, ClientProfile::class.java)
         //cacheConfig.setExpiryPolicyFactory(MyExpiryPolicyFactory(Duration.TEN_MINUTES, Duration.TEN_MINUTES, Duration.TEN_MINUTES))
 
-        userStore = ignite.createCache(cacheConfig)
+        clientProfileStore = ignite.createCache(cacheConfig)
     }
 
-    override fun saveOne(sessionId: String, user: User) {
-        userStore.put(sessionId, user)
+    override fun saveOne(clientProfile: ClientProfile) {
+        clientProfileStore.put(clientProfile.userId, clientProfile)
     }
 
-    override fun findOne(sessionId: String): Fickle<User> {
-        return Fickle.of(userStore[sessionId])
+    override fun findOne(userId: Long): Fickle<ClientProfile> {
+        return Fickle.of(clientProfileStore[userId])
     }
 
-    override fun deleteOne(sessionId: String) {
-        userStore.remove(sessionId)
-    }
+    /*override fun deleteOne(userId: Long) {
+        assignedSpecialistStore.remove(userId)
+    }*/
 }

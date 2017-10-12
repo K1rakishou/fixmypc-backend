@@ -11,9 +11,9 @@ import org.springframework.test.util.ReflectionTestUtils
 import redis.clients.jedis.JedisShardInfo
 import java.util.*
 
-class LocationCacheImplTest {
+class LocationStoreImplTest {
 
-    val locationCache = LocationCacheImpl()
+    val locationCache = LocationStoreImpl()
 
     lateinit var redisTemplate: RedisTemplate<String, Long>
 

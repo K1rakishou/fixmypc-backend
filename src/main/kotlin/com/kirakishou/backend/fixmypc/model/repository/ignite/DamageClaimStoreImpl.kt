@@ -13,12 +13,12 @@ import org.springframework.stereotype.Component
 import javax.annotation.PostConstruct
 
 @Component
-class DamageClaimCacheImpl : DamageClaimCache {
+class DamageClaimStoreImpl : DamageClaimStore {
 
     @Autowired
     lateinit var ignite: Ignite
 
-    lateinit var damageClaimCache: IgniteCache<Long, DamageClaim>
+    lateinit var damageClaimStore: IgniteCache<Long, DamageClaim>
 
     @PostConstruct
     fun init() {
@@ -29,11 +29,11 @@ class DamageClaimCacheImpl : DamageClaimCache {
         cacheConfig.setIndexedTypes(Long::class.java, DamageClaim::class.java)
         //cacheConfig.setExpiryPolicyFactory(MyExpiryPolicyFactory(Duration.TEN_MINUTES, Duration.TEN_MINUTES, Duration.TEN_MINUTES))
 
-        damageClaimCache = ignite.createCache(cacheConfig)
+        damageClaimStore = ignite.createCache(cacheConfig)
     }
 
     override fun saveOne(damageClaim: DamageClaim) {
-        damageClaimCache.put(damageClaim.id, damageClaim)
+        damageClaimStore.put(damageClaim.id, damageClaim)
     }
 
     override fun saveMany(damageClaimList: List<DamageClaim>) {
@@ -43,16 +43,16 @@ class DamageClaimCacheImpl : DamageClaimCache {
             damageClaimMap.put(malfunction.id, malfunction)
         }
 
-        damageClaimCache.putAll(damageClaimMap)
+        damageClaimStore.putAll(damageClaimMap)
     }
 
     override fun findOne(malfunctionId: Long): Fickle<DamageClaim> {
-        return Fickle.of(damageClaimCache[malfunctionId])
+        return Fickle.of(damageClaimStore[malfunctionId])
     }
 
     override fun findMany(isActive: Boolean, malfunctionIdList: List<Long>): List<DamageClaim> {
         val set = malfunctionIdList.toSet()
-        val clientDamageClaims = damageClaimCache.getAll(set).values
+        val clientDamageClaims = damageClaimStore.getAll(set).values
         val filtered = clientDamageClaims.filter { it.isActive == isActive }
 
         return ArrayList(filtered)
@@ -62,20 +62,20 @@ class DamageClaimCacheImpl : DamageClaimCache {
         val sql = "SELECT * FROM DamageClaim WHERE is_active = ?"
         val sqlQuery = SqlQuery<Long, DamageClaim>(DamageClaim::class.java, sql).setArgs(isActive)
 
-        return damageClaimCache.query(sqlQuery)
+        return damageClaimStore.query(sqlQuery)
                 .all
                 .map { it.value }
     }
 
     override fun deleteOne(malfunctionId: Long) {
-        damageClaimCache.remove(malfunctionId)
+        damageClaimStore.remove(malfunctionId)
     }
 
     override fun deleteMany(malfunctionIdList: List<Long>) {
-        damageClaimCache.removeAll(malfunctionIdList.toSet())
+        damageClaimStore.removeAll(malfunctionIdList.toSet())
     }
 
     override fun clear() {
-        damageClaimCache.clear()
+        damageClaimStore.clear()
     }
 }

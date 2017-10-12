@@ -15,7 +15,7 @@ import javax.annotation.PostConstruct
 import kotlin.collections.ArrayList
 
 @Component
-class UserToDamageClaimKeyAffinityCacheImpl : UserToDamageClaimKeyAffinityCache {
+class UserToDamageClaimKeyAffinityStoreImpl : UserToDamageClaimKeyAffinityStore {
 
     @Autowired
     lateinit var ignite: Ignite

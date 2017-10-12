@@ -2,7 +2,7 @@ package com.kirakishou.backend.fixmypc.model.repository.ignite
 
 import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.core.Fickle
-import com.kirakishou.backend.fixmypc.model.entity.ProfilePhoto
+import com.kirakishou.backend.fixmypc.model.entity.User
 import org.apache.ignite.Ignite
 import org.apache.ignite.IgniteCache
 import org.apache.ignite.cache.CacheMode
@@ -11,31 +11,40 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import javax.annotation.PostConstruct
 
+
+/**
+ * Created by kirakishou on 7/11/2017.
+ */
+
 @Component
-class ProfilePhotoCacheImpl : ProfilePhotoCache {
+class UserStoreImpl : UserStore {
 
     @Autowired
     lateinit var ignite: Ignite
 
-    lateinit var profilePhotoCache: IgniteCache<Long, ProfilePhoto>
+    lateinit var userStore: IgniteCache<String, User>
 
     @PostConstruct
     fun init() {
-        val cacheConfig = CacheConfiguration<Long, ProfilePhoto>()
+        val cacheConfig = CacheConfiguration<String, User>()
         cacheConfig.backups = 1
-        cacheConfig.name = Constant.IgniteNames.PROFILE_PHOTO_CACHE
+        cacheConfig.name = Constant.IgniteNames.USER_CACHE_NAME
         cacheConfig.cacheMode = CacheMode.PARTITIONED
-        cacheConfig.setIndexedTypes(Long::class.java, ProfilePhoto::class.java)
+        cacheConfig.setIndexedTypes(String::class.java, User::class.java)
         //cacheConfig.setExpiryPolicyFactory(MyExpiryPolicyFactory(Duration.TEN_MINUTES, Duration.TEN_MINUTES, Duration.TEN_MINUTES))
 
-        profilePhotoCache = ignite.createCache(cacheConfig)
+        userStore = ignite.createCache(cacheConfig)
     }
 
-    override fun saveOne(profilePhoto: ProfilePhoto) {
-        profilePhotoCache.put(profilePhoto.userId, profilePhoto)
+    override fun saveOne(sessionId: String, user: User) {
+        userStore.put(sessionId, user)
     }
 
-    override fun findOne(userId: Long): Fickle<ProfilePhoto> {
-        return Fickle.of(profilePhotoCache[userId])
+    override fun findOne(sessionId: String): Fickle<User> {
+        return Fickle.of(userStore[sessionId])
+    }
+
+    override fun deleteOne(sessionId: String) {
+        userStore.remove(sessionId)
     }
 }

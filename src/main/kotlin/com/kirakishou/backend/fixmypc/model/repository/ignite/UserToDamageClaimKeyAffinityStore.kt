@@ -1,6 +1,6 @@
 package com.kirakishou.backend.fixmypc.model.repository.ignite
 
-interface UserToDamageClaimKeyAffinityCache {
+interface UserToDamageClaimKeyAffinityStore {
     fun saveOne(ownerId: Long, malfunctionId: Long)
     fun saveMany(ownerId: Long, malfunctionIdList: List<Long>)
     fun findMany(ownerId: Long, offset: Long, count: Long): List<Long>

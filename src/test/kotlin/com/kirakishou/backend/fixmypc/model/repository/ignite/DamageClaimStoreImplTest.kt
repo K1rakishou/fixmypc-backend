@@ -19,7 +19,7 @@ import javax.cache.expiry.Duration
 
 class DamageClaimStoreImplTest {
 
-    val cache = DamageClaimCacheImpl()
+    val cache = DamageClaimStoreImpl()
 
     private lateinit var damageClaimStore: IgniteCache<Long, DamageClaim>
 

@@ -2,7 +2,7 @@ package com.kirakishou.backend.fixmypc.model.repository.ignite
 
 import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.core.Fickle
-import com.kirakishou.backend.fixmypc.model.entity.ClientProfile
+import com.kirakishou.backend.fixmypc.model.entity.ProfilePhoto
 import org.apache.ignite.Ignite
 import org.apache.ignite.IgniteCache
 import org.apache.ignite.cache.CacheMode
@@ -12,34 +12,30 @@ import org.springframework.stereotype.Component
 import javax.annotation.PostConstruct
 
 @Component
-class ClientProfileCacheImpl : ClientProfileCache {
+class ProfilePhotoStoreImpl : ProfilePhotoStore {
 
     @Autowired
     lateinit var ignite: Ignite
 
-    lateinit var clientProfileCache: IgniteCache<Long, ClientProfile>
+    lateinit var profilePhotoStore: IgniteCache<Long, ProfilePhoto>
 
     @PostConstruct
     fun init() {
-        val cacheConfig = CacheConfiguration<Long, ClientProfile>()
+        val cacheConfig = CacheConfiguration<Long, ProfilePhoto>()
         cacheConfig.backups = 1
-        cacheConfig.name = Constant.IgniteNames.CLIENT_PROFILE_CACHE_NAME
+        cacheConfig.name = Constant.IgniteNames.PROFILE_PHOTO_CACHE
         cacheConfig.cacheMode = CacheMode.PARTITIONED
-        cacheConfig.setIndexedTypes(Long::class.java, ClientProfile::class.java)
+        cacheConfig.setIndexedTypes(Long::class.java, ProfilePhoto::class.java)
         //cacheConfig.setExpiryPolicyFactory(MyExpiryPolicyFactory(Duration.TEN_MINUTES, Duration.TEN_MINUTES, Duration.TEN_MINUTES))
 
-        clientProfileCache = ignite.createCache(cacheConfig)
+        profilePhotoStore = ignite.createCache(cacheConfig)
     }
 
-    override fun saveOne(clientProfile: ClientProfile) {
-        clientProfileCache.put(clientProfile.userId, clientProfile)
+    override fun saveOne(profilePhoto: ProfilePhoto) {
+        profilePhotoStore.put(profilePhoto.userId, profilePhoto)
     }
 
-    override fun findOne(userId: Long): Fickle<ClientProfile> {
-        return Fickle.of(clientProfileCache[userId])
+    override fun findOne(userId: Long): Fickle<ProfilePhoto> {
+        return Fickle.of(profilePhotoStore[userId])
     }
-
-    /*override fun deleteOne(userId: Long) {
-        assignedSpecialistCache.remove(userId)
-    }*/
 }

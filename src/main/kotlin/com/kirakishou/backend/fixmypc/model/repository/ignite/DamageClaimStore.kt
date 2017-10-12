@@ -3,7 +3,7 @@ package com.kirakishou.backend.fixmypc.model.repository.ignite
 import com.kirakishou.backend.fixmypc.core.Fickle
 import com.kirakishou.backend.fixmypc.model.entity.DamageClaim
 
-interface DamageClaimCache {
+interface DamageClaimStore {
     fun saveOne(damageClaim: DamageClaim)
     fun saveMany(damageClaimList: List<DamageClaim>)
     fun findOne(malfunctionId: Long): Fickle<DamageClaim>

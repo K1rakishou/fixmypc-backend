@@ -16,9 +16,9 @@ import org.springframework.test.util.ReflectionTestUtils
 import java.util.*
 import javax.cache.expiry.Duration
 
-class UserToDamageClaimKeyAffinityCacheImplTest {
+class UserToDamageClaimKeyAffinityStoreImplTest {
 
-    val store = UserToDamageClaimKeyAffinityCacheImpl()
+    val store = UserToDamageClaimKeyAffinityStoreImpl()
 
     private var userMalfunctionStore: IgniteCache<Long, SortedSet<Long>>? = null
 

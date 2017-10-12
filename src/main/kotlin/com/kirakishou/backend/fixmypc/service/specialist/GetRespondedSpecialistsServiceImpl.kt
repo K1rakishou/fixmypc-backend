@@ -5,7 +5,7 @@ import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.repository.DamageClaimRepository
 import com.kirakishou.backend.fixmypc.model.repository.RespondedSpecialistsRepository
 import com.kirakishou.backend.fixmypc.model.repository.SpecialistProfileRepository
-import com.kirakishou.backend.fixmypc.model.repository.ignite.UserCache
+import com.kirakishou.backend.fixmypc.model.repository.ignite.UserStore
 import io.reactivex.Single
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -21,7 +21,7 @@ class GetRespondedSpecialistsServiceImpl : GetRespondedSpecialistsService {
     private lateinit var damageClaimRepository: DamageClaimRepository
 
     @Autowired
-    private lateinit var userCache: UserCache
+    private lateinit var userStore: UserStore
 
     @Autowired
     private lateinit var specialistProfilesRepository: SpecialistProfileRepository
@@ -32,9 +32,9 @@ class GetRespondedSpecialistsServiceImpl : GetRespondedSpecialistsService {
     override fun getRespondedSpecialistsPaged(sessionId: String, damageClaimId: Long, skip: Long, count: Long):
             Single<GetRespondedSpecialistsService.Get.Result> {
 
-        val userFickle = userCache.findOne(sessionId)
+        val userFickle = userStore.findOne(sessionId)
         if (!userFickle.isPresent()) {
-            log.d("SessionId $sessionId was not found in the cache")
+            log.d("SessionId $sessionId was not found in the specialistProfileStore")
             return Single.just(GetRespondedSpecialistsService.Get.Result.SessionIdExpired())
         }
 

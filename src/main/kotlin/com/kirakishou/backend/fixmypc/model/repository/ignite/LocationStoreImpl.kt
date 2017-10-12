@@ -15,13 +15,13 @@ import javax.annotation.PostConstruct
 import kotlin.system.measureTimeMillis
 
 @Component
-class LocationCacheImpl : LocationCache {
+class LocationStoreImpl : LocationStore {
 
     @Autowired
     lateinit var template: RedisTemplate<String, Long>
 
     @Autowired
-    lateinit var damageClaimCache: DamageClaimCache
+    lateinit var damageClaimStore: DamageClaimStore
 
     @Autowired
     lateinit var log: FileLog
@@ -53,7 +53,7 @@ class LocationCacheImpl : LocationCache {
     }
 
     private fun warmUpCache() {
-        log.d("=== Loading damage claims' ids and locations in the cache ===")
+        log.d("=== Loading damage claims' ids and locations in the specialistProfileStore ===")
         var totalLoaded = 0L
 
         val time = measureTimeMillis {
@@ -62,7 +62,7 @@ class LocationCacheImpl : LocationCache {
             val mapOfItems = mutableMapOf<Long, Point>()
 
             while (true) {
-                val damageClaimsList = damageClaimCache.findAll(true)
+                val damageClaimsList = damageClaimStore.findAll(true)
                 if (damageClaimsList.isEmpty()) {
                     break
                 }

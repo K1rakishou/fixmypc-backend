@@ -5,8 +5,8 @@ import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.entity.LatLon
 import com.kirakishou.backend.fixmypc.model.repository.DamageClaimRepository
-import com.kirakishou.backend.fixmypc.model.repository.ignite.LocationCache
-import com.kirakishou.backend.fixmypc.model.repository.ignite.UserCache
+import com.kirakishou.backend.fixmypc.model.repository.ignite.LocationStore
+import com.kirakishou.backend.fixmypc.model.repository.ignite.UserStore
 import io.reactivex.Single
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -15,13 +15,13 @@ import org.springframework.stereotype.Component
 class GetUserDamageClaimListServiceImpl : GetUserDamageClaimListService {
 
     @Autowired
-    private lateinit var locationCache: LocationCache
+    private lateinit var locationStore: LocationStore
 
     @Autowired
     private lateinit var damageClaimRepository: DamageClaimRepository
 
     @Autowired
-    private lateinit var userCache: UserCache
+    private lateinit var userStore: UserStore
 
     @Autowired
     private lateinit var log: FileLog
@@ -30,9 +30,9 @@ class GetUserDamageClaimListServiceImpl : GetUserDamageClaimListService {
                                                   radiusParam: Double, skipParam: Long, countParam: Long):
             Single<GetUserDamageClaimListService.Get.Result> {
 
-        val userFickle = userCache.findOne(sessionId)
+        val userFickle = userStore.findOne(sessionId)
         if (!userFickle.isPresent()) {
-            log.d("SessionId $sessionId was not found in the cache")
+            log.d("SessionId $sessionId was not found in the specialistProfileStore")
             return Single.just(GetUserDamageClaimListService.Get.Result.SessionIdExpired())
         }
 
@@ -65,7 +65,7 @@ class GetUserDamageClaimListServiceImpl : GetUserDamageClaimListService {
             else -> countParam
         }
 
-        val idsList = locationCache.findWithin(skip, LatLon(lat, lon), radius, count)
+        val idsList = locationStore.findWithin(skip, LatLon(lat, lon), radius, count)
         val damageClaimsList = damageClaimRepository.findMany(true, idsList)
 
         return Single.just(GetUserDamageClaimListService.Get.Result.Ok(damageClaimsList))
@@ -74,9 +74,9 @@ class GetUserDamageClaimListServiceImpl : GetUserDamageClaimListService {
     override fun getClientDamageClaimsPaged(sessionId: String, isActive: Boolean, skip: Long, count: Long):
             Single<GetUserDamageClaimListService.Get.Result> {
 
-        val userFickle = userCache.findOne(sessionId)
+        val userFickle = userStore.findOne(sessionId)
         if (!userFickle.isPresent()) {
-            log.d("SessionId $sessionId was not found in the cache")
+            log.d("SessionId $sessionId was not found in the specialistProfileStore")
             return Single.just(GetUserDamageClaimListService.Get.Result.SessionIdExpired())
         }
 

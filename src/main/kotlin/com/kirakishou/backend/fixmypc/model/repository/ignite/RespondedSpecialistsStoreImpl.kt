@@ -14,7 +14,7 @@ import java.util.stream.Collectors
 import javax.annotation.PostConstruct
 
 @Component
-class RespondedSpecialistsCacheImpl : RespondedSpecialistsCache {
+class RespondedSpecialistsStoreImpl : RespondedSpecialistsStore {
 
     @Autowired
     lateinit var ignite: Ignite

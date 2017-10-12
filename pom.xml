@@ -140,8 +140,8 @@
 		</dependency>
 
         <dependency>
-            <groupId>javax.cache</groupId>
-            <artifactId>cache-api</artifactId>
+            <groupId>javax.store</groupId>
+            <artifactId>store-api</artifactId>
             <version>1.0.0</version>
         </dependency>
 

@@ -3,7 +3,7 @@ package com.kirakishou.backend.fixmypc.service.client
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.repository.ClientProfileRepository
 import com.kirakishou.backend.fixmypc.model.repository.ProfilePhotoRepository
-import com.kirakishou.backend.fixmypc.model.repository.ignite.UserCache
+import com.kirakishou.backend.fixmypc.model.repository.ignite.UserStore
 import io.reactivex.Single
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -18,15 +18,15 @@ class ClientProfileServiceImpl : ClientProfileService {
     private lateinit var profilePhotoRepository: ProfilePhotoRepository
 
     @Autowired
-    private lateinit var userCache: UserCache
+    private lateinit var userStore: UserStore
 
     @Autowired
     private lateinit var log: FileLog
 
     override fun getClientProfile(sessionId: String, userId: Long): Single<ClientProfileService.Get.Result> {
-        val userFickle = userCache.findOne(sessionId)
+        val userFickle = userStore.findOne(sessionId)
         if (!userFickle.isPresent()) {
-            log.d("SessionId $sessionId was not found in the cache")
+            log.d("SessionId $sessionId was not found in the specialistProfileStore")
             return Single.just(ClientProfileService.Get.Result.SessionIdExpired())
         }
 

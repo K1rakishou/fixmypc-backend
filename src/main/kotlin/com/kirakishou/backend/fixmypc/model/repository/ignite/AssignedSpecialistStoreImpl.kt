@@ -13,12 +13,12 @@ import java.util.stream.Collectors
 import javax.annotation.PostConstruct
 
 @Component
-class AssignedSpecialistCacheImpl : AssignedSpecialistCache {
+class AssignedSpecialistStoreImpl : AssignedSpecialistStore {
 
     @Autowired
     lateinit var ignite: Ignite
 
-    lateinit var assignedSpecialistCache: IgniteCache<Long, AssignedSpecialist>
+    lateinit var assignedSpecialistStore: IgniteCache<Long, AssignedSpecialist>
 
     @PostConstruct
     fun init() {
@@ -29,11 +29,11 @@ class AssignedSpecialistCacheImpl : AssignedSpecialistCache {
         cacheConfig.setIndexedTypes(Long::class.java, AssignedSpecialist::class.java)
         //cacheConfig.setExpiryPolicyFactory(MyExpiryPolicyFactory(Duration.THIRTY_MINUTES, Duration.THIRTY_MINUTES, Duration.THIRTY_MINUTES))
 
-        assignedSpecialistCache = ignite.createCache(cacheConfig)
+        assignedSpecialistStore = ignite.createCache(cacheConfig)
     }
 
     override fun saveOne(assignedSpecialist: AssignedSpecialist) {
-        assignedSpecialistCache.put(assignedSpecialist.damageClaimId, assignedSpecialist)
+        assignedSpecialistStore.put(assignedSpecialist.damageClaimId, assignedSpecialist)
     }
 
     override fun saveMany(assignedSpecialistList: List<AssignedSpecialist>) {
@@ -43,11 +43,11 @@ class AssignedSpecialistCacheImpl : AssignedSpecialistCache {
             assignedSpecialistMap.put(assignedSpecialist.damageClaimId, assignedSpecialist)
         }
 
-        assignedSpecialistCache.putAll(assignedSpecialistMap)
+        assignedSpecialistStore.putAll(assignedSpecialistMap)
     }
 
     override fun findOne(damageClaimId: Long, isWorkDone: Boolean): Fickle<AssignedSpecialist> {
-        val assignedSpecialist = assignedSpecialistCache[damageClaimId]
+        val assignedSpecialist = assignedSpecialistStore[damageClaimId]
         if (assignedSpecialist == null) {
             return Fickle.empty()
         }
@@ -60,7 +60,7 @@ class AssignedSpecialistCacheImpl : AssignedSpecialistCache {
     }
 
     override fun findMany(damageClaimIdList: List<Long>, isWorkDone: Boolean): List<AssignedSpecialist> {
-        val assignedSpecialistList = assignedSpecialistCache.getAll(damageClaimIdList.toSet())
+        val assignedSpecialistList = assignedSpecialistStore.getAll(damageClaimIdList.toSet())
         if (assignedSpecialistList == null || assignedSpecialistList.isEmpty()) {
             return emptyList()
         }
