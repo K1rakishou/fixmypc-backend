@@ -4,9 +4,7 @@ import com.kirakishou.backend.fixmypc.core.Fickle
 import com.kirakishou.backend.fixmypc.model.entity.User
 
 interface UserRepository {
+    fun saveOne(login: String, user: User): Long
     fun findOne(login: String): Fickle<User>
-    fun saveOneToDao(user: User): Pair<Boolean, Long>
-    fun saveOneToStore(sessionId: String, user: User)
-    fun deleteOneFromDao(login: String): Boolean
-    fun deleteOneFromStore(sessionId: String)
+    fun deleteOne(login: String)
 }

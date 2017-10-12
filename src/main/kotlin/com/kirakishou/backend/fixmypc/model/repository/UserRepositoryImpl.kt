@@ -16,23 +16,15 @@ class UserRepositoryImpl : UserRepository {
     @Autowired
     private lateinit var log: FileLog
 
+    override fun saveOne(login: String, user: User): Long {
+        return store.saveOne(login, user)
+    }
+
     override fun findOne(login: String): Fickle<User> {
-        return Fickle.empty()
+        return store.findOne(login)
     }
 
-    override fun saveOneToDao(user: User): Pair<Boolean, Long> {
-        return Pair(false, 0L)
-    }
-
-    override fun saveOneToStore(sessionId: String, user: User) {
-        store.saveOne(sessionId, user)
-    }
-
-    override fun deleteOneFromDao(login: String): Boolean {
-        return false
-    }
-
-    override fun deleteOneFromStore(sessionId: String) {
-        store.deleteOne(sessionId)
+    override fun deleteOne(login: String) {
+        store.deleteOne(login)
     }
 }

@@ -4,8 +4,10 @@ import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.core.Fickle
 import com.kirakishou.backend.fixmypc.model.entity.User
 import org.apache.ignite.Ignite
+import org.apache.ignite.IgniteAtomicSequence
 import org.apache.ignite.IgniteCache
 import org.apache.ignite.cache.CacheMode
+import org.apache.ignite.configuration.AtomicConfiguration
 import org.apache.ignite.configuration.CacheConfiguration
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -23,6 +25,7 @@ class UserStoreImpl : UserStore {
     lateinit var ignite: Ignite
 
     lateinit var userStore: IgniteCache<String, User>
+    lateinit var userIdGenerator: IgniteAtomicSequence
 
     @PostConstruct
     fun init() {
@@ -31,20 +34,27 @@ class UserStoreImpl : UserStore {
         cacheConfig.name = Constant.IgniteNames.USER_STORE
         cacheConfig.cacheMode = CacheMode.PARTITIONED
         cacheConfig.setIndexedTypes(String::class.java, User::class.java)
-        //cacheConfig.setExpiryPolicyFactory(MyExpiryPolicyFactory(Duration.TEN_MINUTES, Duration.TEN_MINUTES, Duration.TEN_MINUTES))
-
         userStore = ignite.createCache(cacheConfig)
+
+        val atomicConfig = AtomicConfiguration()
+        atomicConfig.backups = 3
+        atomicConfig.cacheMode = CacheMode.PARTITIONED
+
+        userIdGenerator = ignite.atomicSequence(Constant.IgniteNames.USER_ID_GENERATOR, atomicConfig, 0L, true)
     }
 
-    override fun saveOne(sessionId: String, user: User) {
-        userStore.put(sessionId, user)
+    override fun saveOne(login: String, user: User): Long {
+        user.id = userIdGenerator.andIncrement
+        userStore.put(login, user)
+
+        return user.id
     }
 
-    override fun findOne(sessionId: String): Fickle<User> {
-        return Fickle.of(userStore[sessionId])
+    override fun findOne(login: String): Fickle<User> {
+        return Fickle.of(userStore[login])
     }
 
-    override fun deleteOne(sessionId: String) {
-        userStore.remove(sessionId)
+    override fun deleteOne(login: String) {
+        userStore.remove(login)
     }
 }

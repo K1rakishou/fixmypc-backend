@@ -18,7 +18,6 @@ import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.data.redis.serializer.JdkSerializationRedisSerializer
 import org.springframework.http.converter.HttpMessageConverter
 import org.springframework.http.converter.json.GsonHttpMessageConverter
-import org.springframework.web.client.AsyncRestTemplate
 import redis.clients.jedis.JedisShardInfo
 import java.util.*
 
@@ -67,30 +66,13 @@ class AppConfig {
         return FileSystem.newInstance(conf)
     }
 
-    /*@Bean
-    fun provideDataSource(): DataSource {
-        val dataSource = HikariDataSource()
-        dataSource.driverClassName = "org.postgresql.Driver"
-        dataSource.jdbcUrl = "jdbc:postgresql://192.168.99.100:9499/postgres"
-        dataSource.username = "postgres"
-        dataSource.password = "4e7d2dfx"
-        dataSource.maximumPoolSize = 1
-        /*dataSource.leakDetectionThreshold = 2000
-        dataSource.connectionTimeout = 20000*/
-
-        return dataSource
-    }*/
-
-    @Bean
-    fun provideJedisConnectionFactory(): JedisConnectionFactory {
-        val shardInfo = JedisShardInfo("192.168.99.100", 9119)
-        return JedisConnectionFactory(shardInfo)
-    }
-
     @Bean
     fun provideRedisTemplate(): RedisTemplate<String, Long> {
+        val shardInfo = JedisShardInfo("192.168.99.100", 9119)
+        val jedisConnectionFactory = JedisConnectionFactory(shardInfo)
+
         val template = RedisTemplate<String, Long>()
-        template.connectionFactory = provideJedisConnectionFactory()
+        template.connectionFactory = jedisConnectionFactory
         template.keySerializer = JdkSerializationRedisSerializer()
         template.hashKeySerializer = JdkSerializationRedisSerializer()
         template.valueSerializer = JdkSerializationRedisSerializer()
@@ -98,11 +80,6 @@ class AppConfig {
         template.afterPropertiesSet()
 
         return template
-    }
-
-    @Bean
-    fun provideRestTemplate(): AsyncRestTemplate {
-        return AsyncRestTemplate()
     }
 
     @Bean

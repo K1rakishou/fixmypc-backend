@@ -52,6 +52,7 @@ object Constant {
     }
 
     object IgniteNames {
+        //store
         val DAMAGE_CLAIM_STORE = "damage_claim_store"
         val DAMAGE_CLAIM_KEYS_STORE = "damage_claim_keys_store"
         val USER_STORE = "user_store"
@@ -61,7 +62,11 @@ object Constant {
         val RESPONDED_SPECIALISTS_STORE = "responded_specialists_store"
         val PROFILE_PHOTO_STORE = "profile_photo_store"
 
+        //cache
         val SESSION_CACHE = "session_cache"
+
+        //generator
+        val USER_ID_GENERATOR = "user_id_generator"
     }
 
     object RedisNames {
