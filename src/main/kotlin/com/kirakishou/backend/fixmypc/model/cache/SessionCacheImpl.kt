@@ -1,4 +1,4 @@
-package com.kirakishou.backend.fixmypc.model.repository.cache
+package com.kirakishou.backend.fixmypc.model.cache
 
 import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.core.Fickle

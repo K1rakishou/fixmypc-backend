@@ -3,7 +3,7 @@ package com.kirakishou.backend.fixmypc.model.repository
 import com.kirakishou.backend.fixmypc.core.Fickle
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.entity.SpecialistProfile
-import com.kirakishou.backend.fixmypc.model.repository.store.SpecialistProfileStore
+import com.kirakishou.backend.fixmypc.model.store.SpecialistProfileStore
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 

@@ -65,7 +65,7 @@ object Constant {
     }
 
     object RedisNames {
-        val LOCATION_CACHE_NAME = "malfunction_location_cache"
+        val LOCATION_CACHE_NAME = "damage_claim_location_cache"
     }
 
     object TextLength {

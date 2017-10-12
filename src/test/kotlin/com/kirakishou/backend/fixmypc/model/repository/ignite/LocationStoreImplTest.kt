@@ -1,7 +1,7 @@
 package com.kirakishou.backend.fixmypc.model.repository.ignite
 
 import com.kirakishou.backend.fixmypc.model.entity.LatLon
-import com.kirakishou.backend.fixmypc.model.repository.store.LocationStoreImpl
+import com.kirakishou.backend.fixmypc.model.store.LocationStoreImpl
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test

@@ -6,7 +6,7 @@ import com.kirakishou.backend.fixmypc.model.entity.AssignedSpecialist
 import com.kirakishou.backend.fixmypc.model.repository.AssignedSpecialistRepository
 import com.kirakishou.backend.fixmypc.model.repository.DamageClaimRepository
 import com.kirakishou.backend.fixmypc.model.repository.RespondedSpecialistsRepository
-import com.kirakishou.backend.fixmypc.model.repository.store.UserStore
+import com.kirakishou.backend.fixmypc.model.repository.SessionRepository
 import io.reactivex.Single
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -24,15 +24,15 @@ class ClientAssignSpecialistServiceImpl : ClientAssignSpecialistService {
     private lateinit var damageClaimRepo: DamageClaimRepository
 
     @Autowired
-    private lateinit var userStore: UserStore
+    private lateinit var sessionRepository: SessionRepository
 
     @Autowired
     private lateinit var log: FileLog
 
     override fun assignSpecialist(sessionId: String, userId: Long, damageClaimId: Long): Single<ClientAssignSpecialistService.Get.Result> {
-        val userFickle = userStore.findOne(sessionId)
+        val userFickle = sessionRepository.findOne(sessionId)
         if (!userFickle.isPresent()) {
-            log.d("SessionId $sessionId was not found in the specialistProfileStore")
+            log.d("SessionId $sessionId was not found in the sessionRepository")
             return Single.just(ClientAssignSpecialistService.Get.Result.SessionIdExpired())
         }
 

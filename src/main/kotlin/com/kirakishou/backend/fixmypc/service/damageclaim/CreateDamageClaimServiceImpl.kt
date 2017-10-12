@@ -7,7 +7,7 @@ import com.kirakishou.backend.fixmypc.model.entity.DamageClaim
 import com.kirakishou.backend.fixmypc.model.exception.*
 import com.kirakishou.backend.fixmypc.model.net.request.CreateDamageClaimRequest
 import com.kirakishou.backend.fixmypc.model.repository.DamageClaimRepository
-import com.kirakishou.backend.fixmypc.model.repository.store.UserStore
+import com.kirakishou.backend.fixmypc.model.repository.SessionRepository
 import com.kirakishou.backend.fixmypc.service.ImageService
 import com.kirakishou.backend.fixmypc.util.ServerUtils
 import com.kirakishou.backend.fixmypc.util.TextUtils
@@ -42,7 +42,7 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
     private lateinit var imageService: ImageService
 
     @Autowired
-    private lateinit var userStore: UserStore
+    private lateinit var sessionRepository: SessionRepository
 
     private val allowedExtensions = listOf("png", "jpg", "jpeg", "PNG", "JPG", "JPEG")
 
@@ -52,9 +52,9 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
         return Single.just(Params(uploadingFiles, imageType, request, sessionId))
                 .map { params ->
                     //user must re login if sessionId was removed from the specialistProfileStore
-                    val userFickle = userStore.findOne(params.sessionId)
+                    val userFickle = sessionRepository.findOne(params.sessionId)
                     if (!userFickle.isPresent()) {
-                        log.d("sessionId ${params.sessionId} was not found in the specialistProfileStore")
+                        log.d("sessionId ${params.sessionId} was not found in the sessionRepository")
                         throw SessionIdExpiredException()
                     }
 

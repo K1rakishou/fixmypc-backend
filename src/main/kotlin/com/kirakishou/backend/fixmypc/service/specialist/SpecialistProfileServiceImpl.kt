@@ -6,8 +6,8 @@ import com.kirakishou.backend.fixmypc.extension.limit
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.exception.*
 import com.kirakishou.backend.fixmypc.model.net.request.SpecialistProfileRequest
+import com.kirakishou.backend.fixmypc.model.repository.SessionRepository
 import com.kirakishou.backend.fixmypc.model.repository.SpecialistProfileRepository
-import com.kirakishou.backend.fixmypc.model.repository.store.UserStore
 import com.kirakishou.backend.fixmypc.service.ImageService
 import io.reactivex.Single
 import io.reactivex.rxkotlin.Singles
@@ -23,7 +23,7 @@ class SpecialistProfileServiceImpl : SpecialistProfileService {
     private lateinit var mImageService: ImageService
 
     @Autowired
-    private lateinit var mUserStore: UserStore
+    private lateinit var sessionRepository: SessionRepository
 
     @Autowired
     private lateinit var mSpecialistProfileRepository: SpecialistProfileRepository
@@ -35,9 +35,9 @@ class SpecialistProfileServiceImpl : SpecialistProfileService {
     private lateinit var log: FileLog
 
     override fun getProfile(sessionId: String): Single<SpecialistProfileService.Get.Result> {
-        val userFickle = mUserStore.findOne(sessionId)
+        val userFickle = sessionRepository.findOne(sessionId)
         if (!userFickle.isPresent()) {
-            log.d("SessionId $sessionId was not found in the specialistProfileStore")
+            log.d("SessionId $sessionId was not found in the sessionRepository")
             return Single.just(SpecialistProfileService.Get.Result.SessionIdExpired())
         }
 
@@ -64,9 +64,9 @@ class SpecialistProfileServiceImpl : SpecialistProfileService {
 
         return Single.just(UpdatingProfileParams(sessionIdParam, requestParam))
                 .map { (sessionId, request) ->
-                    val userFickle = mUserStore.findOne(sessionId)
+                    val userFickle = sessionRepository.findOne(sessionId)
                     if (!userFickle.isPresent()) {
-                        log.d("SessionId $sessionId was not found in the specialistProfileStore")
+                        log.d("SessionId $sessionId was not found in the sessionRepository")
                         throw SessionIdExpiredException()
                     }
 
@@ -106,9 +106,9 @@ class SpecialistProfileServiceImpl : SpecialistProfileService {
     override fun updateProfilePhoto(sessionIdParam: String, profilePhotoParam: MultipartFile): Single<SpecialistProfileService.Post.ResultPhoto> {
         return Single.just(UpdateProfilePhotoParams(sessionIdParam, profilePhotoParam))
                 .flatMap { (sessionId, newProfilePhoto) ->
-                    val userFickle = mUserStore.findOne(sessionId)
+                    val userFickle = sessionRepository.findOne(sessionId)
                     if (!userFickle.isPresent()) {
-                        log.d("SessionId $sessionId was not found in the specialistProfileStore")
+                        log.d("SessionId $sessionId was not found in the sessionRepository")
                         throw SessionIdExpiredException()
                     }
 

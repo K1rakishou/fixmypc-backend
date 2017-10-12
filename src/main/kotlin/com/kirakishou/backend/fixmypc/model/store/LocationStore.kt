@@ -1,4 +1,4 @@
-package com.kirakishou.backend.fixmypc.model.repository.store
+package com.kirakishou.backend.fixmypc.model.store
 
 import com.kirakishou.backend.fixmypc.model.entity.LatLon
 

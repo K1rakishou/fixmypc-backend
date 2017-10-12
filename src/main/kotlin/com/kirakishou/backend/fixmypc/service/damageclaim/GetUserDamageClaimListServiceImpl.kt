@@ -5,8 +5,8 @@ import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.entity.LatLon
 import com.kirakishou.backend.fixmypc.model.repository.DamageClaimRepository
-import com.kirakishou.backend.fixmypc.model.repository.store.LocationStore
-import com.kirakishou.backend.fixmypc.model.repository.store.UserStore
+import com.kirakishou.backend.fixmypc.model.repository.SessionRepository
+import com.kirakishou.backend.fixmypc.model.store.LocationStore
 import io.reactivex.Single
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -21,7 +21,7 @@ class GetUserDamageClaimListServiceImpl : GetUserDamageClaimListService {
     private lateinit var damageClaimRepository: DamageClaimRepository
 
     @Autowired
-    private lateinit var userStore: UserStore
+    private lateinit var sessionRepository: SessionRepository
 
     @Autowired
     private lateinit var log: FileLog
@@ -30,9 +30,9 @@ class GetUserDamageClaimListServiceImpl : GetUserDamageClaimListService {
                                                   radiusParam: Double, skipParam: Long, countParam: Long):
             Single<GetUserDamageClaimListService.Get.Result> {
 
-        val userFickle = userStore.findOne(sessionId)
+        val userFickle = sessionRepository.findOne(sessionId)
         if (!userFickle.isPresent()) {
-            log.d("SessionId $sessionId was not found in the specialistProfileStore")
+            log.d("SessionId $sessionId was not found in the sessionRepository")
             return Single.just(GetUserDamageClaimListService.Get.Result.SessionIdExpired())
         }
 
@@ -74,9 +74,9 @@ class GetUserDamageClaimListServiceImpl : GetUserDamageClaimListService {
     override fun getClientDamageClaimsPaged(sessionId: String, isActive: Boolean, skip: Long, count: Long):
             Single<GetUserDamageClaimListService.Get.Result> {
 
-        val userFickle = userStore.findOne(sessionId)
+        val userFickle = sessionRepository.findOne(sessionId)
         if (!userFickle.isPresent()) {
-            log.d("SessionId $sessionId was not found in the specialistProfileStore")
+            log.d("SessionId $sessionId was not found in the sessionRepository")
             return Single.just(GetUserDamageClaimListService.Get.Result.SessionIdExpired())
         }
 

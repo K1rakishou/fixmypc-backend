@@ -1,5 +1,6 @@
 package com.kirakishou.backend.fixmypc.service.user
 
+import com.kirakishou.backend.fixmypc.model.repository.SessionRepository
 import com.kirakishou.backend.fixmypc.model.repository.UserRepository
 import com.kirakishou.backend.fixmypc.service.Generator
 import org.springframework.beans.factory.annotation.Autowired
@@ -11,6 +12,9 @@ import org.springframework.stereotype.Component
 
 @Component
 class LoginServiceImpl: LoginService {
+
+    @Autowired
+    lateinit var sessionRepository: SessionRepository
 
     @Autowired
     lateinit var userRepository: UserRepository
@@ -32,7 +36,7 @@ class LoginServiceImpl: LoginService {
         val sessionId = generator.generateSessionId()
 
         user.sessionId = sessionId
-        userRepository.saveOneToStore(sessionId, user)
+        sessionRepository.saveOne(sessionId, user)
 
         return LoginService.Result.Ok(sessionId, user.accountType)
     }
