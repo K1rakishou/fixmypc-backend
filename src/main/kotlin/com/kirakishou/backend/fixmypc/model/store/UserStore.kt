@@ -9,5 +9,5 @@ import com.kirakishou.backend.fixmypc.model.entity.User
 interface UserStore {
     fun saveOne(login: String, user: User): Long
     fun findOne(login: String): Fickle<User>
-    fun deleteOne(login: String)
+    fun deleteOne(login: String): Boolean
 }

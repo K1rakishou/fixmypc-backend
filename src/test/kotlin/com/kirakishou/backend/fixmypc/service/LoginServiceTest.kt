@@ -3,7 +3,7 @@ package com.kirakishou.backend.fixmypc.service
 import com.kirakishou.backend.fixmypc.core.AccountType
 import com.kirakishou.backend.fixmypc.core.Fickle
 import com.kirakishou.backend.fixmypc.model.entity.User
-import com.kirakishou.backend.fixmypc.model.repository.UserRepository
+import com.kirakishou.backend.fixmypc.model.store.UserStore
 import com.kirakishou.backend.fixmypc.service.user.LoginService
 import com.kirakishou.backend.fixmypc.service.user.LoginServiceImpl
 import org.junit.Assert.assertEquals
@@ -26,7 +26,7 @@ class LoginServiceTest {
     val service = LoginServiceImpl()
 
     @Mock
-    lateinit var userRepository: UserRepository
+    lateinit var userStore: UserStore
 
     @Mock
     lateinit var generator: Generator
@@ -40,8 +40,8 @@ class LoginServiceTest {
     fun init() {
         MockitoAnnotations.initMocks(this)
 
-        Mockito.`when`(userRepository.findOne(GOOD_LOGIN)).thenReturn(Fickle.of(TEST_USER))
-        Mockito.`when`(userRepository.findOne(BAD_LOGIN)).thenReturn(Fickle.empty())
+        Mockito.`when`(userStore.findOne(GOOD_LOGIN)).thenReturn(Fickle.of(TEST_USER))
+        Mockito.`when`(userStore.findOne(BAD_LOGIN)).thenReturn(Fickle.empty())
         Mockito.`when`(generator.generateSessionId()).thenReturn(GOOD_SESSION_ID)
     }
 

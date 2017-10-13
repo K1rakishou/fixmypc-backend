@@ -5,7 +5,7 @@ import com.kirakishou.backend.fixmypc.core.AccountType
 import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.core.Fickle
 import com.kirakishou.backend.fixmypc.model.entity.User
-import com.kirakishou.backend.fixmypc.model.repository.UserRepository
+import com.kirakishou.backend.fixmypc.model.store.UserStore
 import com.kirakishou.backend.fixmypc.service.user.SignupService
 import org.junit.Before
 import org.junit.Test
@@ -47,7 +47,7 @@ class SignupControllerTest {
     lateinit var service: SignupService
 
     @Mock
-    lateinit var userRepository: UserRepository
+    lateinit var userStore: UserStore
 
     @Autowired
     @InjectMocks
@@ -75,7 +75,7 @@ class SignupControllerTest {
         Mockito.`when`(service.doSignup(INCORRECT_LOGIN, GOOD_PASSWORD, GOOD_ACCOUNT_TYPE)).thenReturn(SignupService.Result.LoginIsIncorrect())
         Mockito.`when`(service.doSignup(GOOD_LOGIN, INCORRECT_PASSWORD_SHORT, GOOD_ACCOUNT_TYPE)).thenReturn(SignupService.Result.PasswordIsIncorrect())
         Mockito.`when`(service.doSignup(GOOD_LOGIN, INCORRECT_PASSWORD_LONG, GOOD_ACCOUNT_TYPE)).thenReturn(SignupService.Result.PasswordIsIncorrect())
-        Mockito.`when`(userRepository.findOne(GOOD_LOGIN)).thenReturn(Fickle.of(TEST_USER))
+        Mockito.`when`(userStore.findOne(GOOD_LOGIN)).thenReturn(Fickle.of(TEST_USER))
     }
 
     /*

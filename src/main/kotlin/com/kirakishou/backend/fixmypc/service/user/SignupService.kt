@@ -14,6 +14,7 @@ interface SignupService {
         class AccountTypeIsIncorrect: Result
         class LoginAlreadyExists: Result
         class LoginIsTooLong : Result
+        class StoreError : Result
         class UnknownError : Result
     }
 

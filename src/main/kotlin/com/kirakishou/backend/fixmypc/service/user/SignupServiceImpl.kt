@@ -4,9 +4,9 @@ import com.kirakishou.backend.fixmypc.core.AccountType
 import com.kirakishou.backend.fixmypc.model.entity.ClientProfile
 import com.kirakishou.backend.fixmypc.model.entity.SpecialistProfile
 import com.kirakishou.backend.fixmypc.model.entity.User
-import com.kirakishou.backend.fixmypc.model.repository.ClientProfileRepository
-import com.kirakishou.backend.fixmypc.model.repository.SpecialistProfileRepository
-import com.kirakishou.backend.fixmypc.model.repository.UserRepository
+import com.kirakishou.backend.fixmypc.model.store.ClientProfileStore
+import com.kirakishou.backend.fixmypc.model.store.SpecialistProfileStore
+import com.kirakishou.backend.fixmypc.model.store.UserStore
 import com.kirakishou.backend.fixmypc.util.TextUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -19,13 +19,13 @@ import org.springframework.stereotype.Component
 class SignupServiceImpl : SignupService {
 
     @Autowired
-    lateinit var userRepository: UserRepository
+    lateinit var userStore: UserStore
 
     @Autowired
-    lateinit var clientProfileRepository: ClientProfileRepository
+    lateinit var clientProfileStore: ClientProfileStore
 
     @Autowired
-    lateinit var specialistProfileRepository: SpecialistProfileRepository
+    lateinit var specialistProfileStore: SpecialistProfileStore
 
     override fun doSignup(login: String, password: String, accountType: AccountType): SignupService.Result {
         if (!TextUtils.checkLoginCorrect(login)) {
@@ -44,21 +44,24 @@ class SignupServiceImpl : SignupService {
             return SignupService.Result.AccountTypeIsIncorrect()
         }
 
-        val user = userRepository.findOne(login)
+        val user = userStore.findOne(login)
         if (user.isPresent()) {
             return SignupService.Result.LoginAlreadyExists()
         }
 
         val newUser = User(0L, login, password, accountType)
-        val userId = userRepository.saveOne(login, newUser)
+        val userId = userStore.saveOne(login, newUser)
+        if (userId == -1L) {
+            return SignupService.Result.StoreError()
+        }
 
         if (accountType == AccountType.Client) {
-            if (!clientProfileRepository.saveOne(ClientProfile(userId = userId))) {
-                return SignupService.Result.UnknownError()
+            if (!clientProfileStore.saveOne(ClientProfile(userId = userId))) {
+                return SignupService.Result.StoreError()
             }
         } else if (accountType == AccountType.Specialist) {
-            if (!specialistProfileRepository.saveOne(SpecialistProfile(userId = userId))) {
-                return SignupService.Result.UnknownError()
+            if (!specialistProfileStore.saveOne(SpecialistProfile(userId = userId))) {
+                return SignupService.Result.StoreError()
             }
         }
 

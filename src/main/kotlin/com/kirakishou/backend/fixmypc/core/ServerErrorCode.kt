@@ -26,6 +26,7 @@ enum class ServerErrorCode(val value: Int) {
     SEC_COULD_NOT_UPLOAD_IMAGE(31),
     SEC_REPOSITORY_ERROR(32),
     SEC_COULD_NOT_DELETE_OLD_IMAGE(33),
+    SEC_STORE_ERROR(34),
 
     SEC_UNKNOWN_SERVER_ERROR(-1);
 

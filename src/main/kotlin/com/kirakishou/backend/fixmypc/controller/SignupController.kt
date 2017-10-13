@@ -66,6 +66,11 @@ class SignupController {
                                     HttpStatus.UNPROCESSABLE_ENTITY)
                         }
 
+                        is SignupService.Result.StoreError -> {
+                            return@map ResponseEntity(SignupResponse(ServerErrorCode.SEC_STORE_ERROR.value),
+                                    HttpStatus.INTERNAL_SERVER_ERROR)
+                        }
+
                         else -> throw IllegalArgumentException("Unknown result")
                     }
                 }

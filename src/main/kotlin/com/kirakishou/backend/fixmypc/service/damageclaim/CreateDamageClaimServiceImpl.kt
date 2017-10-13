@@ -3,11 +3,11 @@ package com.kirakishou.backend.fixmypc.service.damageclaim
 import com.kirakishou.backend.fixmypc.core.AccountType
 import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.log.FileLog
+import com.kirakishou.backend.fixmypc.model.cache.SessionCache
 import com.kirakishou.backend.fixmypc.model.entity.DamageClaim
 import com.kirakishou.backend.fixmypc.model.exception.*
 import com.kirakishou.backend.fixmypc.model.net.request.CreateDamageClaimRequest
-import com.kirakishou.backend.fixmypc.model.repository.DamageClaimRepository
-import com.kirakishou.backend.fixmypc.model.repository.SessionRepository
+import com.kirakishou.backend.fixmypc.model.store.DamageClaimStore
 import com.kirakishou.backend.fixmypc.service.ImageService
 import com.kirakishou.backend.fixmypc.util.ServerUtils
 import com.kirakishou.backend.fixmypc.util.TextUtils
@@ -36,13 +36,13 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
     private lateinit var fs: FileSystem
 
     @Autowired
-    private lateinit var damageClaimRepository: DamageClaimRepository
+    private lateinit var damageClaimRepository: DamageClaimStore
 
     @Autowired
     private lateinit var imageService: ImageService
 
     @Autowired
-    private lateinit var sessionRepository: SessionRepository
+    private lateinit var sessionCache: SessionCache
 
     private val allowedExtensions = listOf("png", "jpg", "jpeg", "PNG", "JPG", "JPEG")
 
@@ -52,7 +52,7 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
         return Single.just(Params(uploadingFiles, imageType, request, sessionId))
                 .map { params ->
                     //user must re login if sessionId was removed from the specialistProfileStore
-                    val userFickle = sessionRepository.findOne(params.sessionId)
+                    val userFickle = sessionCache.findOne(params.sessionId)
                     if (!userFickle.isPresent()) {
                         log.d("sessionId ${params.sessionId} was not found in the sessionRepository")
                         throw SessionIdExpiredException()
@@ -125,7 +125,7 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
                     damageClaim.imageNamesList = imagesNames
 
                     if (!damageClaimRepository.saveOne(damageClaim)) {
-                        throw RepositoryErrorException()
+                        throw StoreErrorException()
                     }
 
                     return@map CreateDamageClaimService.Post.Result.Ok() as CreateDamageClaimService.Post.Result
@@ -140,7 +140,7 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
                         is FileSizeExceededException -> CreateDamageClaimService.Post.Result.FileSizeExceeded()
                         is RequestSizeExceededException -> CreateDamageClaimService.Post.Result.RequestSizeExceeded()
                         is CouldNotUploadImagesException -> CreateDamageClaimService.Post.Result.CouldNotUploadImages()
-                        is RepositoryErrorException -> CreateDamageClaimService.Post.Result.RepositoryError()
+                        is StoreErrorException -> CreateDamageClaimService.Post.Result.StoreError()
                         else -> CreateDamageClaimService.Post.Result.UnknownError()
                     }
                 }

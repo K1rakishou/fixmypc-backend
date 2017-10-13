@@ -2,6 +2,7 @@ package com.kirakishou.backend.fixmypc.model.store
 
 import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.core.Fickle
+import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.entity.ProfilePhoto
 import org.apache.ignite.Ignite
 import org.apache.ignite.IgniteCache
@@ -17,6 +18,9 @@ class ProfilePhotoStoreImpl : ProfilePhotoStore {
     @Autowired
     lateinit var ignite: Ignite
 
+    @Autowired
+    lateinit var log: FileLog
+
     lateinit var profilePhotoStore: IgniteCache<Long, ProfilePhoto>
 
     @PostConstruct
@@ -28,11 +32,17 @@ class ProfilePhotoStoreImpl : ProfilePhotoStore {
         cacheConfig.setIndexedTypes(Long::class.java, ProfilePhoto::class.java)
         //cacheConfig.setExpiryPolicyFactory(MyExpiryPolicyFactory(Duration.TEN_MINUTES, Duration.TEN_MINUTES, Duration.TEN_MINUTES))
 
-        profilePhotoStore = ignite.createCache(cacheConfig)
+        profilePhotoStore = ignite.getOrCreateCache(cacheConfig)
     }
 
-    override fun saveOne(profilePhoto: ProfilePhoto) {
-        profilePhotoStore.put(profilePhoto.userId, profilePhoto)
+    override fun saveOne(profilePhoto: ProfilePhoto): Boolean {
+        try {
+            profilePhotoStore.put(profilePhoto.userId, profilePhoto)
+            return true
+        } catch (e: Throwable) {
+            log.e(e)
+            return false
+        }
     }
 
     override fun findOne(userId: Long): Fickle<ProfilePhoto> {

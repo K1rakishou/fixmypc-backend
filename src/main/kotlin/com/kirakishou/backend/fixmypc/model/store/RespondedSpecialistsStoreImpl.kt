@@ -2,6 +2,7 @@ package com.kirakishou.backend.fixmypc.model.store
 
 import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.core.Fickle
+import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.entity.RespondedSpecialist
 import org.apache.ignite.Ignite
 import org.apache.ignite.IgniteAtomicSequence
@@ -21,6 +22,9 @@ class RespondedSpecialistsStoreImpl : RespondedSpecialistsStore {
     @Autowired
     lateinit var ignite: Ignite
 
+    @Autowired
+    lateinit var log: FileLog
+
     lateinit var respondedSpecialistsCache: IgniteCache<Long, MutableSet<RespondedSpecialist>>
     lateinit var respondedSpecialistIdGenerator: IgniteAtomicSequence
 
@@ -32,7 +36,7 @@ class RespondedSpecialistsStoreImpl : RespondedSpecialistsStore {
         cacheConfig.cacheMode = CacheMode.PARTITIONED
         cacheConfig.atomicityMode = CacheAtomicityMode.TRANSACTIONAL
         cacheConfig.setIndexedTypes(Long::class.java, MutableSet::class.java)
-        respondedSpecialistsCache = ignite.createCache(cacheConfig)
+        respondedSpecialistsCache = ignite.getOrCreateCache(cacheConfig)
 
         val atomicConfig = AtomicConfiguration()
         atomicConfig.backups = 3
@@ -40,30 +44,61 @@ class RespondedSpecialistsStoreImpl : RespondedSpecialistsStore {
         respondedSpecialistIdGenerator = ignite.atomicSequence(Constant.IgniteNames.RESPONDED_SPECIALIST_ID_GENERATOR, atomicConfig, 0L, true)
     }
 
-    override fun saveOne(respondedSpecialist: RespondedSpecialist) {
-        val lock = respondedSpecialistsCache.lock(respondedSpecialist.damageClaimId)
-        lock.lock()
-
+    override fun saveOne(respondedSpecialist: RespondedSpecialist): Boolean {
         try {
-            respondedSpecialist.id = respondedSpecialistIdGenerator.andIncrement
+            val lock = respondedSpecialistsCache.lock(respondedSpecialist.damageClaimId)
+            lock.lock()
 
-            val allRespondedSpecialists = get(respondedSpecialist.damageClaimId)
-            allRespondedSpecialists.add(respondedSpecialist)
-            respondedSpecialistsCache.put(respondedSpecialist.damageClaimId, allRespondedSpecialists)
+            try {
+                respondedSpecialist.id = respondedSpecialistIdGenerator.andIncrement
 
-        } finally {
-            lock.unlock()
+                val allRespondedSpecialists = get(respondedSpecialist.damageClaimId)
+                allRespondedSpecialists.add(respondedSpecialist)
+                respondedSpecialistsCache.put(respondedSpecialist.damageClaimId, allRespondedSpecialists)
+
+            } finally {
+                lock.unlock()
+            }
+
+            return true
+        } catch (e: Throwable) {
+            log.e(e)
+            return false
         }
     }
 
-    override fun saveMany(damageClaimId: Long, respondedSpecialistList: List<RespondedSpecialist>) {
+    override fun saveMany(damageClaimId: Long, respondedSpecialistList: List<RespondedSpecialist>): Boolean {
+        try {
+            val lock = respondedSpecialistsCache.lock(damageClaimId)
+            lock.lock()
+
+            try {
+                val allRespondedSpecialists = get(damageClaimId)
+                allRespondedSpecialists.addAll(respondedSpecialistList)
+                respondedSpecialistsCache.put(damageClaimId, allRespondedSpecialists)
+            } finally {
+                lock.unlock()
+            }
+
+            return true
+        } catch (e: Throwable) {
+            log.e(e)
+            return false
+        }
+    }
+
+    override fun containsOne(userId: Long, damageClaimId: Long): Boolean {
         val lock = respondedSpecialistsCache.lock(damageClaimId)
         lock.lock()
 
         try {
-            val userMalfunctions = get(damageClaimId)
-            userMalfunctions.addAll(respondedSpecialistList)
-            respondedSpecialistsCache.put(damageClaimId, userMalfunctions)
+            val allRespondedSpecialists = respondedSpecialistsCache.get(userId) ?: return false
+            val respondedSpecialist = allRespondedSpecialists.firstOrNull { it.damageClaimId == damageClaimId }
+            if (respondedSpecialist == null) {
+                return false
+            }
+
+            return true
         } finally {
             lock.unlock()
         }
@@ -87,8 +122,14 @@ class RespondedSpecialistsStoreImpl : RespondedSpecialistsStore {
                 .collect(Collectors.toList())
     }
 
-    override fun deleteAllForDamageClaim(damageClaimId: Long) {
-        respondedSpecialistsCache.remove(damageClaimId)
+    override fun deleteAllForDamageClaim(damageClaimId: Long): Boolean {
+        try {
+            respondedSpecialistsCache.remove(damageClaimId)
+            return true
+        } catch (e: Throwable) {
+            log.e(e)
+            return false
+        }
     }
 
     private fun get(ownerId: Long): MutableSet<RespondedSpecialist> {

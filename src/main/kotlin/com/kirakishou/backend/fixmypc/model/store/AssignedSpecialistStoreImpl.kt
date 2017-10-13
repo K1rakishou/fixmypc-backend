@@ -2,6 +2,7 @@ package com.kirakishou.backend.fixmypc.model.store
 
 import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.core.Fickle
+import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.entity.AssignedSpecialist
 import org.apache.ignite.Ignite
 import org.apache.ignite.IgniteCache
@@ -18,6 +19,9 @@ class AssignedSpecialistStoreImpl : AssignedSpecialistStore {
     @Autowired
     lateinit var ignite: Ignite
 
+    @Autowired
+    lateinit var log: FileLog
+
     lateinit var assignedSpecialistStore: IgniteCache<Long, AssignedSpecialist>
 
     @PostConstruct
@@ -28,21 +32,33 @@ class AssignedSpecialistStoreImpl : AssignedSpecialistStore {
         cacheConfig.cacheMode = CacheMode.PARTITIONED
         cacheConfig.setIndexedTypes(Long::class.java, AssignedSpecialist::class.java)
 
-        assignedSpecialistStore = ignite.createCache(cacheConfig)
+        assignedSpecialistStore = ignite.getOrCreateCache(cacheConfig)
     }
 
-    override fun saveOne(assignedSpecialist: AssignedSpecialist) {
-        assignedSpecialistStore.put(assignedSpecialist.damageClaimId, assignedSpecialist)
+    override fun saveOne(assignedSpecialist: AssignedSpecialist): Boolean {
+        try {
+            assignedSpecialistStore.put(assignedSpecialist.damageClaimId, assignedSpecialist)
+            return true
+        } catch (e: Throwable) {
+            log.e(e)
+            return false
+        }
     }
 
-    override fun saveMany(assignedSpecialistList: List<AssignedSpecialist>) {
+    override fun saveMany(assignedSpecialistList: List<AssignedSpecialist>): Boolean {
         val assignedSpecialistMap = hashMapOf<Long, AssignedSpecialist>()
 
         for (assignedSpecialist in assignedSpecialistList) {
             assignedSpecialistMap.put(assignedSpecialist.damageClaimId, assignedSpecialist)
         }
 
-        assignedSpecialistStore.putAll(assignedSpecialistMap)
+        try {
+            assignedSpecialistStore.putAll(assignedSpecialistMap)
+            return true
+        } catch (e: Throwable) {
+            log.e(e)
+            return false
+        }
     }
 
     override fun findOne(damageClaimId: Long, isWorkDone: Boolean): Fickle<AssignedSpecialist> {

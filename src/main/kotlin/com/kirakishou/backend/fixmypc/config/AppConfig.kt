@@ -56,7 +56,10 @@ class AppConfig {
         igniteConfiguration.metricsLogFrequency = 0
         igniteConfiguration.persistentStoreConfiguration = PersistentStoreConfiguration()
 
-        return Ignition.start(igniteConfiguration)
+        val ignite = Ignition.start(igniteConfiguration)
+        ignite.active(true)
+
+        return ignite
     }
 
     @Bean

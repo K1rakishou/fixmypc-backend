@@ -2,6 +2,7 @@ package com.kirakishou.backend.fixmypc.model.store
 
 import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.core.Fickle
+import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.entity.User
 import org.apache.ignite.Ignite
 import org.apache.ignite.IgniteAtomicSequence
@@ -24,6 +25,9 @@ class UserStoreImpl : UserStore {
     @Autowired
     lateinit var ignite: Ignite
 
+    @Autowired
+    lateinit var log: FileLog
+
     lateinit var userStore: IgniteCache<String, User>
     lateinit var userIdGenerator: IgniteAtomicSequence
 
@@ -34,7 +38,7 @@ class UserStoreImpl : UserStore {
         cacheConfig.name = Constant.IgniteNames.USER_STORE
         cacheConfig.cacheMode = CacheMode.PARTITIONED
         cacheConfig.setIndexedTypes(String::class.java, User::class.java)
-        userStore = ignite.createCache(cacheConfig)
+        userStore = ignite.getOrCreateCache(cacheConfig)
 
         val atomicConfig = AtomicConfiguration()
         atomicConfig.backups = 3
@@ -44,16 +48,27 @@ class UserStoreImpl : UserStore {
 
     override fun saveOne(login: String, user: User): Long {
         user.id = userIdGenerator.andIncrement
-        userStore.put(login, user)
 
-        return user.id
+        try {
+            userStore.put(login, user)
+            return user.id
+        } catch (e: Throwable) {
+            log.e(e)
+            return -1L
+        }
     }
 
     override fun findOne(login: String): Fickle<User> {
         return Fickle.of(userStore[login])
     }
 
-    override fun deleteOne(login: String) {
-        userStore.remove(login)
+    override fun deleteOne(login: String): Boolean {
+        try {
+            userStore.remove(login)
+            return true
+        } catch (e: Throwable) {
+            log.e(e)
+            return false
+        }
     }
 }

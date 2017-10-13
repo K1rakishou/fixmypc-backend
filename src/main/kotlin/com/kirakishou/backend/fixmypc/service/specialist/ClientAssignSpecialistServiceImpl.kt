@@ -2,11 +2,11 @@ package com.kirakishou.backend.fixmypc.service.specialist
 
 import com.kirakishou.backend.fixmypc.core.AccountType
 import com.kirakishou.backend.fixmypc.log.FileLog
+import com.kirakishou.backend.fixmypc.model.cache.SessionCache
 import com.kirakishou.backend.fixmypc.model.entity.AssignedSpecialist
-import com.kirakishou.backend.fixmypc.model.repository.AssignedSpecialistRepository
-import com.kirakishou.backend.fixmypc.model.repository.DamageClaimRepository
-import com.kirakishou.backend.fixmypc.model.repository.RespondedSpecialistsRepository
-import com.kirakishou.backend.fixmypc.model.repository.SessionRepository
+import com.kirakishou.backend.fixmypc.model.store.AssignedSpecialistStore
+import com.kirakishou.backend.fixmypc.model.store.DamageClaimStore
+import com.kirakishou.backend.fixmypc.model.store.RespondedSpecialistsStore
 import io.reactivex.Single
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -15,24 +15,24 @@ import org.springframework.stereotype.Component
 class ClientAssignSpecialistServiceImpl : ClientAssignSpecialistService {
 
     @Autowired
-    private lateinit var assignedSpecialistsRepo: AssignedSpecialistRepository
+    private lateinit var assignedSpecialistsStore: AssignedSpecialistStore
 
     @Autowired
-    private lateinit var respondedSpecialistsRepo: RespondedSpecialistsRepository
+    private lateinit var respondedSpecialistsStore: RespondedSpecialistsStore
 
     @Autowired
-    private lateinit var damageClaimRepo: DamageClaimRepository
+    private lateinit var damageClaimStore: DamageClaimStore
 
     @Autowired
-    private lateinit var sessionRepository: SessionRepository
+    private lateinit var sessionCache: SessionCache
 
     @Autowired
     private lateinit var log: FileLog
 
     override fun assignSpecialist(sessionId: String, userId: Long, damageClaimId: Long): Single<ClientAssignSpecialistService.Get.Result> {
-        val userFickle = sessionRepository.findOne(sessionId)
+        val userFickle = sessionCache.findOne(sessionId)
         if (!userFickle.isPresent()) {
-            log.d("SessionId $sessionId was not found in the sessionRepository")
+            log.d("SessionId $sessionId was not found in the sessionCache")
             return Single.just(ClientAssignSpecialistService.Get.Result.SessionIdExpired())
         }
 
@@ -42,7 +42,7 @@ class ClientAssignSpecialistServiceImpl : ClientAssignSpecialistService {
             return Single.just(ClientAssignSpecialistService.Get.Result.BadAccountType())
         }
 
-        val damageClaimFickle = damageClaimRepo.findOne(damageClaimId)
+        val damageClaimFickle = damageClaimStore.findOne(damageClaimId)
         if (!damageClaimFickle.isPresent()) {
             log.d("DamageClaim with id $damageClaimId does not exist")
             return Single.just(ClientAssignSpecialistService.Get.Result.DamageClaimDoesNotExist())
@@ -54,12 +54,12 @@ class ClientAssignSpecialistServiceImpl : ClientAssignSpecialistService {
             return Single.just(ClientAssignSpecialistService.Get.Result.DamageClaimDoesNotBelongToUser())
         }
 
-        if (!respondedSpecialistsRepo.deleteAllForDamageClaim(damageClaimId)) {
+        if (!respondedSpecialistsStore.deleteAllForDamageClaim(damageClaimId)) {
             log.d("Something went wrong while trying to remove specialists responded to damageClaim with id $damageClaimId")
             return Single.just(ClientAssignSpecialistService.Get.Result.CouldNotRemoveRespondedSpecialists())
         }
 
-        if (!assignedSpecialistsRepo.saveOne(AssignedSpecialist(damageClaimId, userId, false))) {
+        if (!assignedSpecialistsStore.saveOne(AssignedSpecialist(damageClaimId, userId, false))) {
             log.d("Something went wrong while trying to remove specialists responded to damageClaim with id $damageClaimId")
             return Single.just(ClientAssignSpecialistService.Get.Result.CouldNotRemoveRespondedSpecialists())
         }

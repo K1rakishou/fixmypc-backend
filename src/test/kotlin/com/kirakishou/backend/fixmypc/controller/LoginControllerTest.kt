@@ -5,7 +5,7 @@ import com.kirakishou.backend.fixmypc.core.AccountType
 import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.core.Fickle
 import com.kirakishou.backend.fixmypc.model.entity.User
-import com.kirakishou.backend.fixmypc.model.repository.UserRepository
+import com.kirakishou.backend.fixmypc.model.store.UserStore
 import com.kirakishou.backend.fixmypc.service.Generator
 import com.kirakishou.backend.fixmypc.service.user.LoginService
 import org.hamcrest.Matchers
@@ -53,7 +53,7 @@ class LoginControllerTest {
     lateinit var generator: Generator
 
     @Mock
-    lateinit var userRepository: UserRepository
+    lateinit var userStore: UserStore
 
     @Autowired
     @InjectMocks
@@ -75,7 +75,7 @@ class LoginControllerTest {
 
         Mockito.`when`(service.doLogin(GOOD_LOGIN, GOOD_PASSWORD)).thenReturn(LoginService.Result.Ok(SESSION_ID, AccountType.Guest))
         Mockito.`when`(service.doLogin(BAD_LOGIN, BAD_PASSWORD)).thenReturn(LoginService.Result.WrongLoginOrPassword(BAD_LOGIN))
-        Mockito.`when`(userRepository.findOne(Mockito.anyString())).thenReturn(Fickle.empty())
+        Mockito.`when`(userStore.findOne(Mockito.anyString())).thenReturn(Fickle.empty())
         Mockito.`when`(generator.generateSessionId()).thenReturn(SESSION_ID)
     }
 

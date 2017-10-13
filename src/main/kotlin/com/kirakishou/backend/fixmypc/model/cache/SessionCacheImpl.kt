@@ -34,7 +34,7 @@ class SessionCacheImpl : SessionCache {
         sessionCacheConfig.cacheMode = CacheMode.PARTITIONED
         sessionCacheConfig.setExpiryPolicyFactory(MyExpiryPolicyFactory(Duration.ONE_HOUR, Duration.ONE_HOUR, Duration.ONE_HOUR))
 
-        sessionCache = ignite.createCache(sessionCacheConfig)
+        sessionCache = ignite.getOrCreateCache(sessionCacheConfig)
     }
 
     override fun saveOne(sessionId: String, user: User) {

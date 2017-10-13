@@ -41,7 +41,7 @@ class DamageClaimStoreImpl : DamageClaimStore {
         damageClaimStoreConfig.name = Constant.IgniteNames.DAMAGE_CLAIM_STORE
         damageClaimStoreConfig.cacheMode = CacheMode.PARTITIONED
         damageClaimStoreConfig.setIndexedTypes(Long::class.java, DamageClaim::class.java)
-        damageClaimStore = ignite.createCache(damageClaimStoreConfig)
+        damageClaimStore = ignite.getOrCreateCache(damageClaimStoreConfig)
 
         val damageClaimKeyStoreConfig = CacheConfiguration<Long, MutableSet<Long>>()
         damageClaimKeyStoreConfig.backups = 1
@@ -49,7 +49,7 @@ class DamageClaimStoreImpl : DamageClaimStore {
         damageClaimKeyStoreConfig.cacheMode = CacheMode.PARTITIONED
         damageClaimKeyStoreConfig.atomicityMode = CacheAtomicityMode.TRANSACTIONAL
         damageClaimKeyStoreConfig.setIndexedTypes(Long::class.java, MutableSet::class.java)
-        damageClaimKeyStore = ignite.createCache(damageClaimKeyStoreConfig)
+        damageClaimKeyStore = ignite.getOrCreateCache(damageClaimKeyStoreConfig)
 
         val atomicConfig = AtomicConfiguration()
         atomicConfig.backups = 3
@@ -58,56 +58,70 @@ class DamageClaimStoreImpl : DamageClaimStore {
         damageClaimIdGenerator = ignite.atomicSequence(Constant.IgniteNames.DAMAGE_CLAIM_GENERATOR, atomicConfig, 0L, true)
     }
 
-    override fun saveOne(damageClaim: DamageClaim) {
-        ignite.transactions().txStart().use { transaction ->
-            try {
-                damageClaim.id = damageClaimIdGenerator.andIncrement
-                val userId = damageClaim.ownerId
-
-                val lock = damageClaimKeyStore.lock(userId)
-                lock.lock()
-
+    override fun saveOne(damageClaim: DamageClaim): Boolean {
+        try {
+            ignite.transactions().txStart().use { transaction ->
                 try {
-                    val keys = get(userId)
-                    keys.add(damageClaim.id)
-                    damageClaimKeyStore.put(userId, keys)
-                } finally {
-                    lock.unlock()
+                    damageClaim.id = damageClaimIdGenerator.andIncrement
+                    val userId = damageClaim.ownerId
+
+                    val lock = damageClaimKeyStore.lock(userId)
+                    lock.lock()
+
+                    try {
+                        val keys = get(userId)
+                        keys.add(damageClaim.id)
+                        damageClaimKeyStore.put(userId, keys)
+                    } finally {
+                        lock.unlock()
+                    }
+
+                    damageClaimStore.put(damageClaim.id, damageClaim)
+
+                    transaction.commit()
+                } catch (e: Throwable) {
+                    log.e(e)
+                    transaction.rollback()
                 }
-
-                damageClaimStore.put(damageClaim.id, damageClaim)
-
-                transaction.commit()
-            } catch (e: Throwable) {
-                log.e(e)
-                transaction.rollback()
             }
+
+            return true
+        } catch (e: Throwable) {
+            log.e(e)
+            return false
         }
     }
 
-    override fun saveMany(damageClaimList: List<DamageClaim>) {
-        ignite.transactions().txStart().use { transaction ->
-            try {
-                val damageClaimKeysMap = hashMapOf<Long, MutableSet<Long>>()
-                for (damageClaim in damageClaimList) {
-                    damageClaimKeysMap.putIfAbsent(damageClaim.ownerId, mutableSetOf())
-                    damageClaimKeysMap[damageClaim.ownerId]!!.add(damageClaim.id)
+    override fun saveMany(damageClaimList: List<DamageClaim>): Boolean {
+        try {
+            ignite.transactions().txStart().use { transaction ->
+                try {
+                    val damageClaimKeysMap = hashMapOf<Long, MutableSet<Long>>()
+                    for (damageClaim in damageClaimList) {
+                        damageClaimKeysMap.putIfAbsent(damageClaim.ownerId, mutableSetOf())
+                        damageClaimKeysMap[damageClaim.ownerId]!!.add(damageClaim.id)
+                    }
+
+                    damageClaimKeyStore.putAll(damageClaimKeysMap)
+
+                    val damageClaimMap = hashMapOf<Long, DamageClaim>()
+                    for (malfunction in damageClaimList) {
+                        damageClaimMap.put(malfunction.id, malfunction)
+                    }
+
+                    damageClaimStore.putAll(damageClaimMap)
+
+                    transaction.commit()
+                } catch (e: Throwable) {
+                    log.e(e)
+                    transaction.rollback()
                 }
-
-                damageClaimKeyStore.putAll(damageClaimKeysMap)
-
-                val damageClaimMap = hashMapOf<Long, DamageClaim>()
-                for (malfunction in damageClaimList) {
-                    damageClaimMap.put(malfunction.id, malfunction)
-                }
-
-                damageClaimStore.putAll(damageClaimMap)
-
-                transaction.commit()
-            } catch (e: Throwable) {
-                log.e(e)
-                transaction.rollback()
             }
+
+            return true
+        } catch (e: Throwable) {
+            log.e(e)
+            return false
         }
     }
 
@@ -146,20 +160,27 @@ class DamageClaimStoreImpl : DamageClaimStore {
                 .map { it.value }
     }
 
-    override fun deleteOne(damageClaim: DamageClaim) {
-        ignite.transactions().txStart().use { transaction ->
-            try {
-                val keySet = get(damageClaim.ownerId)
-                keySet.remove(damageClaim.id)
+    override fun deleteOne(damageClaim: DamageClaim): Boolean {
+        try {
+            ignite.transactions().txStart().use { transaction ->
+                try {
+                    val keySet = get(damageClaim.ownerId)
+                    keySet.remove(damageClaim.id)
 
-                damageClaimKeyStore.put(damageClaim.ownerId, keySet)
-                damageClaimStore.remove(damageClaim.id)
+                    damageClaimKeyStore.put(damageClaim.ownerId, keySet)
+                    damageClaimStore.remove(damageClaim.id)
 
-                transaction.commit()
-            } catch (e: Throwable) {
-                log.e(e)
-                transaction.rollback()
+                    transaction.commit()
+                } catch (e: Throwable) {
+                    log.e(e)
+                    transaction.rollback()
+                }
             }
+
+            return true
+        } catch (e: Throwable) {
+            log.e(e)
+            return false
         }
     }
 
