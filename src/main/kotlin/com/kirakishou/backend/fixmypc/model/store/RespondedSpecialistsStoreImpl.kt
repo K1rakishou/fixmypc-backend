@@ -25,7 +25,7 @@ class RespondedSpecialistsStoreImpl : RespondedSpecialistsStore {
     @Autowired
     lateinit var log: FileLog
 
-    private val cacheName = Constant.IgniteNames.RESPONDED_SPECIALISTS_STORE
+    private val tableName = "RespondedSpecialist"
 
     //key is RespondedSpecialistId
     lateinit var respondedSpecialistsCache: IgniteCache<Long, RespondedSpecialist>
@@ -33,7 +33,7 @@ class RespondedSpecialistsStoreImpl : RespondedSpecialistsStore {
 
     @PostConstruct
     fun init() {
-        val cacheConfig = CacheConfiguration<Long, RespondedSpecialist>(cacheName)
+        val cacheConfig = CacheConfiguration<Long, RespondedSpecialist>(Constant.IgniteNames.RESPONDED_SPECIALISTS_STORE)
         cacheConfig.backups = 1
         cacheConfig.name = Constant.IgniteNames.RESPONDED_SPECIALISTS_STORE
         cacheConfig.cacheMode = CacheMode.PARTITIONED
@@ -60,14 +60,14 @@ class RespondedSpecialistsStoreImpl : RespondedSpecialistsStore {
     }
 
     override fun containsOne(damageClaimId: Long): Boolean {
-        val sql = "SELECT * FROM $cacheName WHERE damage_claim_id = ? LIMIT 1"
+        val sql = "SELECT * FROM $tableName WHERE damage_claim_id = ? LIMIT 1"
         val sqlQuery = SqlQuery<Long, RespondedSpecialist>(RespondedSpecialist::class.java, sql).setArgs(damageClaimId)
 
         return respondedSpecialistsCache.query(sqlQuery).use { it.all.size == 1 }
     }
 
     override fun findOne(damageClaimId: Long): Fickle<RespondedSpecialist> {
-        val sql = "SELECT * FROM $cacheName WHERE damage_claim_id = ? LIMIT 1"
+        val sql = "SELECT * FROM $tableName WHERE damage_claim_id = ? LIMIT 1"
         val sqlQuery = SqlQuery<Long, RespondedSpecialist>(RespondedSpecialist::class.java, sql).setArgs(damageClaimId)
 
         val respondedSpecialist = respondedSpecialistsCache.query(sqlQuery).use { it.all }
@@ -79,7 +79,7 @@ class RespondedSpecialistsStoreImpl : RespondedSpecialistsStore {
     }
 
     override fun findManyForDamageClaimPaged(damageClaimId: Long, skip: Long, count: Long): List<RespondedSpecialist> {
-        val sql = "SELECT * FROM $cacheName WHERE damage_claim_id = ? OFFSET ? LIMIT ?"
+        val sql = "SELECT * FROM $tableName WHERE damage_claim_id = ? OFFSET ? LIMIT ?"
         val sqlQuery = SqlQuery<Long, RespondedSpecialist>(RespondedSpecialist::class.java, sql).setArgs(damageClaimId, skip, count)
 
         return respondedSpecialistsCache.query(sqlQuery).use { entries -> entries.all.map { it.value } }
@@ -87,7 +87,7 @@ class RespondedSpecialistsStoreImpl : RespondedSpecialistsStore {
 
     override fun deleteAllForDamageClaim(damageClaimId: Long): Boolean {
         try {
-            val sql = "DELETE FROM $cacheName WHERE damage_claim_id = ?"
+            val sql = "DELETE FROM $tableName WHERE damage_claim_id = ?"
             val sqlQuery = SqlQuery<Long, RespondedSpecialist>(RespondedSpecialist::class.java, sql).setArgs(damageClaimId)
 
             respondedSpecialistsCache.query(sqlQuery).use { it.all }

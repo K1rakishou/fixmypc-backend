@@ -23,17 +23,16 @@ class SpecialistProfileStoreImpl : SpecialistProfileStore {
     @Autowired
     lateinit var log: FileLog
 
-    private val cacheName = Constant.IgniteNames.SPECIALIST_PROFILE_STORE
+    private val tableName = "SpecialistProfile"
     lateinit var specialistProfileStore: IgniteCache<Long, SpecialistProfile>
 
     @PostConstruct
     fun init() {
-        val cacheConfig = CacheConfiguration<Long, SpecialistProfile>(cacheName)
+        val cacheConfig = CacheConfiguration<Long, SpecialistProfile>(Constant.IgniteNames.SPECIALIST_PROFILE_STORE)
         cacheConfig.backups = 1
         cacheConfig.cacheMode = CacheMode.PARTITIONED
         cacheConfig.atomicityMode = CacheAtomicityMode.TRANSACTIONAL
         cacheConfig.setIndexedTypes(Long::class.java, SpecialistProfile::class.java)
-        //cacheConfig.setExpiryPolicyFactory(MyExpiryPolicyFactory(Duration.TEN_MINUTES, Duration.TEN_MINUTES, Duration.TEN_MINUTES))
 
         specialistProfileStore = ignite.getOrCreateCache(cacheConfig)
     }

@@ -22,12 +22,12 @@ class AssignedSpecialistStoreImpl : AssignedSpecialistStore {
     @Autowired
     lateinit var log: FileLog
 
-    private val cacheName = Constant.IgniteNames.DAMAGE_CLAIM_ASSIGNED_SPECIALIST_STORE
+    private val tableName = "AssignedSpecialist"
     lateinit var assignedSpecialistStore: IgniteCache<Long, AssignedSpecialist>
 
     @PostConstruct
     fun init() {
-        val cacheConfig = CacheConfiguration<Long, AssignedSpecialist>(cacheName)
+        val cacheConfig = CacheConfiguration<Long, AssignedSpecialist>(Constant.IgniteNames.DAMAGE_CLAIM_ASSIGNED_SPECIALIST_STORE)
         cacheConfig.backups = 1
         cacheConfig.cacheMode = CacheMode.PARTITIONED
         cacheConfig.setIndexedTypes(Long::class.java, AssignedSpecialist::class.java)

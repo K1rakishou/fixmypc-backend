@@ -28,13 +28,13 @@ class UserStoreImpl : UserStore {
     @Autowired
     lateinit var log: FileLog
 
-    private val cacheName = Constant.IgniteNames.USER_STORE
+    private val tableName = "User"
     lateinit var userStore: IgniteCache<String, User>
     lateinit var userIdGenerator: IgniteAtomicSequence
 
     @PostConstruct
     fun init() {
-        val cacheConfig = CacheConfiguration<String, User>(cacheName)
+        val cacheConfig = CacheConfiguration<String, User>(Constant.IgniteNames.USER_STORE)
         cacheConfig.backups = 1
         cacheConfig.cacheMode = CacheMode.PARTITIONED
         cacheConfig.setIndexedTypes(String::class.java, User::class.java)
@@ -47,9 +47,8 @@ class UserStoreImpl : UserStore {
     }
 
     override fun saveOne(login: String, user: User): Long {
-        user.id = userIdGenerator.andIncrement
-
         try {
+            user.id = userIdGenerator.andIncrement
             userStore.put(login, user)
             return user.id
         } catch (e: Throwable) {

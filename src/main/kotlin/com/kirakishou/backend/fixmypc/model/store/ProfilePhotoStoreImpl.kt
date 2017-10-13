@@ -21,16 +21,15 @@ class ProfilePhotoStoreImpl : ProfilePhotoStore {
     @Autowired
     lateinit var log: FileLog
 
-    private val cacheName = Constant.IgniteNames.PROFILE_PHOTO_STORE
+    private val tableName = "ProfilePhoto"
     lateinit var profilePhotoStore: IgniteCache<Long, ProfilePhoto>
 
     @PostConstruct
     fun init() {
-        val cacheConfig = CacheConfiguration<Long, ProfilePhoto>(cacheName)
+        val cacheConfig = CacheConfiguration<Long, ProfilePhoto>(Constant.IgniteNames.PROFILE_PHOTO_STORE)
         cacheConfig.backups = 1
         cacheConfig.cacheMode = CacheMode.PARTITIONED
         cacheConfig.setIndexedTypes(Long::class.java, ProfilePhoto::class.java)
-        //cacheConfig.setExpiryPolicyFactory(MyExpiryPolicyFactory(Duration.TEN_MINUTES, Duration.TEN_MINUTES, Duration.TEN_MINUTES))
 
         profilePhotoStore = ignite.getOrCreateCache(cacheConfig)
     }

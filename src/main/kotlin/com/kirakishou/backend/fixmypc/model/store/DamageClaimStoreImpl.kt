@@ -24,13 +24,13 @@ class DamageClaimStoreImpl : DamageClaimStore {
     @Autowired
     lateinit var log: FileLog
 
-    private val cacheName = Constant.IgniteNames.DAMAGE_CLAIM_STORE
+    private val tableName = "DamageClaim"
     lateinit var damageClaimIdGenerator: IgniteAtomicSequence
     lateinit var damageClaimStore: IgniteCache<Long, DamageClaim>
 
     @PostConstruct
     fun init() {
-        val damageClaimStoreConfig = CacheConfiguration<Long, DamageClaim>(cacheName)
+        val damageClaimStoreConfig = CacheConfiguration<Long, DamageClaim>(Constant.IgniteNames.DAMAGE_CLAIM_STORE)
         damageClaimStoreConfig.backups = 1
         damageClaimStoreConfig.cacheMode = CacheMode.PARTITIONED
         damageClaimStoreConfig.setIndexedTypes(Long::class.java, DamageClaim::class.java)
@@ -40,6 +40,16 @@ class DamageClaimStoreImpl : DamageClaimStore {
         atomicConfig.backups = 3
         atomicConfig.cacheMode = CacheMode.PARTITIONED
         damageClaimIdGenerator = ignite.atomicSequence(Constant.IgniteNames.DAMAGE_CLAIM_GENERATOR, atomicConfig, 0L, true)
+
+        val sql = "SELECT * FROM $tableName"
+        val sqlQuery = SqlQuery<Long, DamageClaim>(DamageClaim::class.java, sql)
+        val resultList = damageClaimStore.query(sqlQuery).all
+
+        for (result in resultList) {
+            println(result)
+        }
+
+        println()
     }
 
     override fun saveOne(damageClaim: DamageClaim): Boolean {
@@ -83,7 +93,7 @@ class DamageClaimStoreImpl : DamageClaimStore {
     }
 
     override fun findManyPaged(isActive: Boolean, userId: Long, offset: Long, count: Long): List<DamageClaim> {
-        val sql = "SELECT * FROM $cacheName WHERE user_id = ? AND is_active = ? OFFSET ? LIMIT ?"
+        val sql = "SELECT * FROM $tableName WHERE user_id = ? AND is_active = ? OFFSET ? LIMIT ?"
         val sqlQuery = SqlQuery<Long, DamageClaim>(DamageClaim::class.java, sql).setArgs(userId, isActive, offset, count)
 
         return damageClaimStore.query(sqlQuery)
@@ -92,7 +102,7 @@ class DamageClaimStoreImpl : DamageClaimStore {
     }
 
     override fun findAll(isActive: Boolean): List<DamageClaim> {
-        val sql = "SELECT * FROM $cacheName WHERE is_active = ?"
+        val sql = "SELECT * FROM $tableName WHERE is_active = ?"
         val sqlQuery = SqlQuery<Long, DamageClaim>(DamageClaim::class.java, sql).setArgs(isActive)
 
         return damageClaimStore.query(sqlQuery)

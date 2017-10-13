@@ -5,7 +5,7 @@ import java.io.Serializable
 
 
 data class ClientProfile(@SerializedName("user_id")
-                         val userId: Long = 0L,
+                         val userId: Long = -1L,
 
                          @SerializedName("name")
                          val name: String = "",
