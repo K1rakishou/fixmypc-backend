@@ -15,6 +15,7 @@ import io.reactivex.Flowable
 import io.reactivex.Single
 import io.reactivex.rxkotlin.Singles
 import org.apache.hadoop.fs.FileSystem
+import org.apache.hadoop.fs.Path
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
@@ -125,6 +126,8 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
                     damageClaim.imageNamesList = imagesNames
 
                     if (!damageClaimRepository.saveOne(damageClaim)) {
+                        val serverFilePath = "${fs.homeDirectory}/img/damage_claim/${damageClaim.ownerId}/"
+                        fs.delete(Path(serverFilePath), true)
                         throw StoreErrorException()
                     }
 

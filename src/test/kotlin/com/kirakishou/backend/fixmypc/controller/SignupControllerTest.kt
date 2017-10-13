@@ -25,7 +25,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
-import java.sql.Timestamp
 import java.util.*
 
 /**
@@ -58,7 +57,7 @@ class SignupControllerTest {
     private val ALREADY_EXISTING_LOGIN: String = "alreadyexists@gmail.com"
     private val INCORRECT_LOGIN: String = "testgmail.com"
     private val GOOD_ACCOUNT_TYPE: AccountType = AccountType.Client
-    private val TEST_USER = User(0L, GOOD_LOGIN, GOOD_PASSWORD, AccountType.Guest, Timestamp(Date().time))
+    private val TEST_USER = User(0L, GOOD_LOGIN, GOOD_PASSWORD, AccountType.Guest, Date().time)
 
     private val INCORRECT_PASSWORD_SHORT: String = "123"
     private val INCORRECT_PASSWORD_LONG: String = "123643563463463465687679670-7698-6706783567563486479758075890-78"

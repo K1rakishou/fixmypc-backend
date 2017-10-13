@@ -27,7 +27,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
-import java.sql.Timestamp
 import java.util.*
 
 
@@ -64,7 +63,7 @@ class LoginControllerTest {
     private val BAD_LOGIN: String = "badlogin@gmail.com"
     private val BAD_PASSWORD: String = "badpassword"
     private val SESSION_ID: String = "123"
-    private val TEST_USER = User(0L, GOOD_LOGIN, GOOD_PASSWORD, AccountType.Guest, Timestamp(Date().time))
+    private val TEST_USER = User(0L, GOOD_LOGIN, GOOD_PASSWORD, AccountType.Guest, Date().time)
 
     @Before
     fun init() {

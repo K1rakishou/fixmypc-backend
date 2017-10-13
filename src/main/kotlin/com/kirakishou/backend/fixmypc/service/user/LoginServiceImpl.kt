@@ -23,7 +23,7 @@ class LoginServiceImpl: LoginService {
     lateinit var generator: Generator
 
     override fun doLogin(login: String, password: String): LoginService.Result {
-        val userFickle = sessionCache.findOne(login)
+        val userFickle = userStore.findOne(login)
         if (!userFickle.isPresent()) {
             return LoginService.Result.WrongLoginOrPassword(login)
         }
@@ -36,7 +36,7 @@ class LoginServiceImpl: LoginService {
         val sessionId = generator.generateSessionId()
 
         user.sessionId = sessionId
-        userStore.saveOne(sessionId, user)
+        sessionCache.saveOne(sessionId, user)
 
         return LoginService.Result.Ok(sessionId, user.accountType)
     }

@@ -65,17 +65,10 @@ class DamageClaimStoreImpl : DamageClaimStore {
                     damageClaim.id = damageClaimIdGenerator.andIncrement
                     val userId = damageClaim.ownerId
 
-                    val lock = damageClaimKeyStore.lock(userId)
-                    lock.lock()
+                    val keys = get(userId)
+                    keys.add(damageClaim.id)
 
-                    try {
-                        val keys = get(userId)
-                        keys.add(damageClaim.id)
-                        damageClaimKeyStore.put(userId, keys)
-                    } finally {
-                        lock.unlock()
-                    }
-
+                    damageClaimKeyStore.put(userId, keys)
                     damageClaimStore.put(damageClaim.id, damageClaim)
 
                     transaction.commit()

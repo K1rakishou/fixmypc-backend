@@ -7,6 +7,7 @@ import com.kirakishou.backend.fixmypc.model.entity.User
 import com.kirakishou.backend.fixmypc.model.store.ClientProfileStore
 import com.kirakishou.backend.fixmypc.model.store.SpecialistProfileStore
 import com.kirakishou.backend.fixmypc.model.store.UserStore
+import com.kirakishou.backend.fixmypc.util.ServerUtils
 import com.kirakishou.backend.fixmypc.util.TextUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -49,7 +50,7 @@ class SignupServiceImpl : SignupService {
             return SignupService.Result.LoginAlreadyExists()
         }
 
-        val newUser = User(0L, login, password, accountType)
+        val newUser = User(0L, login, password, accountType, ServerUtils.getTimeFast())
         val userId = userStore.saveOne(login, newUser)
         if (userId == -1L) {
             return SignupService.Result.StoreError()
