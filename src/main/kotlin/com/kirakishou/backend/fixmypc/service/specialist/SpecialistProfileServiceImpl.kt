@@ -47,6 +47,8 @@ class SpecialistProfileServiceImpl : SpecialistProfileService {
             return Single.just(SpecialistProfileService.Get.Result.BadAccountType())
         }
 
+        check(user.id != -1L) { "userId should not be -1" }
+
         val profileFickle = mSpecialistProfileStore.findOne(user.id)
         if (!profileFickle.isPresent()) {
             log.d("Could not find specialist profile with id ${user.id}")
@@ -78,6 +80,8 @@ class SpecialistProfileServiceImpl : SpecialistProfileService {
 
                     val name = request.profileName.limit(Constant.TextLength.MAX_PROFILE_NAME_LENGTH)
                     val phone = request.profilePhone.limit(Constant.TextLength.MAX_PHONE_LENGTH)
+
+                    check(user.id != -1L) { "userId should not be -1" }
                     val userId = user.id
 
                     //do not update the photo
@@ -117,6 +121,8 @@ class SpecialistProfileServiceImpl : SpecialistProfileService {
                         log.d("Bad accountType ${user.accountType}")
                         throw BadAccountTypeException()
                     }
+
+                    check(user.id != -1L) { "userId should not be -1" }
 
                     val profileFickle = mSpecialistProfileStore.findOne(user.id)
                     if (!profileFickle.isPresent()) {

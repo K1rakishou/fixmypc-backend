@@ -60,7 +60,8 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
                     }
 
                     val user = userFickle.get()
-                    val ownerId = user.id
+                    val userId = user.id
+                    check(userId != -1L) { "userId should not be -1" }
 
                     if (user.accountType != AccountType.Client) {
                         log.d("User with accountType ${user.accountType} no supposed to do this operation")
@@ -84,7 +85,7 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
                     checkFileNames(params.uploadingFiles.map { it.originalFilename })
 
                     val damageClaim = DamageClaim(
-                            ownerId = ownerId,
+                            userId = userId,
                             category = params.request.category,
                             description = params.request.description,
                             lat = params.request.lat,
@@ -96,7 +97,7 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
                     return@map DamageClaimAndParams(damageClaim, params)
                 }
                 .flatMap { (damageClaim, _) ->
-                    val serverFilePath = "${fs.homeDirectory}/img/damage_claim/${damageClaim.ownerId}/"
+                    val serverFilePath = "${fs.homeDirectory}/img/damage_claim/${damageClaim.userId}/"
                     val responseList = mutableListOf<Flowable<ImageService.Post.Result>>()
 
                     for (uploadingFile in uploadingFiles) {
@@ -126,7 +127,7 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
                     damageClaim.imageNamesList = imagesNames
 
                     if (!damageClaimRepository.saveOne(damageClaim)) {
-                        val serverFilePath = "${fs.homeDirectory}/img/damage_claim/${damageClaim.ownerId}/"
+                        val serverFilePath = "${fs.homeDirectory}/img/damage_claim/${damageClaim.userId}/"
                         fs.delete(Path(serverFilePath), true)
                         throw StoreErrorException()
                     }

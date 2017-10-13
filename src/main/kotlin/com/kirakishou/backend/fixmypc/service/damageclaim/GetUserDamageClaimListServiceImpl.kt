@@ -86,6 +86,8 @@ class GetUserDamageClaimListServiceImpl : GetUserDamageClaimListService {
             return Single.just(GetUserDamageClaimListService.Get.Result.BadAccountType())
         }
 
+        check(user.id != -1L) { "userId should not be -1" }
+
         val repoResult = damageClaimRepository.findManyPaged(isActive, user.id, skip, count)
         return Single.just(GetUserDamageClaimListService.Get.Result.Ok(repoResult))
     }

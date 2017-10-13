@@ -54,7 +54,6 @@ object Constant {
     object IgniteNames {
         //store
         val DAMAGE_CLAIM_STORE = "damage_claim_store"
-        val DAMAGE_CLAIM_KEYS_STORE = "damage_claim_keys_store"
         val USER_STORE = "user_store"
         val CLIENT_PROFILE_STORE = "client_profile_store"
         val SPECIALIST_PROFILE_STORE = "specialist_profile_store"

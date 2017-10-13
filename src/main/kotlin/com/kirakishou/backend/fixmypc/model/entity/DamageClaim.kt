@@ -9,8 +9,9 @@ data class DamageClaim(@SerializedName("id")
                        @QuerySqlField(index = true, name = "id")
                        var id: Long = 0L,
 
+                       @QuerySqlField(index = true, name = "user_id")
                        @SerializedName("owner_id")
-                       var ownerId: Long = 0L,
+                       var userId: Long = 0L,
 
                        @QuerySqlField(name = "is_active")
                        @SerializedName("is_active")

@@ -49,7 +49,7 @@ class ClientAssignSpecialistServiceImpl : ClientAssignSpecialistService {
         }
 
         val damageClaim = damageClaimFickle.get()
-        if (userId != damageClaim.ownerId) {
+        if (userId != damageClaim.userId) {
             log.d("DamageClaim with id ${damageClaim.id} does not belong to user with ud $userId")
             return Single.just(ClientAssignSpecialistService.Get.Result.DamageClaimDoesNotBelongToUser())
         }

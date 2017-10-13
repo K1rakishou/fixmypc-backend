@@ -50,6 +50,8 @@ class DamageClaimResponseServiceImpl : DamageClaimResponseService {
             return Single.just(DamageClaimResponseService.Post.Result.DamageClaimIsNotActive())
         }
 
+        check(user.id != -1L) { "userId should not be -1" }
+
         val storeResult = respondedSpecialistsStore.saveOne(RespondedSpecialist(damageClaimId = damageClaimId, userId = user.id))
         if (!storeResult) {
             log.d("Couldn't respond to damage claim")
@@ -72,7 +74,7 @@ class DamageClaimResponseServiceImpl : DamageClaimResponseService {
             return Single.just(DamageClaimResponseService.Get.Result.BadAccountType())
         }
 
-        val hasAlreadyResponded = respondedSpecialistsStore.containsOne(user.id, damageClaimId)
+        val hasAlreadyResponded = respondedSpecialistsStore.containsOne(damageClaimId)
         if (!hasAlreadyResponded) {
             return Single.just(DamageClaimResponseService.Get.Result.Ok(false))
         }

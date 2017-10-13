@@ -57,27 +57,19 @@ class LocationStoreImpl : LocationStore {
         var totalLoaded = 0L
 
         val time = measureTimeMillis {
-            var offset = 0L
-            val count = 1000L
             val mapOfItems = mutableMapOf<Long, Point>()
 
-            while (true) {
-                val damageClaimsList = damageClaimStore.findAll(true)
-                if (damageClaimsList.isEmpty()) {
-                    break
-                }
-
+            val damageClaimsList = damageClaimStore.findAll(true)
+            if (damageClaimsList.isNotEmpty()) {
                 totalLoaded += damageClaimsList.size
 
                 for (damageClaim in damageClaimsList) {
                     mapOfItems.put(damageClaim.id, Point(damageClaim.lon, damageClaim.lat))
                 }
 
-                offset += count
-            }
-
-            if (mapOfItems.isNotEmpty()) {
-                template.opsForGeo().geoAdd(Constant.RedisNames.LOCATION_CACHE_NAME, mapOfItems)
+                if (mapOfItems.isNotEmpty()) {
+                    template.opsForGeo().geoAdd(Constant.RedisNames.LOCATION_CACHE_NAME, mapOfItems)
+                }
             }
         }
 

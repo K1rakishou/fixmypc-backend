@@ -21,13 +21,13 @@ class ClientProfileStoreImpl : ClientProfileStore {
     @Autowired
     lateinit var log: FileLog
 
+    private val cacheName = Constant.IgniteNames.CLIENT_PROFILE_STORE
     lateinit var clientProfileStore: IgniteCache<Long, ClientProfile>
 
     @PostConstruct
     fun init() {
-        val cacheConfig = CacheConfiguration<Long, ClientProfile>()
+        val cacheConfig = CacheConfiguration<Long, ClientProfile>(cacheName)
         cacheConfig.backups = 1
-        cacheConfig.name = Constant.IgniteNames.CLIENT_PROFILE_STORE
         cacheConfig.cacheMode = CacheMode.PARTITIONED
         cacheConfig.setIndexedTypes(Long::class.java, ClientProfile::class.java)
         //cacheConfig.setExpiryPolicyFactory(MyExpiryPolicyFactory(Duration.TEN_MINUTES, Duration.TEN_MINUTES, Duration.TEN_MINUTES))

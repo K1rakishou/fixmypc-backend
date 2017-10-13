@@ -9,11 +9,11 @@ import org.apache.ignite.IgniteAtomicSequence
 import org.apache.ignite.IgniteCache
 import org.apache.ignite.cache.CacheAtomicityMode
 import org.apache.ignite.cache.CacheMode
+import org.apache.ignite.cache.query.SqlQuery
 import org.apache.ignite.configuration.AtomicConfiguration
 import org.apache.ignite.configuration.CacheConfiguration
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
-import java.util.stream.Collectors
 import javax.annotation.PostConstruct
 
 @Component
@@ -25,12 +25,15 @@ class RespondedSpecialistsStoreImpl : RespondedSpecialistsStore {
     @Autowired
     lateinit var log: FileLog
 
-    lateinit var respondedSpecialistsCache: IgniteCache<Long, MutableSet<RespondedSpecialist>>
+    private val cacheName = Constant.IgniteNames.RESPONDED_SPECIALISTS_STORE
+
+    //key is RespondedSpecialistId
+    lateinit var respondedSpecialistsCache: IgniteCache<Long, RespondedSpecialist>
     lateinit var respondedSpecialistIdGenerator: IgniteAtomicSequence
 
     @PostConstruct
     fun init() {
-        val cacheConfig = CacheConfiguration<Long, MutableSet<RespondedSpecialist>>()
+        val cacheConfig = CacheConfiguration<Long, RespondedSpecialist>(cacheName)
         cacheConfig.backups = 1
         cacheConfig.name = Constant.IgniteNames.RESPONDED_SPECIALISTS_STORE
         cacheConfig.cacheMode = CacheMode.PARTITIONED
@@ -46,19 +49,8 @@ class RespondedSpecialistsStoreImpl : RespondedSpecialistsStore {
 
     override fun saveOne(respondedSpecialist: RespondedSpecialist): Boolean {
         try {
-            val lock = respondedSpecialistsCache.lock(respondedSpecialist.damageClaimId)
-            lock.lock()
-
-            try {
-                respondedSpecialist.id = respondedSpecialistIdGenerator.andIncrement
-
-                val allRespondedSpecialists = get(respondedSpecialist.damageClaimId)
-                allRespondedSpecialists.add(respondedSpecialist)
-                respondedSpecialistsCache.put(respondedSpecialist.damageClaimId, allRespondedSpecialists)
-
-            } finally {
-                lock.unlock()
-            }
+            respondedSpecialist.id = respondedSpecialistIdGenerator.andIncrement
+            respondedSpecialistsCache.put(respondedSpecialist.userId, respondedSpecialist)
 
             return true
         } catch (e: Throwable) {
@@ -67,77 +59,43 @@ class RespondedSpecialistsStoreImpl : RespondedSpecialistsStore {
         }
     }
 
-    override fun saveMany(damageClaimId: Long, respondedSpecialistList: List<RespondedSpecialist>): Boolean {
-        try {
-            val lock = respondedSpecialistsCache.lock(damageClaimId)
-            lock.lock()
+    override fun containsOne(damageClaimId: Long): Boolean {
+        val sql = "SELECT * FROM $cacheName WHERE damage_claim_id = ? LIMIT 1"
+        val sqlQuery = SqlQuery<Long, RespondedSpecialist>(RespondedSpecialist::class.java, sql).setArgs(damageClaimId)
 
-            try {
-                val allRespondedSpecialists = get(damageClaimId)
-                allRespondedSpecialists.addAll(respondedSpecialistList)
-                respondedSpecialistsCache.put(damageClaimId, allRespondedSpecialists)
-            } finally {
-                lock.unlock()
-            }
-
-            return true
-        } catch (e: Throwable) {
-            log.e(e)
-            return false
-        }
+        return respondedSpecialistsCache.query(sqlQuery).use { it.all.size == 1 }
     }
 
-    override fun containsOne(userId: Long, damageClaimId: Long): Boolean {
-        val lock = respondedSpecialistsCache.lock(damageClaimId)
-        lock.lock()
+    override fun findOne(damageClaimId: Long): Fickle<RespondedSpecialist> {
+        val sql = "SELECT * FROM $cacheName WHERE damage_claim_id = ? LIMIT 1"
+        val sqlQuery = SqlQuery<Long, RespondedSpecialist>(RespondedSpecialist::class.java, sql).setArgs(damageClaimId)
 
-        try {
-            val allRespondedSpecialists = respondedSpecialistsCache.get(userId) ?: return false
-            val respondedSpecialist = allRespondedSpecialists.firstOrNull { it.damageClaimId == damageClaimId }
-            if (respondedSpecialist == null) {
-                return false
-            }
-
-            return true
-        } finally {
-            lock.unlock()
-        }
-    }
-
-    override fun findOne(userId: Long, damageClaimId: Long): Fickle<RespondedSpecialist> {
-        val allRespondedSpecialists = respondedSpecialistsCache.get(damageClaimId)
-        if (allRespondedSpecialists == null || allRespondedSpecialists.isEmpty()) {
+        val respondedSpecialist = respondedSpecialistsCache.query(sqlQuery).use { it.all }
+        if (respondedSpecialist.isEmpty()) {
             return Fickle.empty()
         }
 
-        return Fickle.of(allRespondedSpecialists.firstOrNull { it.userId == userId })
+        return Fickle.of(respondedSpecialist.map { it.value }.first())
     }
 
     override fun findManyForDamageClaimPaged(damageClaimId: Long, skip: Long, count: Long): List<RespondedSpecialist> {
-        val allRespondedSpecialists = respondedSpecialistsCache.get(damageClaimId) ?: return emptyList()
+        val sql = "SELECT * FROM $cacheName WHERE damage_claim_id = ? OFFSET ? LIMIT ?"
+        val sqlQuery = SqlQuery<Long, RespondedSpecialist>(RespondedSpecialist::class.java, sql).setArgs(damageClaimId, skip, count)
 
-        return allRespondedSpecialists.stream()
-                .skip(skip)
-                .limit(count)
-                .collect(Collectors.toList())
+        return respondedSpecialistsCache.query(sqlQuery).use { entries -> entries.all.map { it.value } }
     }
 
     override fun deleteAllForDamageClaim(damageClaimId: Long): Boolean {
         try {
-            respondedSpecialistsCache.remove(damageClaimId)
+            val sql = "DELETE FROM $cacheName WHERE damage_claim_id = ?"
+            val sqlQuery = SqlQuery<Long, RespondedSpecialist>(RespondedSpecialist::class.java, sql).setArgs(damageClaimId)
+
+            respondedSpecialistsCache.query(sqlQuery).use { it.all }
             return true
         } catch (e: Throwable) {
             log.e(e)
             return false
         }
-    }
-
-    private fun get(ownerId: Long): MutableSet<RespondedSpecialist> {
-        var allRespondedSpecialists = respondedSpecialistsCache.get(ownerId)
-        if (allRespondedSpecialists == null) {
-            allRespondedSpecialists = HashSet()
-        }
-        return allRespondedSpecialists
     }
 }
 

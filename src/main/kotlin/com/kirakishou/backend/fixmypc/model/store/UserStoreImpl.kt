@@ -28,14 +28,14 @@ class UserStoreImpl : UserStore {
     @Autowired
     lateinit var log: FileLog
 
+    private val cacheName = Constant.IgniteNames.USER_STORE
     lateinit var userStore: IgniteCache<String, User>
     lateinit var userIdGenerator: IgniteAtomicSequence
 
     @PostConstruct
     fun init() {
-        val cacheConfig = CacheConfiguration<String, User>()
+        val cacheConfig = CacheConfiguration<String, User>(cacheName)
         cacheConfig.backups = 1
-        cacheConfig.name = Constant.IgniteNames.USER_STORE
         cacheConfig.cacheMode = CacheMode.PARTITIONED
         cacheConfig.setIndexedTypes(String::class.java, User::class.java)
         userStore = ignite.getOrCreateCache(cacheConfig)
