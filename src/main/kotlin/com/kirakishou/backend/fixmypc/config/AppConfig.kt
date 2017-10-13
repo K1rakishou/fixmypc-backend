@@ -6,7 +6,6 @@ import org.apache.hadoop.fs.FileSystem
 import org.apache.ignite.Ignite
 import org.apache.ignite.Ignition
 import org.apache.ignite.configuration.IgniteConfiguration
-import org.apache.ignite.configuration.PersistentStoreConfiguration
 import org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi
 import org.apache.ignite.spi.discovery.tcp.ipfinder.vm.TcpDiscoveryVmIpFinder
 import org.springframework.beans.factory.annotation.Value
@@ -54,7 +53,9 @@ class AppConfig {
         //igniteConfiguration.discoverySpi = discoSpi
         //igniteConfiguration.deploymentMode = DeploymentMode.SHARED
         igniteConfiguration.metricsLogFrequency = 0
-        igniteConfiguration.persistentStoreConfiguration = PersistentStoreConfiguration()
+
+        //TODO:
+        //igniteConfiguration.persistentStoreConfiguration = PersistentStoreConfiguration()
 
         val ignite = Ignition.start(igniteConfiguration)
         ignite.active(true)

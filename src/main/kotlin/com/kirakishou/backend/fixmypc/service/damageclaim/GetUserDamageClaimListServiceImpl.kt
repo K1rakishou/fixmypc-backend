@@ -18,7 +18,7 @@ class GetUserDamageClaimListServiceImpl : GetUserDamageClaimListService {
     private lateinit var locationStore: LocationStore
 
     @Autowired
-    private lateinit var damageClaimRepository: DamageClaimStore
+    private lateinit var damageClaimStore: DamageClaimStore
 
     @Autowired
     private lateinit var sessionCache: SessionCache
@@ -66,7 +66,7 @@ class GetUserDamageClaimListServiceImpl : GetUserDamageClaimListService {
         }
 
         val idsList = locationStore.findWithin(skip, LatLon(lat, lon), radius, count)
-        val damageClaimsList = damageClaimRepository.findMany(true, idsList)
+        val damageClaimsList = damageClaimStore.findMany(true, idsList)
 
         return Single.just(GetUserDamageClaimListService.Get.Result.Ok(damageClaimsList))
     }
@@ -88,7 +88,7 @@ class GetUserDamageClaimListServiceImpl : GetUserDamageClaimListService {
 
         check(user.id != -1L) { "userId should not be -1" }
 
-        val repoResult = damageClaimRepository.findManyPaged(isActive, user.id, skip, count)
+        val repoResult = damageClaimStore.findManyPaged(isActive, user.id, skip, count)
         return Single.just(GetUserDamageClaimListService.Get.Result.Ok(repoResult))
     }
 }

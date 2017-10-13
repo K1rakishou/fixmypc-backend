@@ -41,15 +41,18 @@ class DamageClaimStoreImpl : DamageClaimStore {
         atomicConfig.cacheMode = CacheMode.PARTITIONED
         damageClaimIdGenerator = ignite.atomicSequence(Constant.IgniteNames.DAMAGE_CLAIM_GENERATOR, atomicConfig, 0L, true)
 
-        val sql = "SELECT * FROM $tableName"
-        val sqlQuery = SqlQuery<Long, DamageClaim>(DamageClaim::class.java, sql)
-        val resultList = damageClaimStore.query(sqlQuery).all
+        /*val sql = "SELECT * FROM $tableName WHERE user_id = ? AND is_active = ? OFFSET ? LIMIT ?"
+        val sqlQuery = SqlQuery<Long, DamageClaim>(DamageClaim::class.java, sql).setArgs(0, true, 0, 5)
+
+        val resultList = damageClaimStore.query(sqlQuery)
+                .all
+                .map { it.value }
 
         for (result in resultList) {
             println(result)
         }
 
-        println()
+        println()*/
     }
 
     override fun saveOne(damageClaim: DamageClaim): Boolean {

@@ -11,6 +11,7 @@ import com.kirakishou.backend.fixmypc.util.ServerUtils
 import com.kirakishou.backend.fixmypc.util.TextUtils
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
+import javax.annotation.PostConstruct
 
 /**
  * Created by kirakishou on 7/15/2017.
@@ -27,6 +28,13 @@ class SignupServiceImpl : SignupService {
 
     @Autowired
     lateinit var specialistProfileStore: SpecialistProfileStore
+
+    @PostConstruct
+    fun initForTest() {
+        //TODO: REMOVE
+        doSignup("client1@gmail.com", "1234567890", AccountType.Client)
+        doSignup("specialist1@gmail.com", "1234567890", AccountType.Specialist)
+    }
 
     override fun doSignup(login: String, password: String, accountType: AccountType): SignupService.Result {
         if (!TextUtils.checkLoginCorrect(login)) {
