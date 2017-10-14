@@ -38,7 +38,7 @@ class RespondedSpecialistsStoreImpl : RespondedSpecialistsStore {
         cacheConfig.name = Constant.IgniteNames.RESPONDED_SPECIALISTS_STORE
         cacheConfig.cacheMode = CacheMode.PARTITIONED
         cacheConfig.atomicityMode = CacheAtomicityMode.TRANSACTIONAL
-        cacheConfig.setIndexedTypes(Long::class.java, MutableSet::class.java)
+        cacheConfig.setIndexedTypes(Long::class.java, RespondedSpecialist::class.java)
         respondedSpecialistsCache = ignite.getOrCreateCache(cacheConfig)
 
         val atomicConfig = AtomicConfiguration()

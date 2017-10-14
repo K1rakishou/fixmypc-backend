@@ -5,9 +5,11 @@ import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.cache.SessionCache
 import com.kirakishou.backend.fixmypc.model.entity.DamageClaim
+import com.kirakishou.backend.fixmypc.model.entity.LatLon
 import com.kirakishou.backend.fixmypc.model.exception.*
 import com.kirakishou.backend.fixmypc.model.net.request.CreateDamageClaimRequest
 import com.kirakishou.backend.fixmypc.model.store.DamageClaimStore
+import com.kirakishou.backend.fixmypc.model.store.LocationStore
 import com.kirakishou.backend.fixmypc.service.ImageService
 import com.kirakishou.backend.fixmypc.util.ServerUtils
 import com.kirakishou.backend.fixmypc.util.TextUtils
@@ -37,10 +39,13 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
     private lateinit var fs: FileSystem
 
     @Autowired
-    private lateinit var damageClaimRepository: DamageClaimStore
+    private lateinit var damageClaimStore: DamageClaimStore
 
     @Autowired
     private lateinit var imageService: ImageService
+
+    @Autowired
+    private lateinit var locationStore: LocationStore
 
     @Autowired
     private lateinit var sessionCache: SessionCache
@@ -126,11 +131,14 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
 
                     damageClaim.imageNamesList = imagesNames
 
-                    if (!damageClaimRepository.saveOne(damageClaim)) {
+                    if (!damageClaimStore.saveOne(damageClaim)) {
                         val serverFilePath = "${fs.homeDirectory}/img/damage_claim/${damageClaim.userId}/"
                         fs.delete(Path(serverFilePath), true)
                         throw StoreErrorException()
                     }
+
+                    val location = LatLon(damageClaim.lat, damageClaim.lon)
+                    locationStore.saveOne(location, damageClaim.id)
 
                     return@map CreateDamageClaimService.Post.Result.Ok() as CreateDamageClaimService.Post.Result
                 }

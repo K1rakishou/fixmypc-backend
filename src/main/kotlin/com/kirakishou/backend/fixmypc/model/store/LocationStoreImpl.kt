@@ -36,9 +36,11 @@ class LocationStoreImpl : LocationStore {
     }
 
     override fun findWithin(skip: Long, centroid: LatLon, radius: Double, count: Long): List<Long> {
-        val result =  template.opsForGeo().geoRadius(Constant.RedisNames.LOCATION_CACHE_NAME,
+        val result =  template.opsForGeo().geoRadius(
+                Constant.RedisNames.LOCATION_CACHE_NAME,
                 Circle(Point(centroid.lon, centroid.lat), Distance(radius, RedisGeoCommands.DistanceUnit.KILOMETERS)),
-                RedisGeoCommands.GeoRadiusCommandArgs.newGeoRadiusArgs().sortAscending()).content
+                RedisGeoCommands.GeoRadiusCommandArgs.newGeoRadiusArgs().sortAscending()
+        ).content
 
         return result
                 .stream()
