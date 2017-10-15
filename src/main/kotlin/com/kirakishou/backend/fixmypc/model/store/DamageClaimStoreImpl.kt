@@ -40,25 +40,12 @@ class DamageClaimStoreImpl : DamageClaimStore {
         atomicConfig.backups = 3
         atomicConfig.cacheMode = CacheMode.PARTITIONED
         damageClaimIdGenerator = ignite.atomicSequence(Constant.IgniteNames.DAMAGE_CLAIM_GENERATOR, atomicConfig, 0L, true)
-
-        /*val sql = "SELECT * FROM $tableName WHERE user_id = ? AND is_active = ? OFFSET ? LIMIT ?"
-        val sqlQuery = SqlQuery<Long, DamageClaim>(DamageClaim::class.java, sql).setArgs(0, true, 0, 5)
-
-        val resultList = damageClaimStore.query(sqlQuery)
-                .all
-                .map { it.value }
-
-        for (result in resultList) {
-            println(result)
-        }
-
-        println()*/
     }
 
     override fun saveOne(damageClaim: DamageClaim): Boolean {
         try {
             damageClaim.id = damageClaimIdGenerator.andIncrement
-            damageClaimStore.put(damageClaim.userId, damageClaim)
+            damageClaimStore.put(damageClaim.id, damageClaim)
 
             return true
         } catch (e: Throwable) {
@@ -113,19 +100,18 @@ class DamageClaimStoreImpl : DamageClaimStore {
                 .map { it.value }
     }
 
+    override fun findAll(): List<DamageClaim> {
+        val sql = "SELECT * FROM $tableName"
+        val sqlQuery = SqlQuery<Long, DamageClaim>(DamageClaim::class.java, sql)
+
+        return damageClaimStore.query(sqlQuery)
+                .all
+                .map { it.value }
+    }
+
     override fun deleteOne(damageClaim: DamageClaim): Boolean {
         try {
-            ignite.transactions().txStart().use { transaction ->
-                try {
-                    damageClaimStore.remove(damageClaim.id)
-
-                    transaction.commit()
-                } catch (e: Throwable) {
-                    log.e(e)
-                    transaction.rollback()
-                }
-            }
-
+            damageClaimStore.remove(damageClaim.id)
             return true
         } catch (e: Throwable) {
             log.e(e)

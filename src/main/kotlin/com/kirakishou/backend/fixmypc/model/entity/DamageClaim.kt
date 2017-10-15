@@ -5,8 +5,8 @@ import org.apache.ignite.cache.query.annotations.QuerySqlField
 import java.io.Serializable
 
 
-data class DamageClaim(@SerializedName("id")
-                       @QuerySqlField(index = true, name = "id")
+data class DamageClaim(@QuerySqlField(index = true, name = "id")
+                       @SerializedName("id")
                        var id: Long = 0L,
 
                        @QuerySqlField(index = true, name = "user_id")
