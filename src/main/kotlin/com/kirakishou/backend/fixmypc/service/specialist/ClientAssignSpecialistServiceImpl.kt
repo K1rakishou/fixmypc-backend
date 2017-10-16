@@ -8,6 +8,7 @@ import com.kirakishou.backend.fixmypc.model.store.AssignedSpecialistStore
 import com.kirakishou.backend.fixmypc.model.store.DamageClaimStore
 import com.kirakishou.backend.fixmypc.model.store.RespondedSpecialistsStore
 import io.reactivex.Single
+import org.apache.ignite.Ignite
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
@@ -25,6 +26,9 @@ class ClientAssignSpecialistServiceImpl : ClientAssignSpecialistService {
 
     @Autowired
     private lateinit var sessionCache: SessionCache
+
+    @Autowired
+    lateinit var ignite: Ignite
 
     @Autowired
     private lateinit var log: FileLog
@@ -54,14 +58,26 @@ class ClientAssignSpecialistServiceImpl : ClientAssignSpecialistService {
             return Single.just(ClientAssignSpecialistService.Get.Result.DamageClaimDoesNotBelongToUser())
         }
 
-        if (!respondedSpecialistsStore.deleteAllForDamageClaim(damageClaimId)) {
-            log.d("Something went wrong while trying to remove specialists responded to damageClaim with id $damageClaimId")
-            return Single.just(ClientAssignSpecialistService.Get.Result.CouldNotRemoveRespondedSpecialists())
-        }
+        ignite.transactions().txStart().use { transaction ->
+            try {
+                if (!respondedSpecialistsStore.deleteAllForDamageClaim(damageClaimId)) {
+                    log.d("Something went wrong while trying to remove specialists responded to damageClaim with id $damageClaimId")
+                    transaction.rollback()
 
-        if (!assignedSpecialistsStore.saveOne(AssignedSpecialist(damageClaimId, userId, false))) {
-            log.d("Something went wrong while trying to remove specialists responded to damageClaim with id $damageClaimId")
-            return Single.just(ClientAssignSpecialistService.Get.Result.CouldNotRemoveRespondedSpecialists())
+                    return Single.just(ClientAssignSpecialistService.Get.Result.CouldNotRemoveRespondedSpecialists())
+                }
+
+                if (!assignedSpecialistsStore.saveOne(AssignedSpecialist(damageClaimId, userId, false))) {
+                    log.d("Something went wrong while trying to remove specialists responded to damageClaim with id $damageClaimId")
+                    transaction.rollback()
+
+                    return Single.just(ClientAssignSpecialistService.Get.Result.CouldNotRemoveRespondedSpecialists())
+                }
+
+                transaction.commit()
+            } catch (e: Throwable) {
+                transaction.rollback()
+            }
         }
 
         return Single.just(ClientAssignSpecialistService.Get.Result.Ok())
