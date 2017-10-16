@@ -10,8 +10,7 @@ import java.io.Serializable
 data class User(var id: Long = -1L,
                 var login: String = "",
                 var password: String = "",
-                var accountType: AccountType = AccountType.Guest,
-                var createdOn: Long = 0L) : Serializable {
+                var accountType: AccountType = AccountType.Guest) : Serializable {
 
     var sessionId: String? = null
 }

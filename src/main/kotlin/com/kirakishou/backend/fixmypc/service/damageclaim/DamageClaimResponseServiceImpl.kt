@@ -75,11 +75,7 @@ class DamageClaimResponseServiceImpl : DamageClaimResponseService {
         }
 
         val hasAlreadyResponded = respondedSpecialistsStore.containsOne(damageClaimId)
-        if (!hasAlreadyResponded) {
-            return Single.just(DamageClaimResponseService.Get.Result.Ok(false))
-        }
-
-        return Single.just(DamageClaimResponseService.Get.Result.Ok(true))
+        return Single.just(DamageClaimResponseService.Get.Result.Ok(hasAlreadyResponded))
     }
 }
 

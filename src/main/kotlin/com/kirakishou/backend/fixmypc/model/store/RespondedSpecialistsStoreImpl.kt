@@ -50,8 +50,7 @@ class RespondedSpecialistsStoreImpl : RespondedSpecialistsStore {
     override fun saveOne(respondedSpecialist: RespondedSpecialist): Boolean {
         try {
             respondedSpecialist.id = respondedSpecialistIdGenerator.andIncrement
-            respondedSpecialistsCache.put(respondedSpecialist.userId, respondedSpecialist)
-
+            respondedSpecialistsCache.put(respondedSpecialist.id, respondedSpecialist)
             return true
         } catch (e: Throwable) {
             log.e(e)

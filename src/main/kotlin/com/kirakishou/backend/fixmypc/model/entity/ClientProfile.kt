@@ -20,4 +20,7 @@ data class ClientProfile(@SerializedName("user_id")
                          var photoName: String = "",
 
                          @Transient
+                         var registeredOn: Long = 0L,
+
+                         @Transient
                          val isFilledOut: Boolean = false) : Serializable

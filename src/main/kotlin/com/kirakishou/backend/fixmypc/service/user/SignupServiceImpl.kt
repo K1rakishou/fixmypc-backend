@@ -58,18 +58,20 @@ class SignupServiceImpl : SignupService {
             return SignupService.Result.LoginAlreadyExists()
         }
 
-        val newUser = User(0L, login, password, accountType, ServerUtils.getTimeFast())
+        val currentTime =  ServerUtils.getTimeFast()
+        val newUser = User(0L, login, password, accountType)
+
         val userId = userStore.saveOne(login, newUser)
         if (userId == -1L) {
             return SignupService.Result.StoreError()
         }
 
         if (accountType == AccountType.Client) {
-            if (!clientProfileStore.saveOne(ClientProfile(userId = userId))) {
+            if (!clientProfileStore.saveOne(ClientProfile(userId = userId, registeredOn = currentTime))) {
                 return SignupService.Result.StoreError()
             }
         } else if (accountType == AccountType.Specialist) {
-            if (!specialistProfileStore.saveOne(SpecialistProfile(userId = userId))) {
+            if (!specialistProfileStore.saveOne(SpecialistProfile(userId = userId, registeredOn =currentTime))) {
                 return SignupService.Result.StoreError()
             }
         }
