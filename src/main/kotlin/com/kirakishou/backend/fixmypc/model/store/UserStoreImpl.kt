@@ -8,6 +8,7 @@ import org.apache.ignite.Ignite
 import org.apache.ignite.IgniteAtomicSequence
 import org.apache.ignite.IgniteCache
 import org.apache.ignite.cache.CacheMode
+import org.apache.ignite.cache.query.SqlQuery
 import org.apache.ignite.configuration.AtomicConfiguration
 import org.apache.ignite.configuration.CacheConfiguration
 import org.springframework.beans.factory.annotation.Autowired
@@ -59,6 +60,15 @@ class UserStoreImpl : UserStore {
 
     override fun findOne(login: String): Fickle<User> {
         return Fickle.of(userStore[login])
+    }
+
+    override fun findAll(): List<User> {
+        val sql = "SELECT * FROM $tableName"
+        val sqlQuery = SqlQuery<String, User>(User::class.java, sql)
+
+        return userStore.query(sqlQuery)
+                .all
+                .map { it.value }
     }
 
     override fun deleteOne(login: String): Boolean {

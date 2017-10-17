@@ -74,7 +74,7 @@ class DamageClaimResponseServiceImpl : DamageClaimResponseService {
             return Single.just(DamageClaimResponseService.Get.Result.BadAccountType())
         }
 
-        val hasAlreadyResponded = respondedSpecialistsStore.containsOne(damageClaimId)
+        val hasAlreadyResponded = respondedSpecialistsStore.containsOne(damageClaimId, user.id)
         return Single.just(DamageClaimResponseService.Get.Result.Ok(hasAlreadyResponded))
     }
 }

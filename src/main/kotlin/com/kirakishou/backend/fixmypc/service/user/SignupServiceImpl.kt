@@ -31,9 +31,15 @@ class SignupServiceImpl : SignupService {
 
     @PostConstruct
     fun initForTest() {
-        //TODO: REMOVE
-        doSignup("client1@gmail.com", "1234567890", AccountType.Client)
-        doSignup("specialist1@gmail.com", "1234567890", AccountType.Specialist)
+        /*
+        doSignup("specialist2@gmail.com", "1234567890", AccountType.Specialist)
+        doSignup("specialist3@gmail.com", "1234567890", AccountType.Specialist)
+        doSignup("specialist4@gmail.com", "1234567890", AccountType.Specialist)
+
+        val allUsers = userStore.findAll()
+        for (user in allUsers) {
+            println(user)
+        }*/
     }
 
     override fun doSignup(login: String, password: String, accountType: AccountType): SignupService.Result {

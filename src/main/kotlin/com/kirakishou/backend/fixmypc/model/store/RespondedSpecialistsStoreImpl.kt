@@ -58,11 +58,17 @@ class RespondedSpecialistsStoreImpl : RespondedSpecialistsStore {
         }
     }
 
-    override fun containsOne(damageClaimId: Long): Boolean {
-        val sql = "SELECT * FROM $tableName WHERE damage_claim_id = ? LIMIT 1"
+    override fun containsOne(damageClaimId: Long, userId: Long): Boolean {
+        val sql = "SELECT * FROM $tableName WHERE damage_claim_id = ?"
         val sqlQuery = SqlQuery<Long, RespondedSpecialist>(RespondedSpecialist::class.java, sql).setArgs(damageClaimId)
 
-        return respondedSpecialistsCache.query(sqlQuery).use { it.all.size == 1 }
+        val result = respondedSpecialistsCache.query(sqlQuery).use {
+            it.all.firstOrNull {
+                it.value.userId == userId
+            }
+        }
+
+        return result != null
     }
 
     override fun findOne(damageClaimId: Long): Fickle<RespondedSpecialist> {
