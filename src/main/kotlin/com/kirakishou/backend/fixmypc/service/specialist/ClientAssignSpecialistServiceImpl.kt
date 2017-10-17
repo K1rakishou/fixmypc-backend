@@ -5,6 +5,7 @@ import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.cache.SessionCache
 import com.kirakishou.backend.fixmypc.model.entity.AssignedSpecialist
 import com.kirakishou.backend.fixmypc.model.store.AssignedSpecialistStore
+import com.kirakishou.backend.fixmypc.model.store.ClientProfileStore
 import com.kirakishou.backend.fixmypc.model.store.DamageClaimStore
 import com.kirakishou.backend.fixmypc.model.store.RespondedSpecialistsStore
 import io.reactivex.Single
@@ -28,6 +29,9 @@ class ClientAssignSpecialistServiceImpl : ClientAssignSpecialistService {
     private lateinit var sessionCache: SessionCache
 
     @Autowired
+    private lateinit var clientProfileStore: ClientProfileStore
+
+    @Autowired
     lateinit var ignite: Ignite
 
     @Autowired
@@ -44,6 +48,18 @@ class ClientAssignSpecialistServiceImpl : ClientAssignSpecialistService {
         if (user.accountType != AccountType.Client) {
             log.d("Bad accountType ${user.accountType}")
             return Single.just(ClientAssignSpecialistService.Get.Result.BadAccountType())
+        }
+
+        val clientProfileFickle = clientProfileStore.findOne(user.id)
+        if (!clientProfileFickle.isPresent()) {
+            log.d("Could not find client profile with id ${user.id}")
+            return Single.just(ClientAssignSpecialistService.Get.Result.CouldNotFindClientProfile())
+        }
+
+        val clientProfile = clientProfileFickle.get()
+        if (!clientProfile.isProfileInfoFilledIn()) {
+            log.d("User with id ${user.id} tried to respond to damage claim with not filled in profile")
+            return Single.just(ClientAssignSpecialistService.Get.Result.ProfileIsNotFilledIn())
         }
 
         val damageClaimFickle = damageClaimStore.findOne(damageClaimId)

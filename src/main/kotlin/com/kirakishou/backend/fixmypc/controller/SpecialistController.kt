@@ -93,6 +93,10 @@ class SpecialistController {
                                     HttpStatus.OK)
                         }
 
+                        is ClientAssignSpecialistService.Get.Result.CouldNotFindClientProfile -> TODO()
+
+                        is ClientAssignSpecialistService.Get.Result.ProfileIsNotFilledIn -> TODO()
+
                         is ClientAssignSpecialistService.Get.Result.CouldNotRemoveRespondedSpecialists -> {
                             return@map ResponseEntity(StatusResponse(ServerErrorCode.SEC_COULD_NOT_REMOVE_RESPONDED_SPECIALISTS.value),
                                     HttpStatus.INTERNAL_SERVER_ERROR)

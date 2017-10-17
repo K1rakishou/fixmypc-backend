@@ -201,6 +201,10 @@ class DamageClaimController {
                             return@map ResponseEntity(StatusResponse(ServerErrorCode.SEC_OK.value), HttpStatus.OK)
                         }
 
+                        is DamageClaimResponseService.Post.Result.CouldNotFindSpecialistProfile -> TODO()
+
+                        is DamageClaimResponseService.Post.Result.ProfileIsNotFilledIn -> TODO()
+
                         is DamageClaimResponseService.Post.Result.CouldNotRespondToDamageClaim -> {
                             return@map ResponseEntity(StatusResponse(ServerErrorCode.SEC_COULD_NOT_RESPOND_TO_DAMAGE_CLAIM.value),
                                     HttpStatus.UNPROCESSABLE_ENTITY)

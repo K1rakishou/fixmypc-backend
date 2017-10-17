@@ -23,4 +23,9 @@ data class ClientProfile(@SerializedName("user_id")
                          var registeredOn: Long = 0L,
 
                          @Transient
-                         val isFilledOut: Boolean = false) : Serializable
+                         val isFilledIn: Boolean = false) : Serializable {
+
+    fun isProfileInfoFilledIn(): Boolean {
+        return (this.name.isNotEmpty() && this.phone.isNotEmpty() && this.photoName.isNotEmpty())
+    }
+}

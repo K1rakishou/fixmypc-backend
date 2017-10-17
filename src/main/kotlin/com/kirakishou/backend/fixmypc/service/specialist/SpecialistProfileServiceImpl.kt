@@ -56,7 +56,7 @@ class SpecialistProfileServiceImpl : SpecialistProfileService {
         }
 
         val profile = profileFickle.get()
-        profile.isFilledIn = (profile.name.isNotEmpty() && profile.phone.isNotEmpty() && profile.photoName.isNotEmpty())
+        profile.isFilledIn = profile.isProfileInfoFilledIn()
 
         return Single.just(SpecialistProfileService.Get.Result.Ok(profile))
     }

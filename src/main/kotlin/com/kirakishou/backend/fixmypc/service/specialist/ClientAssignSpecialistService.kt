@@ -12,6 +12,8 @@ interface ClientAssignSpecialistService {
             class DamageClaimDoesNotExist : Result
             class DamageClaimDoesNotBelongToUser : Result
             class CouldNotRemoveRespondedSpecialists : Result
+            class CouldNotFindClientProfile : Result
+            class ProfileIsNotFilledIn : Result
         }
     }
 

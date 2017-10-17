@@ -6,6 +6,7 @@ import com.kirakishou.backend.fixmypc.model.cache.SessionCache
 import com.kirakishou.backend.fixmypc.model.entity.RespondedSpecialist
 import com.kirakishou.backend.fixmypc.model.store.DamageClaimStore
 import com.kirakishou.backend.fixmypc.model.store.RespondedSpecialistsStore
+import com.kirakishou.backend.fixmypc.model.store.SpecialistProfileStore
 import io.reactivex.Single
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -23,6 +24,9 @@ class DamageClaimResponseServiceImpl : DamageClaimResponseService {
     private lateinit var sessionCache: SessionCache
 
     @Autowired
+    private lateinit var specialistProfileStore: SpecialistProfileStore
+
+    @Autowired
     private lateinit var log: FileLog
 
     override fun respondToDamageClaim(sessionId: String, damageClaimId: Long): Single<DamageClaimResponseService.Post.Result> {
@@ -36,6 +40,18 @@ class DamageClaimResponseServiceImpl : DamageClaimResponseService {
         if (user.accountType != AccountType.Specialist) {
             log.d("Bad accountType ${user.accountType}")
             return Single.just(DamageClaimResponseService.Post.Result.BadAccountType())
+        }
+
+        val specialistProfileFickle = specialistProfileStore.findOne(user.id)
+        if (!specialistProfileFickle.isPresent()) {
+            log.d("Could not find specialist profile with id ${user.id}")
+            return Single.just(DamageClaimResponseService.Post.Result.CouldNotFindSpecialistProfile())
+        }
+
+        val specialistProfile = specialistProfileFickle.get()
+        if (!specialistProfile.isProfileInfoFilledIn()) {
+            log.d("User with id ${user.id} tried to respond to damage claim with not filled in profile")
+            return Single.just(DamageClaimResponseService.Post.Result.ProfileIsNotFilledIn())
         }
 
         val damageClaimFickle = damageClaimStore.findOne(damageClaimId)

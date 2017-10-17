@@ -8,6 +8,7 @@ import com.kirakishou.backend.fixmypc.model.entity.DamageClaim
 import com.kirakishou.backend.fixmypc.model.entity.LatLon
 import com.kirakishou.backend.fixmypc.model.exception.*
 import com.kirakishou.backend.fixmypc.model.net.request.CreateDamageClaimRequest
+import com.kirakishou.backend.fixmypc.model.store.ClientProfileStore
 import com.kirakishou.backend.fixmypc.model.store.DamageClaimStore
 import com.kirakishou.backend.fixmypc.model.store.LocationStore
 import com.kirakishou.backend.fixmypc.service.ImageService
@@ -50,6 +51,9 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
     @Autowired
     private lateinit var sessionCache: SessionCache
 
+    @Autowired
+    private lateinit var clientProfileStore: ClientProfileStore
+
     private val allowedExtensions = listOf("png", "jpg", "jpeg", "PNG", "JPG", "JPEG")
 
     override fun createDamageClaim(uploadingFiles: Array<MultipartFile>, imageType: Int,
@@ -71,6 +75,17 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
                     if (user.accountType != AccountType.Client) {
                         log.d("User with accountType ${user.accountType} no supposed to do this operation")
                         throw BadAccountTypeException()
+                    }
+
+                    val clientProfileFickle = clientProfileStore.findOne(userId)
+                    if (!clientProfileFickle.isPresent()) {
+                        //wut?
+                        throw CouldNotFindClientProfileException()
+                    }
+
+                    val clientProfile = clientProfileFickle.get()
+                    if (!clientProfile.isProfileInfoFilledIn()) {
+                        throw ProfileIsNotFilledInException()
                     }
 
                     //return error code if user somehow sent a request without any images
@@ -153,6 +168,8 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
                         is RequestSizeExceededException -> CreateDamageClaimService.Post.Result.RequestSizeExceeded()
                         is CouldNotUploadImagesException -> CreateDamageClaimService.Post.Result.CouldNotUploadImages()
                         is StoreErrorException -> CreateDamageClaimService.Post.Result.StoreError()
+                        is CouldNotFindClientProfileException -> TODO()
+                        is ProfileIsNotFilledInException -> TODO()
                         else -> CreateDamageClaimService.Post.Result.UnknownError()
                     }
                 }
