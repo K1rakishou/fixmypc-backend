@@ -168,8 +168,8 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
                         is RequestSizeExceededException -> CreateDamageClaimService.Post.Result.RequestSizeExceeded()
                         is CouldNotUploadImagesException -> CreateDamageClaimService.Post.Result.CouldNotUploadImages()
                         is StoreErrorException -> CreateDamageClaimService.Post.Result.StoreError()
-                        is CouldNotFindClientProfileException -> TODO()
-                        is ProfileIsNotFilledInException -> TODO()
+                        is CouldNotFindClientProfileException -> CreateDamageClaimService.Post.Result.CouldNotFindClientProfile()
+                        is ProfileIsNotFilledInException -> CreateDamageClaimService.Post.Result.ProfileIsNotFilledIn()
                         else -> CreateDamageClaimService.Post.Result.UnknownError()
                     }
                 }

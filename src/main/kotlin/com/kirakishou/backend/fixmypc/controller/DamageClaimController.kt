@@ -53,6 +53,18 @@ class DamageClaimController {
                                     HttpStatus.OK)
                         }
 
+                        is CreateDamageClaimService.Post.Result.CouldNotFindClientProfile -> {
+                            return@map ResponseEntity(CreateDamageClaimResponse(
+                                    ServerErrorCode.SEC_COULD_NOT_FIND_PROFILE.value),
+                                    HttpStatus.UNPROCESSABLE_ENTITY)
+                        }
+
+                        is CreateDamageClaimService.Post.Result.ProfileIsNotFilledIn -> {
+                            return@map ResponseEntity(CreateDamageClaimResponse(
+                                    ServerErrorCode.SEC_PROFILE_IS_NOT_FILLED_IN.value),
+                                    HttpStatus.UNPROCESSABLE_ENTITY)
+                        }
+
                         is CreateDamageClaimService.Post.Result.BadAccountType -> {
                             return@map ResponseEntity(CreateDamageClaimResponse(
                                     ServerErrorCode.SEC_BAD_ACCOUNT_TYPE.value),
@@ -201,9 +213,15 @@ class DamageClaimController {
                             return@map ResponseEntity(StatusResponse(ServerErrorCode.SEC_OK.value), HttpStatus.OK)
                         }
 
-                        is DamageClaimResponseService.Post.Result.CouldNotFindSpecialistProfile -> TODO()
+                        is DamageClaimResponseService.Post.Result.CouldNotFindSpecialistProfile -> {
+                            return@map ResponseEntity(StatusResponse(ServerErrorCode.SEC_COULD_NOT_FIND_PROFILE.value),
+                                    HttpStatus.UNPROCESSABLE_ENTITY)
+                        }
 
-                        is DamageClaimResponseService.Post.Result.ProfileIsNotFilledIn -> TODO()
+                        is DamageClaimResponseService.Post.Result.ProfileIsNotFilledIn -> {
+                            return@map ResponseEntity(StatusResponse(ServerErrorCode.SEC_PROFILE_IS_NOT_FILLED_IN.value),
+                                    HttpStatus.UNPROCESSABLE_ENTITY)
+                        }
 
                         is DamageClaimResponseService.Post.Result.CouldNotRespondToDamageClaim -> {
                             return@map ResponseEntity(StatusResponse(ServerErrorCode.SEC_COULD_NOT_RESPOND_TO_DAMAGE_CLAIM.value),

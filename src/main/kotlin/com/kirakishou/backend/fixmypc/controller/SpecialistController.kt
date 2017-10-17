@@ -93,9 +93,15 @@ class SpecialistController {
                                     HttpStatus.OK)
                         }
 
-                        is ClientAssignSpecialistService.Get.Result.CouldNotFindClientProfile -> TODO()
+                        is ClientAssignSpecialistService.Get.Result.CouldNotFindClientProfile -> {
+                            return@map ResponseEntity(StatusResponse(ServerErrorCode.SEC_COULD_NOT_FIND_PROFILE.value),
+                                    HttpStatus.UNPROCESSABLE_ENTITY)
+                        }
 
-                        is ClientAssignSpecialistService.Get.Result.ProfileIsNotFilledIn -> TODO()
+                        is ClientAssignSpecialistService.Get.Result.ProfileIsNotFilledIn -> {
+                            return@map ResponseEntity(StatusResponse(ServerErrorCode.SEC_PROFILE_IS_NOT_FILLED_IN.value),
+                                    HttpStatus.UNPROCESSABLE_ENTITY)
+                        }
 
                         is ClientAssignSpecialistService.Get.Result.CouldNotRemoveRespondedSpecialists -> {
                             return@map ResponseEntity(StatusResponse(ServerErrorCode.SEC_COULD_NOT_REMOVE_RESPONDED_SPECIALISTS.value),
@@ -156,7 +162,7 @@ class SpecialistController {
 
                         is SpecialistProfileService.Get.Result.NotFound -> {
                             return@map ResponseEntity(SpecialistProfileResponse(null,
-                                    ServerErrorCode.SEC_COULD_NOT_FIND_PROFILE_WITH_USER_ID.value), HttpStatus.UNPROCESSABLE_ENTITY)
+                                    ServerErrorCode.SEC_COULD_NOT_FIND_PROFILE.value), HttpStatus.UNPROCESSABLE_ENTITY)
                         }
 
                         else -> throw IllegalArgumentException("Unknown result")
@@ -193,7 +199,7 @@ class SpecialistController {
 
                         is SpecialistProfileService.Post.ResultInfo.NotFound -> {
                             return@map ResponseEntity(StatusResponse(
-                                    ServerErrorCode.SEC_COULD_NOT_FIND_PROFILE_WITH_USER_ID.value), HttpStatus.NOT_FOUND)
+                                    ServerErrorCode.SEC_COULD_NOT_FIND_PROFILE.value), HttpStatus.NOT_FOUND)
                         }
 
                         is SpecialistProfileService.Post.ResultInfo.RepositoryError -> {
@@ -240,7 +246,7 @@ class SpecialistController {
 
                         is SpecialistProfileService.Post.ResultPhoto.NotFound -> {
                             return@map ResponseEntity(UpdateSpecialistProfileResponse("",
-                                    ServerErrorCode.SEC_COULD_NOT_FIND_PROFILE_WITH_USER_ID.value), HttpStatus.NOT_FOUND)
+                                    ServerErrorCode.SEC_COULD_NOT_FIND_PROFILE.value), HttpStatus.NOT_FOUND)
                         }
 
                         is SpecialistProfileService.Post.ResultPhoto.CouldNotUploadImage -> {
