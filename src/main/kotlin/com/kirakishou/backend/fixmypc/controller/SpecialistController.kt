@@ -4,10 +4,7 @@ import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.core.ServerErrorCode
 import com.kirakishou.backend.fixmypc.model.net.request.PickSpecialistRequest
 import com.kirakishou.backend.fixmypc.model.net.request.SpecialistProfileRequest
-import com.kirakishou.backend.fixmypc.model.net.response.SpecialistProfileResponse
-import com.kirakishou.backend.fixmypc.model.net.response.SpecialistsListResponse
-import com.kirakishou.backend.fixmypc.model.net.response.StatusResponse
-import com.kirakishou.backend.fixmypc.model.net.response.UpdateSpecialistProfileResponse
+import com.kirakishou.backend.fixmypc.model.net.response.*
 import com.kirakishou.backend.fixmypc.service.specialist.ClientAssignSpecialistService
 import com.kirakishou.backend.fixmypc.service.specialist.GetRespondedSpecialistsService
 import com.kirakishou.backend.fixmypc.service.specialist.SpecialistProfileService
@@ -145,22 +142,22 @@ class SpecialistController {
         return mSpecialistProfileService.getProfile(sessionId)
                 .map { result ->
                     when (result) {
-                        is SpecialistProfileService.Get.Result.Ok -> {
+                        is SpecialistProfileService.Get.ResultProfile.Ok -> {
                             return@map ResponseEntity(SpecialistProfileResponse(result.profile, result.profile.isProfileInfoFilledIn(),
                                     ServerErrorCode.SEC_OK.value), HttpStatus.OK)
                         }
 
-                        is SpecialistProfileService.Get.Result.SessionIdExpired -> {
+                        is SpecialistProfileService.Get.ResultProfile.SessionIdExpired -> {
                             return@map ResponseEntity(SpecialistProfileResponse(null, false,
                                     ServerErrorCode.SEC_SESSION_ID_EXPIRED.value), HttpStatus.UNAUTHORIZED)
                         }
 
-                        is SpecialistProfileService.Get.Result.BadAccountType -> {
+                        is SpecialistProfileService.Get.ResultProfile.BadAccountType -> {
                             return@map ResponseEntity(SpecialistProfileResponse(null, false,
                                     ServerErrorCode.SEC_BAD_ACCOUNT_TYPE.value), HttpStatus.FORBIDDEN)
                         }
 
-                        is SpecialistProfileService.Get.Result.NotFound -> {
+                        is SpecialistProfileService.Get.ResultProfile.NotFound -> {
                             return@map ResponseEntity(SpecialistProfileResponse(null, false,
                                     ServerErrorCode.SEC_COULD_NOT_FIND_PROFILE.value), HttpStatus.UNPROCESSABLE_ENTITY)
                         }
@@ -274,6 +271,46 @@ class SpecialistController {
                 }
                 .onErrorReturn {
                     return@onErrorReturn ResponseEntity(UpdateSpecialistProfileResponse("",
+                            ServerErrorCode.SEC_UNKNOWN_SERVER_ERROR.value),
+                            HttpStatus.INTERNAL_SERVER_ERROR)
+                }
+    }
+
+    @RequestMapping(path = arrayOf("${Constant.Paths.SPECIALIST_CONTROLLER_PATH}/profile/is_filled_in"),
+            method = arrayOf(RequestMethod.GET))
+    fun isProfileFilledIn(@RequestHeader(value = "session_id", defaultValue = "") sessionId: String): Single<ResponseEntity<IsProfileFilledInResponse>> {
+        return mSpecialistProfileService.isProfileFilledIn(sessionId)
+                .map { result ->
+                    when (result) {
+                        is SpecialistProfileService.Get.ResultIsFilledIn.Ok -> {
+                            return@map ResponseEntity(IsProfileFilledInResponse(result.isFilledIn,
+                                    ServerErrorCode.SEC_OK.value),
+                                    HttpStatus.INTERNAL_SERVER_ERROR)
+                        }
+
+                        is SpecialistProfileService.Get.ResultIsFilledIn.SessionIdExpired -> {
+                            return@map ResponseEntity(IsProfileFilledInResponse(false,
+                                    ServerErrorCode.SEC_SESSION_ID_EXPIRED.value),
+                                    HttpStatus.UNAUTHORIZED)
+                        }
+
+                        is SpecialistProfileService.Get.ResultIsFilledIn.BadAccountType -> {
+                            return@map ResponseEntity(IsProfileFilledInResponse(false,
+                                    ServerErrorCode.SEC_OK.value),
+                                    HttpStatus.FORBIDDEN)
+                        }
+
+                        is SpecialistProfileService.Get.ResultIsFilledIn.CouldNotFindClientProfile -> {
+                            return@map ResponseEntity(IsProfileFilledInResponse(false,
+                                    ServerErrorCode.SEC_OK.value),
+                                    HttpStatus.UNPROCESSABLE_ENTITY)
+                        }
+
+                        else -> throw IllegalArgumentException("Unknown result")
+                    }
+                }
+                .onErrorReturn {
+                    return@onErrorReturn ResponseEntity(IsProfileFilledInResponse(false,
                             ServerErrorCode.SEC_UNKNOWN_SERVER_ERROR.value),
                             HttpStatus.INTERNAL_SERVER_ERROR)
                 }

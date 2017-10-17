@@ -80,11 +80,13 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
                     val clientProfileFickle = clientProfileStore.findOne(userId)
                     if (!clientProfileFickle.isPresent()) {
                         //wut?
+                        log.d("Could not find client profile with id ${user.id}")
                         throw CouldNotFindClientProfileException()
                     }
 
                     val clientProfile = clientProfileFickle.get()
                     if (!clientProfile.isProfileInfoFilledIn()) {
+                        log.d("User with id ${user.id} tried to respond to damage claim with not filled in profile")
                         throw ProfileIsNotFilledInException()
                     }
 

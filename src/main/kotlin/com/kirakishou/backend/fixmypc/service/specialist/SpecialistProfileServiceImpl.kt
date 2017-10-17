@@ -34,17 +34,39 @@ class SpecialistProfileServiceImpl : SpecialistProfileService {
     @Autowired
     private lateinit var log: FileLog
 
-    override fun getProfile(sessionId: String): Single<SpecialistProfileService.Get.Result> {
+    override fun isProfileFilledIn(sessionId: String): Single<SpecialistProfileService.Get.ResultIsFilledIn> {
         val userFickle = sessionCache.findOne(sessionId)
         if (!userFickle.isPresent()) {
             log.d("SessionId $sessionId was not found in the sessionCache")
-            return Single.just(SpecialistProfileService.Get.Result.SessionIdExpired())
+            return Single.just(SpecialistProfileService.Get.ResultIsFilledIn.SessionIdExpired())
         }
 
         val user = userFickle.get()
         if (user.accountType != AccountType.Specialist) {
             log.d("Bad accountType ${user.accountType}")
-            return Single.just(SpecialistProfileService.Get.Result.BadAccountType())
+            return Single.just(SpecialistProfileService.Get.ResultIsFilledIn.BadAccountType())
+        }
+
+        val specialistProfileFickle = mSpecialistProfileStore.findOne(user.id)
+        if (!specialistProfileFickle.isPresent()) {
+            return Single.just(SpecialistProfileService.Get.ResultIsFilledIn.CouldNotFindClientProfile())
+        }
+
+        val profile = specialistProfileFickle.get()
+        return Single.just(SpecialistProfileService.Get.ResultIsFilledIn.Ok(profile.isProfileInfoFilledIn()))
+    }
+
+    override fun getProfile(sessionId: String): Single<SpecialistProfileService.Get.ResultProfile> {
+        val userFickle = sessionCache.findOne(sessionId)
+        if (!userFickle.isPresent()) {
+            log.d("SessionId $sessionId was not found in the sessionCache")
+            return Single.just(SpecialistProfileService.Get.ResultProfile.SessionIdExpired())
+        }
+
+        val user = userFickle.get()
+        if (user.accountType != AccountType.Specialist) {
+            log.d("Bad accountType ${user.accountType}")
+            return Single.just(SpecialistProfileService.Get.ResultProfile.BadAccountType())
         }
 
         check(user.id != -1L) { "userId should not be -1" }
@@ -52,11 +74,11 @@ class SpecialistProfileServiceImpl : SpecialistProfileService {
         val profileFickle = mSpecialistProfileStore.findOne(user.id)
         if (!profileFickle.isPresent()) {
             log.d("Could not find specialist profile with id ${user.id}")
-            return Single.just(SpecialistProfileService.Get.Result.NotFound())
+            return Single.just(SpecialistProfileService.Get.ResultProfile.NotFound())
         }
 
         val profile = profileFickle.get()
-        return Single.just(SpecialistProfileService.Get.Result.Ok(profile))
+        return Single.just(SpecialistProfileService.Get.ResultProfile.Ok(profile))
     }
 
     override fun updateProfileInfo(sessionIdParam: String, requestParam: SpecialistProfileRequest):
