@@ -24,10 +24,7 @@ data class SpecialistProfile(@SerializedName("user_id")
                              val successRepairs: Int = 0,
 
                              @SerializedName("fail_repairs")
-                             val failRepairs: Int = 0,
-
-                             @SerializedName("is_filled_in")
-                             var isFilledIn: Boolean = false) {
+                             val failRepairs: Int = 0) {
 
     fun isProfileInfoFilledIn(): Boolean {
         return (this.name.isNotEmpty() && this.phone.isNotEmpty() && this.photoName.isNotEmpty())

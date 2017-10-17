@@ -31,29 +31,28 @@ class ClientController {
                     when (result) {
                         is ClientProfileService.Get.Result.Ok -> {
                             return@map ResponseEntity(
-                                    ClientProfileResponse(result.clientProfile, ServerErrorCode.SEC_OK.value),
-                                    HttpStatus.OK)
+                                    ClientProfileResponse(result.clientProfile, result.clientProfile.isProfileInfoFilledIn(),
+                                            ServerErrorCode.SEC_OK.value), HttpStatus.OK)
                         }
 
                         is ClientProfileService.Get.Result.SessionIdExpired -> {
                             return@map ResponseEntity(
-                                    ClientProfileResponse(null, ServerErrorCode.SEC_SESSION_ID_EXPIRED.value),
-                                    HttpStatus.UNAUTHORIZED)
+                                    ClientProfileResponse(null, false,
+                                            ServerErrorCode.SEC_SESSION_ID_EXPIRED.value), HttpStatus.UNAUTHORIZED)
                         }
 
                         is ClientProfileService.Get.Result.CouldNotFindProfile -> {
                             return@map ResponseEntity(
-                                    ClientProfileResponse(null, ServerErrorCode.SEC_UNKNOWN_SERVER_ERROR.value),
-                                    HttpStatus.INTERNAL_SERVER_ERROR)
+                                    ClientProfileResponse(null, false,
+                                            ServerErrorCode.SEC_UNKNOWN_SERVER_ERROR.value), HttpStatus.INTERNAL_SERVER_ERROR)
                         }
 
                         else -> throw IllegalArgumentException("Unknown result")
                     }
                 }
                 .onErrorReturn {
-                    return@onErrorReturn ResponseEntity(ClientProfileResponse(null,
-                            ServerErrorCode.SEC_UNKNOWN_SERVER_ERROR.value),
-                            HttpStatus.INTERNAL_SERVER_ERROR)
+                    return@onErrorReturn ResponseEntity(ClientProfileResponse(null, false,
+                            ServerErrorCode.SEC_UNKNOWN_SERVER_ERROR.value), HttpStatus.INTERNAL_SERVER_ERROR)
                 }
     }
 }

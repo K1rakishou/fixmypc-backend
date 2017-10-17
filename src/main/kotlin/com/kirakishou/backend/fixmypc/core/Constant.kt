@@ -23,32 +23,25 @@ object Constant {
         const val SERVER_ERROR_CODE = "server_error_code"
         const val DAMAGE_CATEGORY = "damage_category"
         const val DAMAGE_DESCRIPTION = "damage_description"
-
         const val LOCATION_LAT = "lat"
         const val LOCATION_LON = "lon"
-
         const val ERROR_CODE = "error_code"
         const val BAD_PHOTO_NAMES = "bad_photo_names"
-
         const val IMAGE_ORIGINAL_NAME = "image_orig_name"
         const val IMAGE_TYPE = "image_type"
         const val IMAGE_NAME = "image_name"
         const val OWNER_ID = "owner_id"
         const val MALFUNCTION_REQUEST_ID = "m_request_id"
-
         const val DAMAGE_CLAIM_LIST = "damage_claim_list"
         const val CLIENT_PROFILE = "client_profile"
-
         const val DAMAGE_CLAIM_ID = "damage_claim_id"
         const val SPECIALIST_PROFILES_LIST = "specialist_profiles_list"
         const val SPECIALIST_PROFILE = "specialist_profile"
-
         const val PROFILE_NAME = "profile_name"
         const val PROFILE_PHONE = "profile_phone"
-
         const val NEW_SPECIALIST_PROFILE_PHOTO_NAME = "nsp_photo_name"
-
         const val HAS_SPECIALIST_ALREADY_RESPONDED = "responded"
+        const val IS_PROFILE_FILLED_IN = "is_profile_filled"
     }
 
     object IgniteNames {

@@ -146,22 +146,22 @@ class SpecialistController {
                 .map { result ->
                     when (result) {
                         is SpecialistProfileService.Get.Result.Ok -> {
-                            return@map ResponseEntity(SpecialistProfileResponse(result.profile,
+                            return@map ResponseEntity(SpecialistProfileResponse(result.profile, result.profile.isProfileInfoFilledIn(),
                                     ServerErrorCode.SEC_OK.value), HttpStatus.OK)
                         }
 
                         is SpecialistProfileService.Get.Result.SessionIdExpired -> {
-                            return@map ResponseEntity(SpecialistProfileResponse(null,
+                            return@map ResponseEntity(SpecialistProfileResponse(null, false,
                                     ServerErrorCode.SEC_SESSION_ID_EXPIRED.value), HttpStatus.UNAUTHORIZED)
                         }
 
                         is SpecialistProfileService.Get.Result.BadAccountType -> {
-                            return@map ResponseEntity(SpecialistProfileResponse(null,
+                            return@map ResponseEntity(SpecialistProfileResponse(null, false,
                                     ServerErrorCode.SEC_BAD_ACCOUNT_TYPE.value), HttpStatus.FORBIDDEN)
                         }
 
                         is SpecialistProfileService.Get.Result.NotFound -> {
-                            return@map ResponseEntity(SpecialistProfileResponse(null,
+                            return@map ResponseEntity(SpecialistProfileResponse(null, false,
                                     ServerErrorCode.SEC_COULD_NOT_FIND_PROFILE.value), HttpStatus.UNPROCESSABLE_ENTITY)
                         }
 
@@ -169,7 +169,7 @@ class SpecialistController {
                     }
                 }
                 .onErrorReturn {
-                    return@onErrorReturn ResponseEntity(SpecialistProfileResponse(null,
+                    return@onErrorReturn ResponseEntity(SpecialistProfileResponse(null, false,
                             ServerErrorCode.SEC_UNKNOWN_SERVER_ERROR.value), HttpStatus.INTERNAL_SERVER_ERROR)
                 }
     }
