@@ -4,9 +4,11 @@ import com.kirakishou.backend.fixmypc.core.AccountType
 import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.cache.SessionCache
+import com.kirakishou.backend.fixmypc.model.entity.DamageClaimResponseCount
 import com.kirakishou.backend.fixmypc.model.entity.LatLon
 import com.kirakishou.backend.fixmypc.model.store.DamageClaimStore
 import com.kirakishou.backend.fixmypc.model.store.LocationStore
+import com.kirakishou.backend.fixmypc.model.store.RespondedSpecialistsStore
 import io.reactivex.Single
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -24,16 +26,19 @@ class GetUserDamageClaimListServiceImpl : GetUserDamageClaimListService {
     private lateinit var sessionCache: SessionCache
 
     @Autowired
+    private lateinit var respondedSpecialistsStore: RespondedSpecialistsStore
+
+    @Autowired
     private lateinit var log: FileLog
 
     override fun getDamageClaimsWithinRadiusPaged(sessionId: String, latParam: Double, lonParam: Double,
                                                   radiusParam: Double, skipParam: Long, countParam: Long):
-            Single<GetUserDamageClaimListService.Get.Result> {
+            Single<GetUserDamageClaimListService.Get.PlainResult> {
 
         val userFickle = sessionCache.findOne(sessionId)
         if (!userFickle.isPresent()) {
             log.d("SessionId $sessionId was not found in the sessionCache")
-            return Single.just(GetUserDamageClaimListService.Get.Result.SessionIdExpired())
+            return Single.just(GetUserDamageClaimListService.Get.PlainResult.SessionIdExpired())
         }
 
         val lat = when {
@@ -68,28 +73,31 @@ class GetUserDamageClaimListServiceImpl : GetUserDamageClaimListService {
         val idsList = locationStore.findWithin(skip, LatLon(lat, lon), radius, count)
         val damageClaimsList = damageClaimStore.findMany(true, idsList)
 
-        return Single.just(GetUserDamageClaimListService.Get.Result.Ok(damageClaimsList))
+        return Single.just(GetUserDamageClaimListService.Get.PlainResult.Ok(damageClaimsList))
     }
 
     override fun getClientDamageClaimsPaged(sessionId: String, isActive: Boolean, skip: Long, count: Long):
-            Single<GetUserDamageClaimListService.Get.Result> {
+            Single<GetUserDamageClaimListService.Get.ResultAndCount> {
 
         val userFickle = sessionCache.findOne(sessionId)
         if (!userFickle.isPresent()) {
             log.d("SessionId $sessionId was not found in the sessionCache")
-            return Single.just(GetUserDamageClaimListService.Get.Result.SessionIdExpired())
+            return Single.just(GetUserDamageClaimListService.Get.ResultAndCount.SessionIdExpired())
         }
 
         val user = userFickle.get()
         if (user.accountType != AccountType.Client) {
             log.d("Bad accountType ${user.accountType}")
-            return Single.just(GetUserDamageClaimListService.Get.Result.BadAccountType())
+            return Single.just(GetUserDamageClaimListService.Get.ResultAndCount.BadAccountType())
         }
 
         check(user.id != -1L) { "userId should not be -1" }
 
         val repoResult = damageClaimStore.findManyPaged(isActive, user.id, skip, count)
-        return Single.just(GetUserDamageClaimListService.Get.Result.Ok(repoResult))
+        val responsesCount = respondedSpecialistsStore.findAllAndCount(repoResult.map { it.id })
+                .map { DamageClaimResponseCount(it.key, it.value) }
+
+        return Single.just(GetUserDamageClaimListService.Get.ResultAndCount.Ok(repoResult, responsesCount))
     }
 }
 

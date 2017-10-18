@@ -4,6 +4,7 @@ import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.core.Fickle
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.entity.RespondedSpecialist
+import com.kirakishou.backend.fixmypc.util.TextUtils
 import org.apache.ignite.Ignite
 import org.apache.ignite.IgniteAtomicSequence
 import org.apache.ignite.IgniteCache
@@ -87,7 +88,29 @@ class RespondedSpecialistsStoreImpl : RespondedSpecialistsStore {
         val sql = "SELECT * FROM $tableName WHERE damage_claim_id = ? OFFSET ? LIMIT ?"
         val sqlQuery = SqlQuery<Long, RespondedSpecialist>(RespondedSpecialist::class.java, sql).setArgs(damageClaimId, skip, count)
 
-        return respondedSpecialistsCache.query(sqlQuery).use { entries -> entries.all.map { it.value } }
+        return respondedSpecialistsCache.query(sqlQuery).use { entries ->
+            entries.all.map { it.value }
+        }
+    }
+
+    override fun findAllAndCount(damageClaimIdList: List<Long>): MutableMap<Long, Int> {
+        val statement = TextUtils.createStatementForList(damageClaimIdList.size)
+        val sql = "SELECT * FROM $tableName WHERE damage_claim_id IN ($statement)"
+        val sqlQuery = SqlQuery<Long, RespondedSpecialist>(RespondedSpecialist::class.java, sql).setArgs(*damageClaimIdList.toTypedArray())
+
+        return respondedSpecialistsCache.query(sqlQuery).use { entries ->
+            val result = mutableMapOf<Long, Int>()
+
+            for (entry in entries.all) {
+                result.putIfAbsent(entry.key, 0)
+
+                var value = result[entry.key]!!
+                ++value
+                result[entry.key] = value
+            }
+
+            return@use result
+        }
     }
 
     override fun deleteAllForDamageClaim(damageClaimId: Long): Boolean {
