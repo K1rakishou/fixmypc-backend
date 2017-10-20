@@ -34,7 +34,7 @@ class SpecialistProfileServiceImpl : SpecialistProfileService {
     @Autowired
     private lateinit var log: FileLog
 
-    override fun isProfileFilledIn(sessionId: String): Single<SpecialistProfileService.Get.ResultIsFilledIn> {
+    override fun isSpecialistProfileFilledIn(sessionId: String): Single<SpecialistProfileService.Get.ResultIsFilledIn> {
         val userFickle = sessionCache.findOne(sessionId)
         if (!userFickle.isPresent()) {
             log.d("SessionId $sessionId was not found in the sessionCache")
@@ -56,7 +56,7 @@ class SpecialistProfileServiceImpl : SpecialistProfileService {
         return Single.just(SpecialistProfileService.Get.ResultIsFilledIn.Ok(profile.isProfileInfoFilledIn()))
     }
 
-    override fun getProfile(sessionId: String): Single<SpecialistProfileService.Get.ResultProfile> {
+    override fun getSpecialistProfile(sessionId: String): Single<SpecialistProfileService.Get.ResultProfile> {
         val userFickle = sessionCache.findOne(sessionId)
         if (!userFickle.isPresent()) {
             log.d("SessionId $sessionId was not found in the sessionCache")
@@ -81,7 +81,7 @@ class SpecialistProfileServiceImpl : SpecialistProfileService {
         return Single.just(SpecialistProfileService.Get.ResultProfile.Ok(profile))
     }
 
-    override fun updateProfileInfo(sessionIdParam: String, requestParam: SpecialistProfileRequest):
+    override fun updateSpecialistProfile(sessionIdParam: String, requestParam: SpecialistProfileRequest):
             Single<SpecialistProfileService.Post.ResultInfo> {
 
         return Single.just(UpdatingProfileParams(sessionIdParam, requestParam))

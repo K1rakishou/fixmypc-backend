@@ -139,7 +139,7 @@ class SpecialistController {
             method = arrayOf(RequestMethod.GET))
     fun getSpecialistProfile(@RequestHeader(value = "session_id", defaultValue = "") sessionId: String): Single<ResponseEntity<SpecialistProfileResponse>> {
 
-        return mSpecialistProfileService.getProfile(sessionId)
+        return mSpecialistProfileService.getSpecialistProfile(sessionId)
                 .map { result ->
                     when (result) {
                         is SpecialistProfileService.Get.ResultProfile.Ok -> {
@@ -176,7 +176,7 @@ class SpecialistController {
     fun updateSpecialistProfile(@RequestHeader(value = "session_id", defaultValue = "") sessionId: String,
                                 @RequestBody request: SpecialistProfileRequest): Single<ResponseEntity<StatusResponse>> {
 
-        return mSpecialistProfileService.updateProfileInfo(sessionId, request)
+        return mSpecialistProfileService.updateSpecialistProfile(sessionId, request)
                 .map { result ->
                     when (result) {
                         is SpecialistProfileService.Post.ResultInfo.Ok -> {
@@ -279,7 +279,7 @@ class SpecialistController {
     @RequestMapping(path = arrayOf("${Constant.Paths.SPECIALIST_CONTROLLER_PATH}/profile/is_filled_in"),
             method = arrayOf(RequestMethod.GET))
     fun isProfileFilledIn(@RequestHeader(value = "session_id", defaultValue = "") sessionId: String): Single<ResponseEntity<IsProfileFilledInResponse>> {
-        return mSpecialistProfileService.isProfileFilledIn(sessionId)
+        return mSpecialistProfileService.isSpecialistProfileFilledIn(sessionId)
                 .map { result ->
                     when (result) {
                         is SpecialistProfileService.Get.ResultIsFilledIn.Ok -> {
@@ -315,6 +315,8 @@ class SpecialistController {
                             HttpStatus.INTERNAL_SERVER_ERROR)
                 }
     }
+
+
 }
 
 
