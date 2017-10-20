@@ -48,6 +48,26 @@ class ClientProfileStoreImpl : ClientProfileStore {
         return Fickle.of(clientProfileStore[userId])
     }
 
+    override fun update(userId: Long, name: String, phone: String) {
+        val lock = clientProfileStore.lock(userId)
+        lock.lock()
+
+        try {
+            val profile = clientProfileStore[userId]
+            if (profile == null) {
+                log.e("No profile was found with user id $userId")
+                return
+            }
+
+            profile.name = name
+            profile.phone = phone
+
+            clientProfileStore.put(userId, profile)
+        } finally {
+            lock.unlock()
+        }
+    }
+
     override fun deleteOne(userId: Long): Boolean {
         try {
             clientProfileStore.remove(userId)

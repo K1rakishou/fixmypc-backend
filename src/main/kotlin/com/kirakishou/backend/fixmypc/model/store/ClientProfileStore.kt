@@ -6,5 +6,6 @@ import com.kirakishou.backend.fixmypc.model.entity.ClientProfile
 interface ClientProfileStore {
     fun saveOne(clientProfile: ClientProfile): Boolean
     fun findOne(userId: Long): Fickle<ClientProfile>
+    fun update(userId: Long, name: String, phone: String)
     fun deleteOne(userId: Long): Boolean
 }
