@@ -4,6 +4,7 @@ import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.core.ServerErrorCode
 import com.kirakishou.backend.fixmypc.model.net.request.ClientProfileRequest
 import com.kirakishou.backend.fixmypc.model.net.response.ClientProfileResponse
+import com.kirakishou.backend.fixmypc.model.net.response.IsProfileFilledInResponse
 import com.kirakishou.backend.fixmypc.model.net.response.UpdateClientProfileResponse
 import com.kirakishou.backend.fixmypc.service.client.ClientProfileService
 import io.reactivex.Single
@@ -93,6 +94,44 @@ class ClientController {
                 }
                 .onErrorReturn {
                     return@onErrorReturn ResponseEntity(UpdateClientProfileResponse(
+                            ServerErrorCode.SEC_UNKNOWN_SERVER_ERROR.value),
+                            HttpStatus.INTERNAL_SERVER_ERROR)
+                }
+    }
+
+    @RequestMapping(path = arrayOf("${Constant.Paths.CLIENT_CONTROLLER_PATH}/profile/is_filled_in"),
+            method = arrayOf(RequestMethod.GET))
+    fun isClientProfileFilledIn(@RequestHeader(value = "session_id", defaultValue = "") sessionId: String):
+            Single<ResponseEntity<IsProfileFilledInResponse>> {
+
+        return clientProfileService.isClientProfileFilledIn(sessionId)
+                .map { result ->
+                    when (result) {
+                        is ClientProfileService.Get.ResultFilledIn.Ok -> {
+                            return@map ResponseEntity(IsProfileFilledInResponse(result.isFilledIn, ServerErrorCode.SEC_OK.value),
+                                    HttpStatus.OK)
+                        }
+
+                        is ClientProfileService.Get.ResultFilledIn.SessionIdExpired -> {
+                            return@map ResponseEntity(IsProfileFilledInResponse(false, ServerErrorCode.SEC_SESSION_ID_EXPIRED.value),
+                                    HttpStatus.UNAUTHORIZED)
+                        }
+
+                        is ClientProfileService.Get.ResultFilledIn.BadAccountType -> {
+                            return@map ResponseEntity(IsProfileFilledInResponse(false, ServerErrorCode.SEC_BAD_ACCOUNT_TYPE.value),
+                                    HttpStatus.FORBIDDEN)
+                        }
+
+                        is ClientProfileService.Get.ResultFilledIn.CouldNotFindProfile -> {
+                            return@map ResponseEntity(IsProfileFilledInResponse(false, ServerErrorCode.SEC_COULD_NOT_FIND_PROFILE.value),
+                                    HttpStatus.NOT_FOUND)
+                        }
+
+                        else -> throw IllegalArgumentException("Unknown result")
+                    }
+                }
+                .onErrorReturn {
+                    return@onErrorReturn ResponseEntity(IsProfileFilledInResponse(false,
                             ServerErrorCode.SEC_UNKNOWN_SERVER_ERROR.value),
                             HttpStatus.INTERNAL_SERVER_ERROR)
                 }
