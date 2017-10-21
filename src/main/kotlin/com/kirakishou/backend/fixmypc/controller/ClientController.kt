@@ -79,6 +79,11 @@ class ClientController {
                                     ServerErrorCode.SEC_OK.value), HttpStatus.OK)
                         }
 
+                        is ClientProfileService.Post.Result.StoreError -> {
+                            return@map ResponseEntity(UpdateClientProfileResponse(
+                                    ServerErrorCode.SEC_STORE_ERROR.value), HttpStatus.INTERNAL_SERVER_ERROR)
+                        }
+
                         is ClientProfileService.Post.Result.SessionIdExpired -> {
                             return@map ResponseEntity(UpdateClientProfileResponse(
                                     ServerErrorCode.SEC_SESSION_ID_EXPIRED.value), HttpStatus.UNAUTHORIZED)

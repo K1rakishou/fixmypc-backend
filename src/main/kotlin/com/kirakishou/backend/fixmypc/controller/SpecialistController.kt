@@ -201,7 +201,7 @@ class SpecialistController {
 
                         is SpecialistProfileService.Post.ResultInfo.RepositoryError -> {
                             return@map ResponseEntity(StatusResponse(
-                                    ServerErrorCode.SEC_REPOSITORY_ERROR.value), HttpStatus.INTERNAL_SERVER_ERROR)
+                                    ServerErrorCode.SEC_STORE_ERROR.value), HttpStatus.INTERNAL_SERVER_ERROR)
                         }
 
                         is SpecialistProfileService.Post.ResultInfo.UnknownError -> {
@@ -256,9 +256,9 @@ class SpecialistController {
                                     ServerErrorCode.SEC_COULD_NOT_DELETE_OLD_IMAGE.value), HttpStatus.INTERNAL_SERVER_ERROR)
                         }
 
-                        is SpecialistProfileService.Post.ResultPhoto.RepositoryError -> {
+                        is SpecialistProfileService.Post.ResultPhoto.StoreError -> {
                             return@map ResponseEntity(UpdateSpecialistProfileResponse("",
-                                    ServerErrorCode.SEC_REPOSITORY_ERROR.value), HttpStatus.INTERNAL_SERVER_ERROR)
+                                    ServerErrorCode.SEC_STORE_ERROR.value), HttpStatus.INTERNAL_SERVER_ERROR)
                         }
 
                         is SpecialistProfileService.Post.ResultPhoto.UnknownError -> {

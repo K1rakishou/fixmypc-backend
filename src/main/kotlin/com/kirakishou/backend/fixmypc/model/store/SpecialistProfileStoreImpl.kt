@@ -100,11 +100,12 @@ class SpecialistProfileStoreImpl : SpecialistProfileStore {
             val profile = specialistProfileStore.get(userId) ?: return false
             profile.photoName = photoName
             specialistProfileStore.put(userId, profile)
-
             return true
+
         } catch (e: Throwable) {
             log.e(e)
             return false
+
         } finally {
             lock.unlock()
         }

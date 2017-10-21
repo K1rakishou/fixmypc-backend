@@ -194,7 +194,7 @@ class SpecialistProfileServiceImpl : SpecialistProfileService {
                         is BadAccountTypeException -> SpecialistProfileService.Post.ResultPhoto.BadAccountType()
                         is NotFoundException -> SpecialistProfileService.Post.ResultPhoto.NotFound()
                         is CouldNotUploadImagesException -> SpecialistProfileService.Post.ResultPhoto.CouldNotUploadImage()
-                        is StoreErrorException -> SpecialistProfileService.Post.ResultPhoto.RepositoryError()
+                        is StoreErrorException -> SpecialistProfileService.Post.ResultPhoto.StoreError()
                         is CouldNotDeleteImageException -> SpecialistProfileService.Post.ResultPhoto.CouldNotDeleteOldImage()
 
                         else -> {

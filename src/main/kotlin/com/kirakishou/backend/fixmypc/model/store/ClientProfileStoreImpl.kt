@@ -6,6 +6,7 @@ import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.entity.ClientProfile
 import org.apache.ignite.Ignite
 import org.apache.ignite.IgniteCache
+import org.apache.ignite.cache.CacheAtomicityMode
 import org.apache.ignite.cache.CacheMode
 import org.apache.ignite.configuration.CacheConfiguration
 import org.springframework.beans.factory.annotation.Autowired
@@ -29,6 +30,7 @@ class ClientProfileStoreImpl : ClientProfileStore {
         val cacheConfig = CacheConfiguration<Long, ClientProfile>(Constant.IgniteNames.CLIENT_PROFILE_STORE)
         cacheConfig.backups = 1
         cacheConfig.cacheMode = CacheMode.PARTITIONED
+        cacheConfig.atomicityMode = CacheAtomicityMode.TRANSACTIONAL
         cacheConfig.setIndexedTypes(Long::class.java, ClientProfile::class.java)
 
         clientProfileStore = ignite.getOrCreateCache(cacheConfig)
@@ -48,21 +50,21 @@ class ClientProfileStoreImpl : ClientProfileStore {
         return Fickle.of(clientProfileStore[userId])
     }
 
-    override fun update(userId: Long, name: String, phone: String) {
+    override fun update(userId: Long, name: String, phone: String): Boolean {
         val lock = clientProfileStore.lock(userId)
         lock.lock()
 
         try {
-            val profile = clientProfileStore[userId]
-            if (profile == null) {
-                log.e("No profile was found with user id $userId")
-                return
-            }
-
+            val profile = clientProfileStore[userId] ?: return false
             profile.name = name
             profile.phone = phone
-
             clientProfileStore.put(userId, profile)
+            return true
+
+        } catch (e: Throwable) {
+            log.e(e)
+            return false
+
         } finally {
             lock.unlock()
         }

@@ -25,6 +25,7 @@ interface ClientProfileService {
     interface Post {
         interface Result {
             class Ok : Result
+            class StoreError : Result
             class BadAccountType : Result
             class SessionIdExpired : Result
         }

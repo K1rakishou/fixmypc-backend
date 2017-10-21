@@ -40,7 +40,7 @@ interface SpecialistProfileService {
             class CouldNotUploadImage : ResultPhoto
             class CouldNotDeleteOldImage : ResultPhoto
             class NotFound : ResultPhoto
-            class RepositoryError: ResultPhoto
+            class StoreError : ResultPhoto
             class UnknownError : ResultPhoto
         }
     }

@@ -78,7 +78,10 @@ class ClientProfileServiceImpl : ClientProfileService {
             return Single.just(ClientProfileService.Post.Result.BadAccountType())
         }
 
-        clientProfileStore.update(user.id, profile.profileName, profile.profilePhone)
+        if (!clientProfileStore.update(user.id, profile.profileName, profile.profilePhone)) {
+            Single.just(ClientProfileService.Post.Result.StoreError())
+        }
+
         return Single.just(ClientProfileService.Post.Result.Ok())
     }
 }
