@@ -285,7 +285,7 @@ class SpecialistController {
                         is SpecialistProfileService.Get.ResultIsFilledIn.Ok -> {
                             return@map ResponseEntity(IsProfileFilledInResponse(result.isFilledIn,
                                     ServerErrorCode.SEC_OK.value),
-                                    HttpStatus.INTERNAL_SERVER_ERROR)
+                                    HttpStatus.OK)
                         }
 
                         is SpecialistProfileService.Get.ResultIsFilledIn.SessionIdExpired -> {
@@ -296,13 +296,13 @@ class SpecialistController {
 
                         is SpecialistProfileService.Get.ResultIsFilledIn.BadAccountType -> {
                             return@map ResponseEntity(IsProfileFilledInResponse(false,
-                                    ServerErrorCode.SEC_OK.value),
+                                    ServerErrorCode.SEC_BAD_ACCOUNT_TYPE.value),
                                     HttpStatus.FORBIDDEN)
                         }
 
                         is SpecialistProfileService.Get.ResultIsFilledIn.CouldNotFindClientProfile -> {
                             return@map ResponseEntity(IsProfileFilledInResponse(false,
-                                    ServerErrorCode.SEC_OK.value),
+                                    ServerErrorCode.SEC_COULD_NOT_FIND_PROFILE.value),
                                     HttpStatus.UNPROCESSABLE_ENTITY)
                         }
 

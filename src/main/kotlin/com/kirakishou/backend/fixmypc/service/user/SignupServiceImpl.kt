@@ -31,7 +31,9 @@ class SignupServiceImpl : SignupService {
 
     @PostConstruct
     fun initForTest() {
-        /*
+        /*doSignup("client1@gmail.com", "1234567890", AccountType.Client)
+        doSignup("client2@gmail.com", "1234567890", AccountType.Client)
+        doSignup("specialist1@gmail.com", "1234567890", AccountType.Specialist)
         doSignup("specialist2@gmail.com", "1234567890", AccountType.Specialist)
         doSignup("specialist3@gmail.com", "1234567890", AccountType.Specialist)
         doSignup("specialist4@gmail.com", "1234567890", AccountType.Specialist)
