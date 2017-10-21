@@ -46,6 +46,14 @@ class RespondedSpecialistsStoreImpl : RespondedSpecialistsStore {
         atomicConfig.backups = 3
         atomicConfig.cacheMode = CacheMode.PARTITIONED
         respondedSpecialistIdGenerator = ignite.atomicSequence(Constant.IgniteNames.RESPONDED_SPECIALIST_ID_GENERATOR, atomicConfig, 0L, true)
+
+        /*val sql = "SELECT * FROM $tableName"
+        val sqlQuery = SqlQuery<Long, RespondedSpecialist>(RespondedSpecialist::class.java, sql)
+
+        val allResponses = respondedSpecialistsCache.query(sqlQuery).all
+        for (response in allResponses) {
+            log.e(response.toString())
+        }*/
     }
 
     override fun saveOne(respondedSpecialist: RespondedSpecialist): Boolean {
@@ -100,13 +108,15 @@ class RespondedSpecialistsStoreImpl : RespondedSpecialistsStore {
 
         return respondedSpecialistsCache.query(sqlQuery).use { entries ->
             val result = mutableMapOf<Long, Int>()
+            val allEntries = entries.all
 
-            for (entry in entries.all) {
-                result.putIfAbsent(entry.key, 0)
+            for (entry in allEntries) {
+                val damageClaimId = entry.value.damageClaimId
+                result.putIfAbsent(damageClaimId, 0)
 
-                var value = result[entry.key]!!
+                var value = result[damageClaimId]!!
                 ++value
-                result[entry.key] = value
+                result[damageClaimId] = value
             }
 
             return@use result
