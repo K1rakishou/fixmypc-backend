@@ -37,7 +37,7 @@ class ClientAssignSpecialistServiceImpl : ClientAssignSpecialistService {
     @Autowired
     private lateinit var log: FileLog
 
-    override fun assignSpecialist(sessionId: String, userId: Long, damageClaimId: Long): Single<ClientAssignSpecialistService.Get.Result> {
+    override fun assignSpecialist(sessionId: String, specialistUserId: Long, damageClaimId: Long): Single<ClientAssignSpecialistService.Get.Result> {
         val userFickle = sessionCache.findOne(sessionId)
         if (!userFickle.isPresent()) {
             log.d("SessionId $sessionId was not found in the sessionCache")
@@ -62,6 +62,12 @@ class ClientAssignSpecialistServiceImpl : ClientAssignSpecialistService {
             return Single.just(ClientAssignSpecialistService.Get.Result.ProfileIsNotFilledIn())
         }
 
+        val assignedSpecialistFickle = assignedSpecialistsStore.findOne(damageClaimId)
+        if (assignedSpecialistFickle.isPresent()) {
+            log.d("Specialist already assigned")
+            return Single.just(ClientAssignSpecialistService.Get.Result.SpecialistAlreadyAssigned())
+        }
+
         val damageClaimFickle = damageClaimStore.findOne(damageClaimId)
         if (!damageClaimFickle.isPresent()) {
             log.d("DamageClaim with id $damageClaimId does not exist")
@@ -69,8 +75,8 @@ class ClientAssignSpecialistServiceImpl : ClientAssignSpecialistService {
         }
 
         val damageClaim = damageClaimFickle.get()
-        if (userId != damageClaim.userId) {
-            log.d("DamageClaim with id ${damageClaim.id} does not belong to user with ud $userId")
+        if (user.id != damageClaim.userId) {
+            log.d("DamageClaim with id ${damageClaim.id} does not belong to user with ud ${user.id}")
             return Single.just(ClientAssignSpecialistService.Get.Result.DamageClaimDoesNotBelongToUser())
         }
 
@@ -83,11 +89,11 @@ class ClientAssignSpecialistServiceImpl : ClientAssignSpecialistService {
                     return Single.just(ClientAssignSpecialistService.Get.Result.CouldNotRemoveRespondedSpecialists())
                 }
 
-                if (!assignedSpecialistsStore.saveOne(AssignedSpecialist(damageClaimId, userId, false))) {
-                    log.d("Something went wrong while trying to remove specialists responded to damageClaim with id $damageClaimId")
+                if (!assignedSpecialistsStore.saveOne(AssignedSpecialist(damageClaimId, specialistUserId, user.id, false))) {
+                    log.d("Something went wrong while trying to save assigned specialist to store")
                     transaction.rollback()
 
-                    return Single.just(ClientAssignSpecialistService.Get.Result.CouldNotRemoveRespondedSpecialists())
+                    return Single.just(ClientAssignSpecialistService.Get.Result.CouldNotSaveAssignedSpecialist())
                 }
 
                 transaction.commit()

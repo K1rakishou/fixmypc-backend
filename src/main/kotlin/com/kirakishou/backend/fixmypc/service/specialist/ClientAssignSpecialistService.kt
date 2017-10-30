@@ -12,10 +12,12 @@ interface ClientAssignSpecialistService {
             class DamageClaimDoesNotExist : Result
             class DamageClaimDoesNotBelongToUser : Result
             class CouldNotRemoveRespondedSpecialists : Result
+            class CouldNotSaveAssignedSpecialist: Result
             class CouldNotFindClientProfile : Result
             class ProfileIsNotFilledIn : Result
+            class SpecialistAlreadyAssigned : Result
         }
     }
 
-    fun assignSpecialist(sessionId: String, userId: Long, damageClaimId: Long): Single<Get.Result>
+    fun assignSpecialist(sessionId: String, specialistUserId: Long, damageClaimId: Long): Single<Get.Result>
 }

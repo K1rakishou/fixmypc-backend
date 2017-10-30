@@ -12,6 +12,7 @@ interface GetRespondedSpecialistsService {
             class BadAccountType : Result
             class DamageClaimDoesNotExist : Result
             class DamageClaimIsNotActive : Result
+            class DamageClaimAlreadyHasAssignedSpecialist : Result
         }
     }
 

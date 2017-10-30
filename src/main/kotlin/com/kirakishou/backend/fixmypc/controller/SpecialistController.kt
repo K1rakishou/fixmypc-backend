@@ -2,7 +2,7 @@ package com.kirakishou.backend.fixmypc.controller
 
 import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.core.ServerErrorCode
-import com.kirakishou.backend.fixmypc.model.net.request.PickSpecialistRequest
+import com.kirakishou.backend.fixmypc.model.net.request.AssignSpecialistRequest
 import com.kirakishou.backend.fixmypc.model.net.request.SpecialistProfileRequest
 import com.kirakishou.backend.fixmypc.model.net.response.*
 import com.kirakishou.backend.fixmypc.service.specialist.ClientAssignSpecialistService
@@ -44,6 +44,11 @@ class SpecialistController {
                                     ServerErrorCode.SEC_OK.value), HttpStatus.OK)
                         }
 
+                        is GetRespondedSpecialistsService.Get.Result.DamageClaimAlreadyHasAssignedSpecialist -> {
+                            return@map ResponseEntity(SpecialistsListResponse(emptyList(),
+                                    ServerErrorCode.SEC_DAMAGE_CLAIM_ALREADY_HAS_ASSIGNED_SPECIALIST.value), HttpStatus.OK)
+                        }
+
                         is GetRespondedSpecialistsService.Get.Result.BadAccountType -> {
                             return@map ResponseEntity(SpecialistsListResponse(emptyList(),
                                     ServerErrorCode.SEC_BAD_ACCOUNT_TYPE.value),
@@ -80,9 +85,9 @@ class SpecialistController {
     @RequestMapping(path = arrayOf("${Constant.Paths.SPECIALIST_CONTROLLER_PATH}/assign"),
             method = arrayOf(RequestMethod.POST))
     fun clientAssignSpecialist(@RequestHeader(value = "session_id", defaultValue = "") sessionId: String,
-                               @RequestBody request: PickSpecialistRequest): Single<ResponseEntity<StatusResponse>> {
+                               @RequestBody request: AssignSpecialistRequest): Single<ResponseEntity<StatusResponse>> {
 
-        return mClientAssignSpecialistService.assignSpecialist(sessionId, request.userId, request.damageClaimId)
+        return mClientAssignSpecialistService.assignSpecialist(sessionId, request.specialistUserId, request.damageClaimId)
                 .map { result ->
                     when (result) {
                         is ClientAssignSpecialistService.Get.Result.Ok -> {
@@ -103,6 +108,14 @@ class SpecialistController {
                         is ClientAssignSpecialistService.Get.Result.CouldNotRemoveRespondedSpecialists -> {
                             return@map ResponseEntity(StatusResponse(ServerErrorCode.SEC_COULD_NOT_REMOVE_RESPONDED_SPECIALISTS.value),
                                     HttpStatus.INTERNAL_SERVER_ERROR)
+                        }
+
+                        is ClientAssignSpecialistService.Get.Result.CouldNotSaveAssignedSpecialist -> {
+                            TODO()
+                        }
+
+                        is ClientAssignSpecialistService.Get.Result.SpecialistAlreadyAssigned -> {
+                            TODO()
                         }
 
                         is ClientAssignSpecialistService.Get.Result.BadAccountType -> {

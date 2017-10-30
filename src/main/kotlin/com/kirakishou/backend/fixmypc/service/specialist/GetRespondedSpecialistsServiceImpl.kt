@@ -3,6 +3,7 @@ package com.kirakishou.backend.fixmypc.service.specialist
 import com.kirakishou.backend.fixmypc.core.AccountType
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.cache.SessionCache
+import com.kirakishou.backend.fixmypc.model.store.AssignedSpecialistStore
 import com.kirakishou.backend.fixmypc.model.store.DamageClaimStore
 import com.kirakishou.backend.fixmypc.model.store.RespondedSpecialistsStore
 import com.kirakishou.backend.fixmypc.model.store.SpecialistProfileStore
@@ -27,6 +28,9 @@ class GetRespondedSpecialistsServiceImpl : GetRespondedSpecialistsService {
     private lateinit var specialistProfilesStore: SpecialistProfileStore
 
     @Autowired
+    private lateinit var assignedSpecialistsStore: AssignedSpecialistStore
+
+    @Autowired
     private lateinit var log: FileLog
 
     override fun getRespondedSpecialistsPaged(sessionId: String, damageClaimId: Long, skip: Long, count: Long):
@@ -42,6 +46,12 @@ class GetRespondedSpecialistsServiceImpl : GetRespondedSpecialistsService {
         if (user.accountType != AccountType.Client) {
             log.d("Bad accountType ${user.accountType}")
             return Single.just(GetRespondedSpecialistsService.Get.Result.BadAccountType())
+        }
+
+        val assignedSpecialistFickle = assignedSpecialistsStore.findOne(damageClaimId)
+        if (assignedSpecialistFickle.isPresent()) {
+            log.d("DamageClaim already has assigned specialist")
+            return Single.just(GetRespondedSpecialistsService.Get.Result.DamageClaimAlreadyHasAssignedSpecialist())
         }
 
         val damageClaimFickle = damageClaimStore.findOne(damageClaimId)

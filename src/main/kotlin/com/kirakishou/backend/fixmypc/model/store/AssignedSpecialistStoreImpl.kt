@@ -61,6 +61,15 @@ class AssignedSpecialistStoreImpl : AssignedSpecialistStore {
         }
     }
 
+    override fun findOne(damageClaimId: Long): Fickle<AssignedSpecialist> {
+        val assignedSpecialist = assignedSpecialistStore[damageClaimId]
+        if (assignedSpecialist == null) {
+            return Fickle.empty()
+        }
+
+        return Fickle.of(assignedSpecialist)
+    }
+
     override fun findOne(damageClaimId: Long, isWorkDone: Boolean): Fickle<AssignedSpecialist> {
         val assignedSpecialist = assignedSpecialistStore[damageClaimId]
         if (assignedSpecialist == null) {
