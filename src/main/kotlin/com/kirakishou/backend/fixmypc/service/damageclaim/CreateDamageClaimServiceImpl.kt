@@ -160,6 +160,8 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
                     return@map CreateDamageClaimService.Post.Result.Ok() as CreateDamageClaimService.Post.Result
                 }
                 .onErrorReturn { exception ->
+                    log.e(exception)
+
                     return@onErrorReturn when (exception) {
                         is SessionIdExpiredException -> CreateDamageClaimService.Post.Result.SessionIdExpired()
                         is NoFilesToUploadException -> CreateDamageClaimService.Post.Result.NoFilesToUpload()
