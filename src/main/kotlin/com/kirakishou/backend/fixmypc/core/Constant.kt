@@ -42,7 +42,7 @@ object Constant {
         const val NEW_SPECIALIST_PROFILE_PHOTO_NAME = "nsp_photo_name"
         const val HAS_SPECIALIST_ALREADY_RESPONDED = "responded"
         const val IS_PROFILE_FILLED_IN = "is_profile_filled"
-        const val RESPONSES_COUNT_LIST = "responses_count_list"
+        const val RESPONDED_SPECIALISTS = "responded_specialists"
     }
 
     object IgniteNames {

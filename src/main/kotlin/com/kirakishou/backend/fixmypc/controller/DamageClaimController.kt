@@ -260,23 +260,23 @@ class DamageClaimController {
     fun getClientDamageClaimsPaged(@RequestHeader(value = "session_id", defaultValue = "") sessionId: String,
                                    @PathVariable("is_active") isActive: Boolean,
                                    @PathVariable("skip") skip: Long,
-                                   @PathVariable("count") count: Long): Single<ResponseEntity<DamageClaimsWithCountResponse>> {
+                                   @PathVariable("count") count: Long): Single<ResponseEntity<DamageClaimsWithRespondedSpecialistsResponse>> {
 
         return mGetUserDamageClaimListService.getClientDamageClaimsPaged(sessionId, isActive, skip, count)
                 .map { result ->
                     when (result) {
                         is GetUserDamageClaimListService.Get.ResultAndCount.Ok -> {
-                            return@map ResponseEntity(DamageClaimsWithCountResponse(result.damageClaimList, result.responsesCountList,
+                            return@map ResponseEntity(DamageClaimsWithRespondedSpecialistsResponse(result.damageClaimList, result.responsesCountList,
                                     ServerErrorCode.SEC_OK.value), HttpStatus.OK)
                         }
 
                         is GetUserDamageClaimListService.Get.ResultAndCount.BadAccountType -> {
-                            return@map ResponseEntity(DamageClaimsWithCountResponse(emptyList(), emptyList(),
+                            return@map ResponseEntity(DamageClaimsWithRespondedSpecialistsResponse(emptyList(), emptyList(),
                                     ServerErrorCode.SEC_BAD_ACCOUNT_TYPE.value), HttpStatus.FORBIDDEN)
                         }
 
                         is GetUserDamageClaimListService.Get.ResultAndCount.SessionIdExpired -> {
-                            return@map ResponseEntity(DamageClaimsWithCountResponse(emptyList(), emptyList(),
+                            return@map ResponseEntity(DamageClaimsWithRespondedSpecialistsResponse(emptyList(), emptyList(),
                                     ServerErrorCode.SEC_SESSION_ID_EXPIRED.value), HttpStatus.UNAUTHORIZED)
                         }
 
@@ -284,7 +284,7 @@ class DamageClaimController {
                     }
                 }
                 .onErrorReturn {
-                    return@onErrorReturn ResponseEntity(DamageClaimsWithCountResponse(emptyList(), emptyList(),
+                    return@onErrorReturn ResponseEntity(DamageClaimsWithRespondedSpecialistsResponse(emptyList(), emptyList(),
                             ServerErrorCode.SEC_UNKNOWN_SERVER_ERROR.value),
                             HttpStatus.INTERNAL_SERVER_ERROR)
                 }

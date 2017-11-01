@@ -1,7 +1,7 @@
 package com.kirakishou.backend.fixmypc.service.damageclaim
 
 import com.kirakishou.backend.fixmypc.model.entity.DamageClaim
-import com.kirakishou.backend.fixmypc.model.entity.DamageClaimResponseCount
+import com.kirakishou.backend.fixmypc.model.entity.RespondedSpecialist
 import io.reactivex.Single
 
 interface GetUserDamageClaimListService {
@@ -15,7 +15,7 @@ interface GetUserDamageClaimListService {
 
         interface ResultAndCount {
             class Ok(val damageClaimList: List<DamageClaim>,
-                     val responsesCountList: List<DamageClaimResponseCount>) : ResultAndCount
+                     val responsesCountList: List<RespondedSpecialist>) : ResultAndCount
             class SessionIdExpired : ResultAndCount
             class BadAccountType : ResultAndCount
         }

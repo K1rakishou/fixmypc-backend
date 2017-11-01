@@ -92,34 +92,22 @@ class RespondedSpecialistsStoreImpl : RespondedSpecialistsStore {
         return Fickle.of(respondedSpecialist.map { it.value }.first())
     }
 
+    override fun findMany(damageClaimIdList: List<Long>): List<RespondedSpecialist> {
+        val statement = TextUtils.createStatementForList(damageClaimIdList.size)
+        val sql = "SELECT * FROM $tableName WHERE damage_claim_id IN ($statement)"
+        val sqlQuery = SqlQuery<Long, RespondedSpecialist>(RespondedSpecialist::class.java, sql).setArgs(*damageClaimIdList.toTypedArray())
+
+        return respondedSpecialistsCache.query(sqlQuery).use { query ->
+            return@use query.all.map { it.value }
+        }
+    }
+
     override fun findManyForDamageClaimPaged(damageClaimId: Long, skip: Long, count: Long): List<RespondedSpecialist> {
         val sql = "SELECT * FROM $tableName WHERE damage_claim_id = ? OFFSET ? LIMIT ?"
         val sqlQuery = SqlQuery<Long, RespondedSpecialist>(RespondedSpecialist::class.java, sql).setArgs(damageClaimId, skip, count)
 
         return respondedSpecialistsCache.query(sqlQuery).use { entries ->
             entries.all.map { it.value }
-        }
-    }
-
-    override fun findAllAndCount(damageClaimIdList: List<Long>): MutableMap<Long, Int> {
-        val statement = TextUtils.createStatementForList(damageClaimIdList.size)
-        val sql = "SELECT * FROM $tableName WHERE damage_claim_id IN ($statement)"
-        val sqlQuery = SqlQuery<Long, RespondedSpecialist>(RespondedSpecialist::class.java, sql).setArgs(*damageClaimIdList.toTypedArray())
-
-        return respondedSpecialistsCache.query(sqlQuery).use { entries ->
-            val result = mutableMapOf<Long, Int>()
-            val allEntries = entries.all
-
-            for (entry in allEntries) {
-                val damageClaimId = entry.value.damageClaimId
-                result.putIfAbsent(damageClaimId, 0)
-
-                var value = result[damageClaimId]!!
-                ++value
-                result[damageClaimId] = value
-            }
-
-            return@use result
         }
     }
 

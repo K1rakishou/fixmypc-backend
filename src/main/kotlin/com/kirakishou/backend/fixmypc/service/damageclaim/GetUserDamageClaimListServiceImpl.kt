@@ -4,7 +4,6 @@ import com.kirakishou.backend.fixmypc.core.AccountType
 import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.cache.SessionCache
-import com.kirakishou.backend.fixmypc.model.entity.DamageClaimResponseCount
 import com.kirakishou.backend.fixmypc.model.entity.LatLon
 import com.kirakishou.backend.fixmypc.model.store.DamageClaimStore
 import com.kirakishou.backend.fixmypc.model.store.LocationStore
@@ -94,10 +93,13 @@ class GetUserDamageClaimListServiceImpl : GetUserDamageClaimListService {
         check(user.id != -1L) { "userId should not be -1" }
 
         val repoResult = damageClaimStore.findManyPaged(isActive, user.id, skip, count)
-        val responsesCount = respondedSpecialistsStore.findAllAndCount(repoResult.map { it.id })
-                .map { DamageClaimResponseCount(it.key, it.value) }
+        val respondedSpecialists = respondedSpecialistsStore.findMany(repoResult.map { it.id })
 
-        return Single.just(GetUserDamageClaimListService.Get.ResultAndCount.Ok(repoResult, responsesCount))
+        for (specialist in respondedSpecialists) {
+            specialist.id = -1L
+        }
+
+        return Single.just(GetUserDamageClaimListService.Get.ResultAndCount.Ok(repoResult, respondedSpecialists))
     }
 }
 
