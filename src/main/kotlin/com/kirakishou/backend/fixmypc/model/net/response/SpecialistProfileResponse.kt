@@ -8,7 +8,7 @@ class SpecialistProfileResponse(@SerializedName(Constant.SerializedNames.SPECIAL
                                 val profile: SpecialistProfile?,
 
                                 @SerializedName(Constant.SerializedNames.IS_PROFILE_FILLED_IN)
-                                val isProfileFilledIn: Boolean,
+                                val isProfileFilledIn: Boolean?,
 
                                 @SerializedName(Constant.SerializedNames.SERVER_ERROR_CODE)
                                 val errorCode: Int)

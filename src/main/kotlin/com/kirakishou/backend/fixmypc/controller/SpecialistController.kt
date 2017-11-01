@@ -6,6 +6,7 @@ import com.kirakishou.backend.fixmypc.model.net.request.AssignSpecialistRequest
 import com.kirakishou.backend.fixmypc.model.net.request.SpecialistProfileRequest
 import com.kirakishou.backend.fixmypc.model.net.response.*
 import com.kirakishou.backend.fixmypc.service.specialist.ClientAssignSpecialistService
+import com.kirakishou.backend.fixmypc.service.specialist.GetAssignedSpecialistService
 import com.kirakishou.backend.fixmypc.service.specialist.GetRespondedSpecialistsService
 import com.kirakishou.backend.fixmypc.service.specialist.SpecialistProfileService
 import io.reactivex.Single
@@ -28,6 +29,9 @@ class SpecialistController {
 
     @Autowired
     lateinit var mSpecialistProfileService: SpecialistProfileService
+
+    @Autowired
+    lateinit var mGetAssignedSpecialistService: GetAssignedSpecialistService
 
     @RequestMapping(path = arrayOf("${Constant.Paths.SPECIALIST_CONTROLLER_PATH}/profile/{damage_claim_id}/{skip}/{count}"),
             method = arrayOf(RequestMethod.GET))
@@ -168,6 +172,38 @@ class SpecialistController {
                         is SpecialistProfileService.Get.ResultProfile.BadAccountType -> {
                             return@map ResponseEntity(SpecialistProfileResponse(null, false,
                                     ServerErrorCode.SEC_BAD_ACCOUNT_TYPE.value), HttpStatus.FORBIDDEN)
+                        }
+
+                        is SpecialistProfileService.Get.ResultProfile.NotFound -> {
+                            return@map ResponseEntity(SpecialistProfileResponse(null, false,
+                                    ServerErrorCode.SEC_COULD_NOT_FIND_PROFILE.value), HttpStatus.UNPROCESSABLE_ENTITY)
+                        }
+
+                        else -> throw IllegalArgumentException("Unknown result")
+                    }
+                }
+                .onErrorReturn {
+                    return@onErrorReturn ResponseEntity(SpecialistProfileResponse(null, false,
+                            ServerErrorCode.SEC_UNKNOWN_SERVER_ERROR.value), HttpStatus.INTERNAL_SERVER_ERROR)
+                }
+    }
+
+    @RequestMapping(path = arrayOf("${Constant.Paths.SPECIALIST_CONTROLLER_PATH}/profile/{specialist_user_id}"),
+            method = arrayOf(RequestMethod.GET))
+    fun getSpecialistProfileById(@RequestHeader(value = "session_id", defaultValue = "") sessionId: String,
+                                 @PathVariable("specialist_user_id") specialistUserId: Long): Single<ResponseEntity<SpecialistProfileResponse>> {
+
+        return mSpecialistProfileService.getSpecialistProfile(sessionId, specialistUserId)
+                .map { result ->
+                    when (result) {
+                        is SpecialistProfileService.Get.ResultProfile.Ok -> {
+                            return@map ResponseEntity(SpecialistProfileResponse(result.profile, null,
+                                    ServerErrorCode.SEC_OK.value), HttpStatus.OK)
+                        }
+
+                        is SpecialistProfileService.Get.ResultProfile.SessionIdExpired -> {
+                            return@map ResponseEntity(SpecialistProfileResponse(null, false,
+                                    ServerErrorCode.SEC_SESSION_ID_EXPIRED.value), HttpStatus.UNAUTHORIZED)
                         }
 
                         is SpecialistProfileService.Get.ResultProfile.NotFound -> {
@@ -329,7 +365,53 @@ class SpecialistController {
                 }
     }
 
+    @RequestMapping(path = arrayOf("${Constant.Paths.SPECIALIST_CONTROLLER_PATH}/assigned/{damage_claim_id}"),
+            method = arrayOf(RequestMethod.POST))
+    fun getAssignedSpecialist(@RequestHeader(value = "session_id", defaultValue = "") sessionId: String,
+                              @PathVariable("damage_claim_id") damageClaimId: Long): Single<ResponseEntity<AssignedSpecialistResponse>> {
 
+        return mGetAssignedSpecialistService.getAssignedSpecialist(sessionId, damageClaimId)
+                .map { result ->
+                    when (result) {
+                        is GetAssignedSpecialistService.Get.Result.Ok -> {
+                            return@map ResponseEntity(AssignedSpecialistResponse(result.specialistUserId,
+                                    ServerErrorCode.SEC_OK.value),
+                                    HttpStatus.OK)
+                        }
+
+                        is GetAssignedSpecialistService.Get.Result.SessionIdExpired -> {
+                            return@map ResponseEntity(AssignedSpecialistResponse(-1L,
+                                    ServerErrorCode.SEC_SESSION_ID_EXPIRED.value),
+                                    HttpStatus.OK)
+                        }
+
+                        is GetAssignedSpecialistService.Get.Result.BadAccountType -> {
+                            return@map ResponseEntity(AssignedSpecialistResponse(-1L,
+                                    ServerErrorCode.SEC_BAD_ACCOUNT_TYPE.value),
+                                    HttpStatus.OK)
+                        }
+
+                        is GetAssignedSpecialistService.Get.Result.CouldNotFindAssignedSpecialist -> {
+                            return@map ResponseEntity(AssignedSpecialistResponse(-1L,
+                                    ServerErrorCode.SEC_COULD_NOT_FIND_ASSIGNED_SPECIALIST.value),
+                                    HttpStatus.OK)
+                        }
+
+                        is GetAssignedSpecialistService.Get.Result.SpecialistWasNotAssignedByCurrentUser -> {
+                            return@map ResponseEntity(AssignedSpecialistResponse(-1L,
+                                    ServerErrorCode.SEC_SPECIALIST_WAS_NOT_ASSIGNED_BY_USER.value),
+                                    HttpStatus.OK)
+                        }
+
+                        else -> throw IllegalArgumentException("Unknown result")
+                    }
+                }
+                .onErrorReturn {
+                    return@onErrorReturn ResponseEntity(AssignedSpecialistResponse(-1L,
+                            ServerErrorCode.SEC_UNKNOWN_SERVER_ERROR.value),
+                            HttpStatus.INTERNAL_SERVER_ERROR)
+                }
+    }
 }
 
 

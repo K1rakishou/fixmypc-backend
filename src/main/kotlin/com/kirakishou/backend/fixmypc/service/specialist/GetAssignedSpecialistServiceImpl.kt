@@ -4,7 +4,6 @@ import com.kirakishou.backend.fixmypc.core.AccountType
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.cache.SessionCache
 import com.kirakishou.backend.fixmypc.model.store.AssignedSpecialistStore
-import com.kirakishou.backend.fixmypc.model.store.SpecialistProfileStore
 import io.reactivex.Single
 import org.springframework.beans.factory.annotation.Autowired
 
@@ -19,10 +18,7 @@ class GetAssignedSpecialistServiceImpl : GetAssignedSpecialistService {
     @Autowired
     private lateinit var assignedSpecialistsStore: AssignedSpecialistStore
 
-    @Autowired
-    private lateinit var specialistProfileStore: SpecialistProfileStore
-
-    override fun getRespondedSpecialist(sessionId: String, damageClaimId: Long): Single<GetAssignedSpecialistService.Get.Result> {
+    override fun getAssignedSpecialist(sessionId: String, damageClaimId: Long): Single<GetAssignedSpecialistService.Get.Result> {
         val userFickle = sessionCache.findOne(sessionId)
         if (!userFickle.isPresent()) {
             log.d("SessionId $sessionId was not found in the sessionCache")
@@ -47,13 +43,7 @@ class GetAssignedSpecialistServiceImpl : GetAssignedSpecialistService {
             return Single.just(GetAssignedSpecialistService.Get.Result.SpecialistWasNotAssignedByCurrentUser())
         }
 
-        val specialistProfileFickle = specialistProfileStore.findOne(assignedSpecialist.specialistUserId)
-        if (!specialistProfileFickle.isPresent()) {
-            log.d("Could not find specialist profile by id ${assignedSpecialist.specialistUserId}")
-            return Single.just(GetAssignedSpecialistService.Get.Result.CouldNotFindSpecialistProfile())
-        }
-
-        return Single.just(GetAssignedSpecialistService.Get.Result.Ok(specialistProfileFickle.get()))
+        return Single.just(GetAssignedSpecialistService.Get.Result.Ok(assignedSpecialist.specialistUserId))
     }
 }
 

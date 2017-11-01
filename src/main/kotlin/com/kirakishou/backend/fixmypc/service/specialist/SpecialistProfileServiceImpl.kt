@@ -81,6 +81,22 @@ class SpecialistProfileServiceImpl : SpecialistProfileService {
         return Single.just(SpecialistProfileService.Get.ResultProfile.Ok(profile))
     }
 
+    override fun getSpecialistProfile(sessionId: String, specialistUserId: Long): Single<SpecialistProfileService.Get.ResultProfile> {
+        val userFickle = sessionCache.findOne(sessionId)
+        if (!userFickle.isPresent()) {
+            log.d("SessionId $sessionId was not found in the sessionCache")
+            return Single.just(SpecialistProfileService.Get.ResultProfile.SessionIdExpired())
+        }
+
+        val profileFickle = mSpecialistProfileStore.findOne(specialistUserId)
+        if (!profileFickle.isPresent()) {
+            log.d("Could not find specialist profile with id $specialistUserId")
+            return Single.just(SpecialistProfileService.Get.ResultProfile.NotFound())
+        }
+
+        return Single.just(SpecialistProfileService.Get.ResultProfile.Ok(profileFickle.get()))
+    }
+
     override fun updateSpecialistProfile(sessionIdParam: String, requestParam: SpecialistProfileRequest):
             Single<SpecialistProfileService.Post.ResultInfo> {
 

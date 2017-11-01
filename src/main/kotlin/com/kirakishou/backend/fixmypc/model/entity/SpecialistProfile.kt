@@ -3,7 +3,7 @@ package com.kirakishou.backend.fixmypc.model.entity
 import com.google.gson.annotations.SerializedName
 
 data class SpecialistProfile(@SerializedName("user_id")
-                             val userId: Long = -1L,
+                             var userId: Long = -1L,
 
                              @SerializedName("name")
                              var name: String = "",
