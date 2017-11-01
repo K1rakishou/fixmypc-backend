@@ -6,7 +6,9 @@ import com.kirakishou.backend.fixmypc.model.cache.SessionCache
 import com.kirakishou.backend.fixmypc.model.store.AssignedSpecialistStore
 import io.reactivex.Single
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.stereotype.Component
 
+@Component
 class GetAssignedSpecialistServiceImpl : GetAssignedSpecialistService {
 
     @Autowired

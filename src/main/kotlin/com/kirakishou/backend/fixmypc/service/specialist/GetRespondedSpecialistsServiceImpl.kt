@@ -10,7 +10,6 @@ import com.kirakishou.backend.fixmypc.model.store.SpecialistProfileStore
 import io.reactivex.Single
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
-import java.util.stream.Collectors
 
 @Component
 class GetRespondedSpecialistsServiceImpl : GetRespondedSpecialistsService {
@@ -67,12 +66,10 @@ class GetRespondedSpecialistsServiceImpl : GetRespondedSpecialistsService {
         }
 
         val respondedSpecialistsList = respondedSpecialistsStore.findManyForDamageClaimPaged(damageClaimId, skip, count)
-        val specialistIdsList = respondedSpecialistsList.stream()
-                .map { it.userId }
-                .collect(Collectors.toList())
+        val specialistUserIdList = respondedSpecialistsList.map { it.userId }
+        val profilesList = specialistProfilesStore.findMany(specialistUserIdList)
 
-        val specialistProfilesList = specialistProfilesStore.findMany(specialistIdsList)
-        return Single.just(GetRespondedSpecialistsService.Get.Result.Ok(specialistProfilesList))
+        return Single.just(GetRespondedSpecialistsService.Get.Result.Ok(profilesList))
     }
 }
 

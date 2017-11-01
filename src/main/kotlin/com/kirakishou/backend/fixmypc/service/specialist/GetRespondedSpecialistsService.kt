@@ -7,7 +7,7 @@ interface GetRespondedSpecialistsService {
 
     interface Get {
         interface Result {
-            class Ok(val responded: List<SpecialistProfile>) : Result
+            class Ok(val specialistProfiles: List<SpecialistProfile>) : Result
             class SessionIdExpired : Result
             class BadAccountType : Result
             class DamageClaimDoesNotExist : Result

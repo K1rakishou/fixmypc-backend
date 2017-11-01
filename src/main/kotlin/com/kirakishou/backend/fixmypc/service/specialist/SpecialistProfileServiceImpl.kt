@@ -81,7 +81,7 @@ class SpecialistProfileServiceImpl : SpecialistProfileService {
         return Single.just(SpecialistProfileService.Get.ResultProfile.Ok(profile))
     }
 
-    override fun getSpecialistProfile(sessionId: String, specialistUserId: Long): Single<SpecialistProfileService.Get.ResultProfile> {
+    override fun getSpecialistProfileById(sessionId: String, specialistUserId: Long): Single<SpecialistProfileService.Get.ResultProfile> {
         val userFickle = sessionCache.findOne(sessionId)
         if (!userFickle.isPresent()) {
             log.d("SessionId $sessionId was not found in the sessionCache")

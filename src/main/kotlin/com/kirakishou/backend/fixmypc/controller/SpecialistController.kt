@@ -44,35 +44,35 @@ class SpecialistController {
                 .map { result ->
                     when (result) {
                         is GetRespondedSpecialistsService.Get.Result.Ok -> {
-                            return@map ResponseEntity(SpecialistsListResponse(result.responded,
+                            return@map ResponseEntity(SpecialistsListResponse(result.specialistProfiles,
                                     ServerErrorCode.SEC_OK.value), HttpStatus.OK)
                         }
 
                         is GetRespondedSpecialistsService.Get.Result.DamageClaimAlreadyHasAssignedSpecialist -> {
-                            return@map ResponseEntity(SpecialistsListResponse(emptyList(),
+                            return@map ResponseEntity(SpecialistsListResponse(null,
                                     ServerErrorCode.SEC_DAMAGE_CLAIM_ALREADY_HAS_ASSIGNED_SPECIALIST.value), HttpStatus.OK)
                         }
 
                         is GetRespondedSpecialistsService.Get.Result.BadAccountType -> {
-                            return@map ResponseEntity(SpecialistsListResponse(emptyList(),
+                            return@map ResponseEntity(SpecialistsListResponse(null,
                                     ServerErrorCode.SEC_BAD_ACCOUNT_TYPE.value),
                                     HttpStatus.FORBIDDEN)
                         }
 
                         is GetRespondedSpecialistsService.Get.Result.DamageClaimDoesNotExist -> {
-                            return@map ResponseEntity(SpecialistsListResponse(emptyList(),
+                            return@map ResponseEntity(SpecialistsListResponse(null,
                                     ServerErrorCode.SEC_DAMAGE_CLAIM_DOES_NOT_EXIST.value),
                                     HttpStatus.UNPROCESSABLE_ENTITY)
                         }
 
                         is GetRespondedSpecialistsService.Get.Result.DamageClaimIsNotActive -> {
-                            return@map ResponseEntity(SpecialistsListResponse(emptyList(),
+                            return@map ResponseEntity(SpecialistsListResponse(null,
                                     ServerErrorCode.SEC_DAMAGE_CLAIM_IS_NOT_ACTIVE.value),
                                     HttpStatus.UNPROCESSABLE_ENTITY)
                         }
 
                         is GetRespondedSpecialistsService.Get.Result.SessionIdExpired -> {
-                            return@map ResponseEntity(SpecialistsListResponse(emptyList(),
+                            return@map ResponseEntity(SpecialistsListResponse(null,
                                     ServerErrorCode.SEC_SESSION_ID_EXPIRED.value), HttpStatus.UNAUTHORIZED)
                         }
 
@@ -80,7 +80,7 @@ class SpecialistController {
                     }
                 }
                 .onErrorReturn {
-                    return@onErrorReturn ResponseEntity(SpecialistsListResponse(emptyList(),
+                    return@onErrorReturn ResponseEntity(SpecialistsListResponse(null,
                             ServerErrorCode.SEC_UNKNOWN_SERVER_ERROR.value),
                             HttpStatus.INTERNAL_SERVER_ERROR)
                 }
@@ -193,7 +193,7 @@ class SpecialistController {
     fun getSpecialistProfileById(@RequestHeader(value = "session_id", defaultValue = "") sessionId: String,
                                  @PathVariable("specialist_user_id") specialistUserId: Long): Single<ResponseEntity<SpecialistProfileResponse>> {
 
-        return mSpecialistProfileService.getSpecialistProfile(sessionId, specialistUserId)
+        return mSpecialistProfileService.getSpecialistProfileById(sessionId, specialistUserId)
                 .map { result ->
                     when (result) {
                         is SpecialistProfileService.Get.ResultProfile.Ok -> {

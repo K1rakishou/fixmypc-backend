@@ -47,7 +47,7 @@ interface SpecialistProfileService {
 
     fun isSpecialistProfileFilledIn(sessionId: String): Single<Get.ResultIsFilledIn>
     fun getSpecialistProfile(sessionId: String): Single<Get.ResultProfile>
-    fun getSpecialistProfile(sessionId: String, specialistUserId: Long): Single<Get.ResultProfile>
+    fun getSpecialistProfileById(sessionId: String, specialistUserId: Long): Single<Get.ResultProfile>
     fun updateSpecialistProfile(sessionIdParam: String, requestParam: SpecialistProfileRequest): Single<Post.ResultInfo>
     fun updateProfilePhoto(sessionIdParam: String, profilePhotoParam: MultipartFile): Single<Post.ResultPhoto>
 }
