@@ -93,11 +93,8 @@ class GetUserDamageClaimListServiceImpl : GetUserDamageClaimListService {
         check(user.id != -1L) { "userId should not be -1" }
 
         val repoResult = damageClaimStore.findManyPaged(isActive, user.id, skip, count)
-        val respondedSpecialists = respondedSpecialistsStore.findMany(repoResult.map { it.id })
-
-        for (specialist in respondedSpecialists) {
-            specialist.id = -1L
-        }
+        val damageClaimIdList = repoResult.map { it.id }
+        val respondedSpecialists = respondedSpecialistsStore.findMany(damageClaimIdList)
 
         return Single.just(GetUserDamageClaimListService.Get.ResultAndCount.Ok(repoResult, respondedSpecialists))
     }

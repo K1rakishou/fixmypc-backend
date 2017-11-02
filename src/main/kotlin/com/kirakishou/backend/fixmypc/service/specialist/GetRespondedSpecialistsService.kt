@@ -16,5 +16,15 @@ interface GetRespondedSpecialistsService {
         }
     }
 
+    interface Put {
+        interface Result {
+            class Ok : Result
+            class SessionIdExpired : Result
+            class BadAccountType : Result
+            class CouldNotUpdateRespondedSpecialist : Result
+        }
+    }
+
     fun getRespondedSpecialistsPaged(sessionId: String, damageClaimId: Long, skip: Long, count: Long): Single<Get.Result>
+    fun markResponseViewed(sessionId: String, responseId: Long): Single<Put.Result>
 }

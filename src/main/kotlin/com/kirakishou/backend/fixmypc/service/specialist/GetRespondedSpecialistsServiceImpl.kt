@@ -71,6 +71,28 @@ class GetRespondedSpecialistsServiceImpl : GetRespondedSpecialistsService {
 
         return Single.just(GetRespondedSpecialistsService.Get.Result.Ok(profilesList))
     }
+
+    override fun markResponseViewed(sessionId: String, responseId: Long): Single<GetRespondedSpecialistsService.Put.Result> {
+        val userFickle = sessionCache.findOne(sessionId)
+        if (!userFickle.isPresent()) {
+            log.d("SessionId $sessionId was not found in the sessionCache")
+            return Single.just(GetRespondedSpecialistsService.Put.Result.SessionIdExpired())
+        }
+
+        val user = userFickle.get()
+        if (user.accountType != AccountType.Client) {
+            log.d("Bad accountType ${user.accountType}")
+            return Single.just(GetRespondedSpecialistsService.Put.Result.BadAccountType())
+        }
+
+        val result = respondedSpecialistsStore.updateSetViewed(responseId)
+        if (result) {
+            log.d("Could not update respondedSpecialist with id $responseId")
+            return Single.just(GetRespondedSpecialistsService.Put.Result.CouldNotUpdateRespondedSpecialist())
+        }
+
+        return Single.just(GetRespondedSpecialistsService.Put.Result.Ok())
+    }
 }
 
 

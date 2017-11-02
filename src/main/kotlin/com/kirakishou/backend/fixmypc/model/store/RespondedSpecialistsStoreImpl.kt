@@ -46,14 +46,6 @@ class RespondedSpecialistsStoreImpl : RespondedSpecialistsStore {
         atomicConfig.backups = 3
         atomicConfig.cacheMode = CacheMode.PARTITIONED
         respondedSpecialistIdGenerator = ignite.atomicSequence(Constant.IgniteNames.RESPONDED_SPECIALIST_ID_GENERATOR, atomicConfig, 0L, true)
-
-        /*val sql = "SELECT * FROM $tableName"
-        val sqlQuery = SqlQuery<Long, RespondedSpecialist>(RespondedSpecialist::class.java, sql)
-
-        val allResponses = respondedSpecialistsCache.query(sqlQuery).all
-        for (response in allResponses) {
-            log.e(response.toString())
-        }*/
     }
 
     override fun saveOne(respondedSpecialist: RespondedSpecialist): Boolean {
@@ -68,8 +60,8 @@ class RespondedSpecialistsStoreImpl : RespondedSpecialistsStore {
     }
 
     override fun containsOne(damageClaimId: Long, userId: Long): Boolean {
-        val sql = "SELECT * FROM $tableName WHERE damage_claim_id = ?"
-        val sqlQuery = SqlQuery<Long, RespondedSpecialist>(RespondedSpecialist::class.java, sql).setArgs(damageClaimId)
+        val sql = "SELECT * FROM $tableName WHERE damage_claim_id = ? AND user_id = ?"
+        val sqlQuery = SqlQuery<Long, RespondedSpecialist>(RespondedSpecialist::class.java, sql).setArgs(damageClaimId, userId)
 
         val result = respondedSpecialistsCache.query(sqlQuery).use {
             it.all.firstOrNull {
@@ -80,8 +72,8 @@ class RespondedSpecialistsStoreImpl : RespondedSpecialistsStore {
         return result != null
     }
 
-    override fun findOne(damageClaimId: Long): Fickle<RespondedSpecialist> {
-        val sql = "SELECT * FROM $tableName WHERE damage_claim_id = ? LIMIT 1"
+    override fun findOne(damageClaimId: Long, userId: Long): Fickle<RespondedSpecialist> {
+        val sql = "SELECT * FROM $tableName WHERE damage_claim_id = ? AND user_id = ?"
         val sqlQuery = SqlQuery<Long, RespondedSpecialist>(RespondedSpecialist::class.java, sql).setArgs(damageClaimId)
 
         val respondedSpecialist = respondedSpecialistsCache.query(sqlQuery).use { it.all }
@@ -98,7 +90,7 @@ class RespondedSpecialistsStoreImpl : RespondedSpecialistsStore {
         val sqlQuery = SqlQuery<Long, RespondedSpecialist>(RespondedSpecialist::class.java, sql).setArgs(*damageClaimIdList.toTypedArray())
 
         return respondedSpecialistsCache.query(sqlQuery).use { query ->
-            return@use query.all.map { it.value }
+            query.all.map { it.value }
         }
     }
 
@@ -109,6 +101,25 @@ class RespondedSpecialistsStoreImpl : RespondedSpecialistsStore {
         return respondedSpecialistsCache.query(sqlQuery).use { entries ->
             entries.all.map { it.value }
         }
+    }
+
+    override fun updateSetViewed(responseId: Long): Boolean {
+        val lock = respondedSpecialistsCache.lock(responseId)
+        lock.lock()
+
+        try {
+            val respondedSpecialist = respondedSpecialistsCache[responseId]
+                    ?: return false
+
+            respondedSpecialist.wasViewed = true
+            respondedSpecialistsCache.put(responseId, respondedSpecialist)
+        } catch (e: Throwable) {
+            return false
+        } finally {
+            lock.unlock()
+        }
+
+        return true
     }
 
     override fun deleteAllForDamageClaim(damageClaimId: Long): Boolean {

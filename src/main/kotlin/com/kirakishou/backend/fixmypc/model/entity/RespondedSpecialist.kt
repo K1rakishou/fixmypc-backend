@@ -16,4 +16,4 @@ data class RespondedSpecialist(@QuerySqlField(index = true, name = "id")
 
                                @QuerySqlField(name = "was_viewed")
                                @SerializedName("was_viewed")
-                               val wasViewed: Boolean = false)
+                               var wasViewed: Boolean = false)
