@@ -3,7 +3,7 @@ package com.kirakishou.backend.fixmypc.service.specialist
 import com.kirakishou.backend.fixmypc.model.entity.SpecialistProfile
 import io.reactivex.Single
 
-interface GetRespondedSpecialistsService {
+interface RespondedSpecialistsService {
 
     interface Get {
         interface Result {
@@ -22,9 +22,11 @@ interface GetRespondedSpecialistsService {
             class SessionIdExpired : Result
             class BadAccountType : Result
             class CouldNotUpdateRespondedSpecialist : Result
+            class CouldNotFindDamageClaim : Result
+            class EntityDoesNotBelongToUser : Result
         }
     }
 
     fun getRespondedSpecialistsPaged(sessionId: String, damageClaimId: Long, skip: Long, count: Long): Single<Get.Result>
-    fun markResponseViewed(sessionId: String, responseId: Long): Single<Put.Result>
+    fun markResponseViewed(sessionId: String, damageClaimId: Long, userId: Long): Single<Put.Result>
 }

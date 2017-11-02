@@ -103,23 +103,17 @@ class RespondedSpecialistsStoreImpl : RespondedSpecialistsStore {
         }
     }
 
-    override fun updateSetViewed(responseId: Long): Boolean {
-        val lock = respondedSpecialistsCache.lock(responseId)
-        lock.lock()
-
+    override fun updateSetViewed(damageClaimId: Long, userId: Long): Boolean {
         try {
-            val respondedSpecialist = respondedSpecialistsCache[responseId]
-                    ?: return false
+            val sql = "UPDATE $tableName SET was_viewed = true WHERE damage_claim_id = ? AND user_id = ?"
+            val sqlQuery = SqlQuery<Long, RespondedSpecialist>(RespondedSpecialist::class.java, sql).setArgs(damageClaimId, userId)
 
-            respondedSpecialist.wasViewed = true
-            respondedSpecialistsCache.put(responseId, respondedSpecialist)
+            respondedSpecialistsCache.query(sqlQuery)
+            return true
         } catch (e: Throwable) {
+            log.e(e)
             return false
-        } finally {
-            lock.unlock()
         }
-
-        return true
     }
 
     override fun deleteAllForDamageClaim(damageClaimId: Long): Boolean {

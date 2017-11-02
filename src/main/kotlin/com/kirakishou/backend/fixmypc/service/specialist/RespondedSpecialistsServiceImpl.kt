@@ -12,7 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
 @Component
-class GetRespondedSpecialistsServiceImpl : GetRespondedSpecialistsService {
+class RespondedSpecialistsServiceImpl : RespondedSpecialistsService {
 
     @Autowired
     private lateinit var respondedSpecialistsStore: RespondedSpecialistsStore
@@ -33,65 +33,76 @@ class GetRespondedSpecialistsServiceImpl : GetRespondedSpecialistsService {
     private lateinit var log: FileLog
 
     override fun getRespondedSpecialistsPaged(sessionId: String, damageClaimId: Long, skip: Long, count: Long):
-            Single<GetRespondedSpecialistsService.Get.Result> {
+            Single<RespondedSpecialistsService.Get.Result> {
 
         val userFickle = sessionCache.findOne(sessionId)
         if (!userFickle.isPresent()) {
             log.d("SessionId $sessionId was not found in the sessionCache")
-            return Single.just(GetRespondedSpecialistsService.Get.Result.SessionIdExpired())
+            return Single.just(RespondedSpecialistsService.Get.Result.SessionIdExpired())
         }
 
         val user = userFickle.get()
         if (user.accountType != AccountType.Client) {
             log.d("Bad accountType ${user.accountType}")
-            return Single.just(GetRespondedSpecialistsService.Get.Result.BadAccountType())
+            return Single.just(RespondedSpecialistsService.Get.Result.BadAccountType())
         }
 
         val assignedSpecialistFickle = assignedSpecialistsStore.findOne(damageClaimId)
         if (assignedSpecialistFickle.isPresent()) {
             log.d("DamageClaim already has assigned specialist")
-            return Single.just(GetRespondedSpecialistsService.Get.Result.DamageClaimAlreadyHasAssignedSpecialist())
+            return Single.just(RespondedSpecialistsService.Get.Result.DamageClaimAlreadyHasAssignedSpecialist())
         }
 
         val damageClaimFickle = damageClaimStore.findOne(damageClaimId)
         if (!damageClaimFickle.isPresent()) {
             log.d("DamageClaim with id $damageClaimId does not exist")
-            return Single.just(GetRespondedSpecialistsService.Get.Result.DamageClaimDoesNotExist())
+            return Single.just(RespondedSpecialistsService.Get.Result.DamageClaimDoesNotExist())
         }
 
         val damageClaim = damageClaimFickle.get()
         if (!damageClaim.isActive) {
             log.d("DamageClaim with id $damageClaimId is not active")
-            return Single.just(GetRespondedSpecialistsService.Get.Result.DamageClaimIsNotActive())
+            return Single.just(RespondedSpecialistsService.Get.Result.DamageClaimIsNotActive())
         }
 
         val respondedSpecialistsList = respondedSpecialistsStore.findManyForDamageClaimPaged(damageClaimId, skip, count)
         val specialistUserIdList = respondedSpecialistsList.map { it.userId }
         val profilesList = specialistProfilesStore.findMany(specialistUserIdList)
 
-        return Single.just(GetRespondedSpecialistsService.Get.Result.Ok(profilesList))
+        return Single.just(RespondedSpecialistsService.Get.Result.Ok(profilesList))
     }
 
-    override fun markResponseViewed(sessionId: String, responseId: Long): Single<GetRespondedSpecialistsService.Put.Result> {
+    override fun markResponseViewed(sessionId: String, damageClaimId: Long, userId: Long): Single<RespondedSpecialistsService.Put.Result> {
         val userFickle = sessionCache.findOne(sessionId)
         if (!userFickle.isPresent()) {
             log.d("SessionId $sessionId was not found in the sessionCache")
-            return Single.just(GetRespondedSpecialistsService.Put.Result.SessionIdExpired())
+            return Single.just(RespondedSpecialistsService.Put.Result.SessionIdExpired())
         }
 
         val user = userFickle.get()
         if (user.accountType != AccountType.Client) {
             log.d("Bad accountType ${user.accountType}")
-            return Single.just(GetRespondedSpecialistsService.Put.Result.BadAccountType())
+            return Single.just(RespondedSpecialistsService.Put.Result.BadAccountType())
         }
 
-        val result = respondedSpecialistsStore.updateSetViewed(responseId)
+        val damageClaimFickle = damageClaimStore.findOne(damageClaimId)
+        if (!damageClaimFickle.isPresent()) {
+            log.d("Could not find damageClaim with id $damageClaimId")
+            return Single.just(RespondedSpecialistsService.Put.Result.CouldNotFindDamageClaim())
+        }
+
+        if (user.id != damageClaimFickle.get().userId) {
+            log.d("Attempt to modify RespondedSpecialist by user who didn't create it")
+            return Single.just(RespondedSpecialistsService.Put.Result.EntityDoesNotBelongToUser())
+        }
+
+        val result = respondedSpecialistsStore.updateSetViewed(damageClaimId, userId)
         if (result) {
-            log.d("Could not update respondedSpecialist with id $responseId")
-            return Single.just(GetRespondedSpecialistsService.Put.Result.CouldNotUpdateRespondedSpecialist())
+            log.d("Could not update respondedSpecialist with damageClaimId $damageClaimId and userId $userId")
+            return Single.just(RespondedSpecialistsService.Put.Result.CouldNotUpdateRespondedSpecialist())
         }
 
-        return Single.just(GetRespondedSpecialistsService.Put.Result.Ok())
+        return Single.just(RespondedSpecialistsService.Put.Result.Ok())
     }
 }
 
