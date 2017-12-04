@@ -1,25 +1,10 @@
 package com.kirakishou.backend.fixmypc.controller
 
-import com.kirakishou.backend.fixmypc.core.AccountType
-import com.kirakishou.backend.fixmypc.core.Constant
-import com.kirakishou.backend.fixmypc.core.ServerErrorCode
-import com.kirakishou.backend.fixmypc.model.net.request.LoginRequest
-import com.kirakishou.backend.fixmypc.model.net.response.LoginResponse
-import com.kirakishou.backend.fixmypc.service.user.LoginService
-import io.reactivex.Single
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
-import org.springframework.stereotype.Controller
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestMethod
-
 /**
  * Created by kirakishou on 7/9/2017.
  */
 
-@Controller
+/*@Controller
 @RequestMapping
 class LoginController {
 
@@ -53,4 +38,4 @@ class LoginController {
                             HttpStatus.INTERNAL_SERVER_ERROR)
                 }
     }
-}
+}*/

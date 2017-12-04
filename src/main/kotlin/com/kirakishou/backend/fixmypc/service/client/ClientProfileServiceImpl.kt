@@ -1,14 +1,6 @@
 package com.kirakishou.backend.fixmypc.service.client
 
-import com.kirakishou.backend.fixmypc.core.AccountType
-import com.kirakishou.backend.fixmypc.log.FileLog
-import com.kirakishou.backend.fixmypc.model.cache.SessionCache
-import com.kirakishou.backend.fixmypc.model.net.request.ClientProfileRequest
-import com.kirakishou.backend.fixmypc.model.store.ClientProfileStore
-import io.reactivex.Single
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Component
-
+/*
 @Component
 class ClientProfileServiceImpl : ClientProfileService {
 
@@ -96,7 +88,7 @@ class ClientProfileServiceImpl : ClientProfileService {
 
 
 
-
+*/
 
 
 

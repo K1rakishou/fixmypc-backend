@@ -1,23 +1,6 @@
 package com.kirakishou.backend.fixmypc.controller
 
-import com.kirakishou.backend.fixmypc.core.Constant
-import com.kirakishou.backend.fixmypc.core.ServerErrorCode
-import com.kirakishou.backend.fixmypc.model.net.request.ClientProfileRequest
-import com.kirakishou.backend.fixmypc.model.net.response.ClientProfileResponse
-import com.kirakishou.backend.fixmypc.model.net.response.IsProfileFilledInResponse
-import com.kirakishou.backend.fixmypc.model.net.response.UpdateClientProfileResponse
-import com.kirakishou.backend.fixmypc.service.client.ClientProfileService
-import io.reactivex.Single
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
-import org.springframework.stereotype.Controller
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestHeader
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestMethod
-
-@Controller
+/*@Controller
 @RequestMapping
 class ClientController {
 
@@ -66,7 +49,7 @@ class ClientController {
                 }
     }
 
-    @RequestMapping(path = arrayOf("${Constant.Paths.CLIENT_CONTROLLER_PATH}/profile"),
+    @RequestMapping(path = arrayOf("${Constant.Paths.CLIENT_CONTROLLER_PATH}/profile/update"),
             method = arrayOf(RequestMethod.POST))
     fun updateClientProfile(@RequestHeader(value = "session_id", defaultValue = "") sessionId: String,
                             @RequestBody request: ClientProfileRequest): Single<ResponseEntity<UpdateClientProfileResponse>> {
@@ -141,7 +124,7 @@ class ClientController {
                             HttpStatus.INTERNAL_SERVER_ERROR)
                 }
     }
-}
+}*/
 
 
 

@@ -1,7 +1,6 @@
 package com.kirakishou.backend.fixmypc.service.damageclaim
 
-import io.reactivex.Single
-
+/*
 interface DamageClaimResponseService {
 
     interface Post {
@@ -27,4 +26,4 @@ interface DamageClaimResponseService {
 
     fun respondToDamageClaim(sessionId: String, damageClaimId: Long): Single<Post.Result>
     fun hasAlreadyResponded(sessionId: String, damageClaimId: Long): Single<Get.Result>
-}
+}*/

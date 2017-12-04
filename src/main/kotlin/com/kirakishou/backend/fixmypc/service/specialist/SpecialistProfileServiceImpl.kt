@@ -1,21 +1,6 @@
 package com.kirakishou.backend.fixmypc.service.specialist
 
-import com.kirakishou.backend.fixmypc.core.AccountType
-import com.kirakishou.backend.fixmypc.core.Constant
-import com.kirakishou.backend.fixmypc.extension.limit
-import com.kirakishou.backend.fixmypc.log.FileLog
-import com.kirakishou.backend.fixmypc.model.cache.SessionCache
-import com.kirakishou.backend.fixmypc.model.exception.*
-import com.kirakishou.backend.fixmypc.model.net.request.SpecialistProfileRequest
-import com.kirakishou.backend.fixmypc.model.store.SpecialistProfileStore
-import com.kirakishou.backend.fixmypc.service.ImageService
-import io.reactivex.Single
-import io.reactivex.rxkotlin.Singles
-import org.apache.hadoop.fs.FileSystem
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Component
-import org.springframework.web.multipart.MultipartFile
-
+/*
 @Component
 class SpecialistProfileServiceImpl : SpecialistProfileService {
 
@@ -229,7 +214,7 @@ class SpecialistProfileServiceImpl : SpecialistProfileService {
 }
 
 
-
+*/
 
 
 

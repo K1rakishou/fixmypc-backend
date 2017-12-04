@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component
 import java.util.stream.Collectors
 import javax.annotation.PostConstruct
 import kotlin.system.measureTimeMillis
-
+/*
 @Component
 class LocationStoreImpl : LocationStore {
 
@@ -77,4 +77,4 @@ class LocationStoreImpl : LocationStore {
 
         log.d("=== Done in $time ms, totalLoaded = $totalLoaded ===")
     }
-}
+}*/

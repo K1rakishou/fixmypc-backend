@@ -1,9 +1,6 @@
 package com.kirakishou.backend.fixmypc.service.damageclaim
 
-import com.kirakishou.backend.fixmypc.model.net.request.CreateDamageClaimRequest
-import io.reactivex.Single
-import org.springframework.web.multipart.MultipartFile
-
+/*
 interface CreateDamageClaimService {
 
     interface Post {
@@ -26,4 +23,4 @@ interface CreateDamageClaimService {
     }
 
     fun createDamageClaim(uploadingFiles: Array<MultipartFile>, imageType: Int, request: CreateDamageClaimRequest, sessionId: String): Single<Post.Result>
-}
+}*/

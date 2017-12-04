@@ -1,8 +1,6 @@
 package com.kirakishou.backend.fixmypc.service.specialist
 
-import com.kirakishou.backend.fixmypc.model.entity.SpecialistProfile
-import io.reactivex.Single
-
+/*
 interface RespondedSpecialistsService {
 
     interface Get {
@@ -29,4 +27,4 @@ interface RespondedSpecialistsService {
 
     fun getRespondedSpecialistsPaged(sessionId: String, damageClaimId: Long, skip: Long, count: Long): Single<Get.Result>
     fun markResponseViewed(sessionId: String, damageClaimId: Long, userId: Long): Single<Put.Result>
-}
+}*/

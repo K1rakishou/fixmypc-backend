@@ -1,7 +1,6 @@
 package com.kirakishou.backend.fixmypc.service.specialist
 
-import io.reactivex.Single
-
+/*
 interface GetAssignedSpecialistService {
 
     interface Get {
@@ -15,4 +14,4 @@ interface GetAssignedSpecialistService {
     }
 
     fun getAssignedSpecialist(sessionId: String, damageClaimId: Long): Single<Get.Result>
-}
+}*/

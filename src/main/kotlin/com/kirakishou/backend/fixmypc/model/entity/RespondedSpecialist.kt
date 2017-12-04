@@ -1,9 +1,8 @@
 package com.kirakishou.backend.fixmypc.model.entity
 
 import com.google.gson.annotations.SerializedName
-import org.apache.ignite.cache.query.annotations.QuerySqlField
 
-data class RespondedSpecialist(@QuerySqlField(index = true, name = "id")
+/*data class RespondedSpecialist(@QuerySqlField(index = true, name = "id")
                                @SerializedName("id")
                                var id: Long = -1L,
 
@@ -17,4 +16,4 @@ data class RespondedSpecialist(@QuerySqlField(index = true, name = "id")
 
                                @QuerySqlField(name = "was_viewed")
                                @SerializedName("was_viewed")
-                               var wasViewed: Boolean = false)
+                               var wasViewed: Boolean = false)*/

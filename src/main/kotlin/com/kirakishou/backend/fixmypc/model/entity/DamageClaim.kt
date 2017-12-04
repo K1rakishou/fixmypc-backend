@@ -1,11 +1,7 @@
 package com.kirakishou.backend.fixmypc.model.entity
 
-import com.google.gson.annotations.SerializedName
-import org.apache.ignite.cache.query.annotations.QuerySqlField
-import java.io.Serializable
 
-
-data class DamageClaim(@QuerySqlField(index = true, name = "id")
+/*/data class DamageClaim(@QuerySqlField(index = true, name = "id")
                        @SerializedName("id")
                        var id: Long = 0L,
 
@@ -33,4 +29,4 @@ data class DamageClaim(@QuerySqlField(index = true, name = "id")
                        var createdOn: Long = 0L,
 
                        @SerializedName("photos")
-                       var imageNamesList: MutableList<String> = mutableListOf()) : Serializable
+                       var imageNamesList: MutableList<String> = mutableListOf()) : Serializable*/

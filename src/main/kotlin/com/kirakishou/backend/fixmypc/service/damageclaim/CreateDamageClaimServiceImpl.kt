@@ -1,29 +1,6 @@
 package com.kirakishou.backend.fixmypc.service.damageclaim
 
-import com.kirakishou.backend.fixmypc.core.AccountType
-import com.kirakishou.backend.fixmypc.core.Constant
-import com.kirakishou.backend.fixmypc.log.FileLog
-import com.kirakishou.backend.fixmypc.model.cache.SessionCache
-import com.kirakishou.backend.fixmypc.model.entity.DamageClaim
-import com.kirakishou.backend.fixmypc.model.entity.LatLon
-import com.kirakishou.backend.fixmypc.model.exception.*
-import com.kirakishou.backend.fixmypc.model.net.request.CreateDamageClaimRequest
-import com.kirakishou.backend.fixmypc.model.store.ClientProfileStore
-import com.kirakishou.backend.fixmypc.model.store.DamageClaimStore
-import com.kirakishou.backend.fixmypc.model.store.LocationStore
-import com.kirakishou.backend.fixmypc.service.ImageService
-import com.kirakishou.backend.fixmypc.util.ServerUtils
-import com.kirakishou.backend.fixmypc.util.TextUtils
-import io.reactivex.Flowable
-import io.reactivex.Single
-import io.reactivex.rxkotlin.Singles
-import org.apache.hadoop.fs.FileSystem
-import org.apache.hadoop.fs.Path
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.stereotype.Component
-import org.springframework.web.multipart.MultipartFile
-
+/*
 @Component
 class CreateDamageClaimServiceImpl : CreateDamageClaimService {
 
@@ -241,7 +218,7 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
 
 
 
-
+*/
 
 
 

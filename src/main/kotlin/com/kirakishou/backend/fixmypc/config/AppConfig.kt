@@ -1,33 +1,52 @@
 package com.kirakishou.backend.fixmypc.config
 
-import com.kirakishou.backend.fixmypc.log.FileLog
-import com.kirakishou.backend.fixmypc.log.FileLogImpl
-import org.apache.hadoop.fs.FileSystem
-import org.apache.ignite.Ignite
-import org.apache.ignite.Ignition
-import org.apache.ignite.configuration.IgniteConfiguration
-import org.apache.ignite.configuration.PersistentStoreConfiguration
-import org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi
-import org.apache.ignite.spi.discovery.tcp.ipfinder.vm.TcpDiscoveryVmIpFinder
-import org.springframework.beans.factory.annotation.Value
-import org.springframework.boot.autoconfigure.web.HttpMessageConverters
-import org.springframework.context.annotation.Bean
-import org.springframework.context.annotation.Configuration
-import org.springframework.data.redis.connection.jedis.JedisConnectionFactory
-import org.springframework.data.redis.core.RedisTemplate
-import org.springframework.data.redis.serializer.JdkSerializationRedisSerializer
-import org.springframework.http.converter.HttpMessageConverter
-import org.springframework.http.converter.json.GsonHttpMessageConverter
-import redis.clients.jedis.JedisShardInfo
-import java.util.*
-
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import com.kirakishou.backend.fixmypc.handlers.*
+import com.kirakishou.backend.fixmypc.routers.Router
+import com.kirakishou.backend.fixmypc.service.JsonConverterService
+import org.springframework.context.support.beans
+import org.springframework.web.reactive.function.server.HandlerStrategies
+import org.springframework.web.reactive.function.server.RouterFunctions
 
 
 /**
  * Created by kirakishou on 7/9/2017.
  */
 
-@Configuration
+fun myBeans() = beans {
+    bean<Router>()
+    bean<GetClientProfileHandler>()
+    bean<UpdateClientProfileHandler>()
+    bean<IsClientProfileFilledInHandler>()
+    bean<CreateDamageClaimHandler>()
+    bean<GetDamageClaimsWithinRadiusPagedHandler>()
+    bean<HasAlreadyRespondedHandler>()
+    bean<RespondToDamageClaimHandler>()
+    bean<GetClientDamageClaimsPagedHandler>()
+    bean<ServeImageHandler>()
+    bean<LoginHandler>()
+    bean<SignupHandler>()
+    bean<GetAllRespondedSpecialistsPagedHandler>()
+    bean<MarkResponseViewedHandler>()
+    bean<AssignSpecialistHandler>()
+    bean<GetSpecialistProfileHandler>()
+    bean<GetSpecialistProfileByIdHandler>()
+    bean<UpdateSpecialistProfileHandler>()
+    bean<IsSpecialistProfileFilledInHandler>()
+    bean<GetAssignedSpecialistHandler>()
+    bean<Gson> {
+        GsonBuilder().create()
+    }
+    bean {
+        JsonConverterService(ref())
+    }
+    bean("webHandler") {
+        RouterFunctions.toWebHandler(ref<Router>().setUpRouter(), HandlerStrategies.builder().viewResolver(ref()).build())
+    }
+}
+
+/*@Configuration
 class AppConfig {
 
     @Value("\${fixmypc.backend.log.print_log_in_console}")
@@ -91,4 +110,5 @@ class AppConfig {
     fun provideFileLog(): FileLog {
         return FileLogImpl(printLog)
     }
-}
+}*/
+

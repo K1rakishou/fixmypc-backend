@@ -1,13 +1,6 @@
 package com.kirakishou.backend.fixmypc.service.specialist
 
-import com.kirakishou.backend.fixmypc.core.AccountType
-import com.kirakishou.backend.fixmypc.log.FileLog
-import com.kirakishou.backend.fixmypc.model.cache.SessionCache
-import com.kirakishou.backend.fixmypc.model.store.AssignedSpecialistStore
-import io.reactivex.Single
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Component
-
+/*
 @Component
 class GetAssignedSpecialistServiceImpl : GetAssignedSpecialistService {
 
@@ -50,7 +43,7 @@ class GetAssignedSpecialistServiceImpl : GetAssignedSpecialistService {
 }
 
 
-
+*/
 
 
 

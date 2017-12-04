@@ -1,24 +1,6 @@
 package com.kirakishou.backend.fixmypc.controller
 
-import com.kirakishou.backend.fixmypc.core.Constant
-import com.kirakishou.backend.fixmypc.core.ServerErrorCode
-import com.kirakishou.backend.fixmypc.model.net.request.AssignSpecialistRequest
-import com.kirakishou.backend.fixmypc.model.net.request.MarkResponseViewedRequest
-import com.kirakishou.backend.fixmypc.model.net.request.SpecialistProfileRequest
-import com.kirakishou.backend.fixmypc.model.net.response.*
-import com.kirakishou.backend.fixmypc.service.specialist.ClientAssignSpecialistService
-import com.kirakishou.backend.fixmypc.service.specialist.GetAssignedSpecialistService
-import com.kirakishou.backend.fixmypc.service.specialist.RespondedSpecialistsService
-import com.kirakishou.backend.fixmypc.service.specialist.SpecialistProfileService
-import io.reactivex.Single
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
-import org.springframework.stereotype.Controller
-import org.springframework.web.bind.annotation.*
-import org.springframework.web.multipart.MultipartFile
-
-@Controller
+/*@Controller
 @RequestMapping
 class SpecialistController {
 
@@ -89,7 +71,7 @@ class SpecialistController {
                 }
     }
 
-    @RequestMapping(path = arrayOf("${Constant.Paths.SPECIALIST_CONTROLLER_PATH}/responded"),
+    @RequestMapping(path = arrayOf("${Constant.Paths.SPECIALIST_CONTROLLER_PATH}/mark_response"),
             method = arrayOf(RequestMethod.PUT))
     fun markResponseViewed(@RequestHeader(value = "session_id", defaultValue = "") sessionId: String,
                            @RequestBody request: MarkResponseViewedRequest): Single<ResponseEntity<MarkResponseViewedResponse>> {
@@ -145,7 +127,7 @@ class SpecialistController {
 
     @RequestMapping(path = arrayOf("${Constant.Paths.SPECIALIST_CONTROLLER_PATH}/assign"),
             method = arrayOf(RequestMethod.POST))
-    fun clientAssignSpecialist(@RequestHeader(value = "session_id", defaultValue = "") sessionId: String,
+    fun assignSpecialist(@RequestHeader(value = "session_id", defaultValue = "") sessionId: String,
                                @RequestBody request: AssignSpecialistRequest): Single<ResponseEntity<StatusResponse>> {
 
         return mClientAssignSpecialistService.assignSpecialist(sessionId, request.specialistUserId, request.damageClaimId)
@@ -284,7 +266,7 @@ class SpecialistController {
                 }
     }
 
-    @RequestMapping(path = arrayOf("${Constant.Paths.SPECIALIST_CONTROLLER_PATH}/profile"),
+    @RequestMapping(path = arrayOf("${Constant.Paths.SPECIALIST_CONTROLLER_PATH}/profile/update"),
             method = arrayOf(RequestMethod.POST))
     fun updateSpecialistProfile(@RequestHeader(value = "session_id", defaultValue = "") sessionId: String,
                                 @RequestBody request: SpecialistProfileRequest): Single<ResponseEntity<StatusResponse>> {
@@ -337,7 +319,7 @@ class SpecialistController {
                 }
     }
 
-    @RequestMapping(path = arrayOf("${Constant.Paths.SPECIALIST_CONTROLLER_PATH}/profile/photo"),
+    /*@RequestMapping(path = arrayOf("${Constant.Paths.SPECIALIST_CONTROLLER_PATH}/profile/photo"),
             method = arrayOf(RequestMethod.POST))
     fun updateSpecialistProfilePhoto(@RequestHeader(value = "session_id", defaultValue = "") sessionId: String,
                                      @RequestPart("photo") profilePhoto: MultipartFile): Single<ResponseEntity<UpdateSpecialistProfileResponse>> {
@@ -401,11 +383,11 @@ class SpecialistController {
                             ServerErrorCode.SEC_UNKNOWN_SERVER_ERROR.value),
                             HttpStatus.INTERNAL_SERVER_ERROR)
                 }
-    }
+    }*/
 
     @RequestMapping(path = arrayOf("${Constant.Paths.SPECIALIST_CONTROLLER_PATH}/profile/is_filled_in"),
             method = arrayOf(RequestMethod.GET))
-    fun isProfileFilledIn(@RequestHeader(value = "session_id", defaultValue = "") sessionId: String): Single<ResponseEntity<IsProfileFilledInResponse>> {
+    fun isSpecialistProfileFilledIn(@RequestHeader(value = "session_id", defaultValue = "") sessionId: String): Single<ResponseEntity<IsProfileFilledInResponse>> {
         return mSpecialistProfileService.isSpecialistProfileFilledIn(sessionId)
                 .map { result ->
                     when (result) {
@@ -501,7 +483,7 @@ class SpecialistController {
 
 
 
-
+*/
 
 
 

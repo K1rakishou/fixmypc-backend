@@ -1,19 +1,6 @@
 package com.kirakishou.backend.fixmypc.model.store
 
-import com.kirakishou.backend.fixmypc.core.Constant
-import com.kirakishou.backend.fixmypc.core.Fickle
-import com.kirakishou.backend.fixmypc.log.FileLog
-import com.kirakishou.backend.fixmypc.model.entity.AssignedSpecialist
-import org.apache.ignite.Ignite
-import org.apache.ignite.IgniteCache
-import org.apache.ignite.cache.CacheMode
-import org.apache.ignite.configuration.CacheConfiguration
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Component
-import java.util.stream.Collectors
-import javax.annotation.PostConstruct
-
-@Component
+/*@Component
 class AssignedSpecialistStoreImpl : AssignedSpecialistStore {
 
     @Autowired
@@ -111,7 +98,7 @@ class AssignedSpecialistStoreImpl : AssignedSpecialistStore {
 
 
 
-
+*/
 
 
 

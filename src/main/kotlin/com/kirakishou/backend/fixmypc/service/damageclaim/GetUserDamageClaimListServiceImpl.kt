@@ -1,17 +1,6 @@
 package com.kirakishou.backend.fixmypc.service.damageclaim
 
-import com.kirakishou.backend.fixmypc.core.AccountType
-import com.kirakishou.backend.fixmypc.core.Constant
-import com.kirakishou.backend.fixmypc.log.FileLog
-import com.kirakishou.backend.fixmypc.model.cache.SessionCache
-import com.kirakishou.backend.fixmypc.model.entity.LatLon
-import com.kirakishou.backend.fixmypc.model.store.DamageClaimStore
-import com.kirakishou.backend.fixmypc.model.store.LocationStore
-import com.kirakishou.backend.fixmypc.model.store.RespondedSpecialistsStore
-import io.reactivex.Single
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Component
-
+/*
 @Component
 class GetUserDamageClaimListServiceImpl : GetUserDamageClaimListService {
 
@@ -101,7 +90,7 @@ class GetUserDamageClaimListServiceImpl : GetUserDamageClaimListService {
 }
 
 
-
+*/
 
 
 
