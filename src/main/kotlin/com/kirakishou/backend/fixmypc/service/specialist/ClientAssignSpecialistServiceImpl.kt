@@ -6,13 +6,9 @@ import com.kirakishou.backend.fixmypc.model.cache.SessionCache
 import com.kirakishou.backend.fixmypc.model.entity.AssignedSpecialist
 import com.kirakishou.backend.fixmypc.model.store.AssignedSpecialistStore
 import com.kirakishou.backend.fixmypc.model.store.ClientProfileStore
-import com.kirakishou.backend.fixmypc.model.store.DamageClaimStore
-import com.kirakishou.backend.fixmypc.model.store.RespondedSpecialistsStore
-import io.reactivex.Single
-import org.apache.ignite.Ignite
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
-
+/*
 @Component
 class ClientAssignSpecialistServiceImpl : ClientAssignSpecialistService {
 
@@ -106,7 +102,7 @@ class ClientAssignSpecialistServiceImpl : ClientAssignSpecialistService {
     }
 }
 
-
+*/
 
 
 

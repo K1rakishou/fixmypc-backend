@@ -1,24 +1,6 @@
 package com.kirakishou.backend.fixmypc.controller
 
-import com.kirakishou.backend.fixmypc.core.Constant
-import com.kirakishou.backend.fixmypc.core.ServerErrorCode
-import com.kirakishou.backend.fixmypc.log.FileLog
-import com.kirakishou.backend.fixmypc.model.net.request.CreateDamageClaimRequest
-import com.kirakishou.backend.fixmypc.model.net.request.RespondToDamageClaimRequest
-import com.kirakishou.backend.fixmypc.model.net.response.*
-import com.kirakishou.backend.fixmypc.service.damageclaim.CreateDamageClaimService
-import com.kirakishou.backend.fixmypc.service.damageclaim.DamageClaimResponseService
-import com.kirakishou.backend.fixmypc.service.damageclaim.GetUserDamageClaimListService
-import io.reactivex.Single
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.http.HttpStatus
-import org.springframework.http.MediaType
-import org.springframework.http.ResponseEntity
-import org.springframework.stereotype.Controller
-import org.springframework.web.bind.annotation.*
-import org.springframework.web.multipart.MultipartFile
-
-@Controller
+/*@Controller
 @RequestMapping
 class DamageClaimController {
 
@@ -289,7 +271,7 @@ class DamageClaimController {
                             HttpStatus.INTERNAL_SERVER_ERROR)
                 }
     }
-}
+}*/
 
 
 

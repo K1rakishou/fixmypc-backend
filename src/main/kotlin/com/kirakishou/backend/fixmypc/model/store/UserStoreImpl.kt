@@ -4,13 +4,6 @@ import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.core.Fickle
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.entity.User
-import org.apache.ignite.Ignite
-import org.apache.ignite.IgniteAtomicSequence
-import org.apache.ignite.IgniteCache
-import org.apache.ignite.cache.CacheMode
-import org.apache.ignite.cache.query.SqlQuery
-import org.apache.ignite.configuration.AtomicConfiguration
-import org.apache.ignite.configuration.CacheConfiguration
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import javax.annotation.PostConstruct
@@ -19,7 +12,7 @@ import javax.annotation.PostConstruct
 /**
  * Created by kirakishou on 7/11/2017.
  */
-
+/*
 @Component
 class UserStoreImpl : UserStore {
 
@@ -80,4 +73,4 @@ class UserStoreImpl : UserStore {
             return false
         }
     }
-}
+}*/

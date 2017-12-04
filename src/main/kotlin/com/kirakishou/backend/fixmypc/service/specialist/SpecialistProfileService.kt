@@ -1,10 +1,6 @@
 package com.kirakishou.backend.fixmypc.service.specialist
 
-import com.kirakishou.backend.fixmypc.model.entity.SpecialistProfile
-import com.kirakishou.backend.fixmypc.model.net.request.SpecialistProfileRequest
-import io.reactivex.Single
-import org.springframework.web.multipart.MultipartFile
-
+/*
 interface SpecialistProfileService {
 
     interface Get {
@@ -50,4 +46,4 @@ interface SpecialistProfileService {
     fun getSpecialistProfileById(sessionId: String, specialistUserId: Long): Single<Get.ResultProfile>
     fun updateSpecialistProfile(sessionIdParam: String, requestParam: SpecialistProfileRequest): Single<Post.ResultInfo>
     fun updateProfilePhoto(sessionIdParam: String, profilePhotoParam: MultipartFile): Single<Post.ResultPhoto>
-}
+}*/

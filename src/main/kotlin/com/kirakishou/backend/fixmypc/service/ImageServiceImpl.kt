@@ -5,9 +5,6 @@ import com.kirakishou.backend.fixmypc.extension.deleteOnExitScope
 import com.kirakishou.backend.fixmypc.extension.getFileExtension
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.util.TextUtils
-import io.reactivex.Flowable
-import io.reactivex.Single
-import io.reactivex.rxkotlin.Flowables
 import net.coobird.thumbnailator.Thumbnails
 import org.apache.commons.io.IOUtils
 import org.apache.hadoop.fs.FileSystem
@@ -20,7 +17,7 @@ import java.io.File
 import java.util.concurrent.TimeUnit
 import javax.annotation.PostConstruct
 import javax.imageio.ImageIO
-
+/*
 @Component
 class ImageServiceImpl : ImageService {
 
@@ -249,4 +246,4 @@ class ImageServiceImpl : ImageService {
     private data class UploadResponse(val success: Boolean,
                                       val uploadedImageName: String,
                                       val tempFile: File)
-}
+}*/

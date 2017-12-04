@@ -1,10 +1,6 @@
 package com.kirakishou.backend.fixmypc.service
 
-import io.reactivex.Flowable
-import io.reactivex.Single
-import org.springframework.web.multipart.MultipartFile
-import java.io.InputStream
-
+/*
 interface ImageService {
 
     interface Post {
@@ -34,4 +30,4 @@ interface ImageService {
     fun uploadImage(serverHomeDirectory: String, multipartFile: MultipartFile): Flowable<Post.Result>
     fun serveImage(userId: Long, imageType: Int, imageNameParam: String, imageSizeParam: String): Single<Get.Result>
     fun deleteImage(serverHomeDirectory: String, imageName: String): Single<Delete.Result>
-}
+}*/

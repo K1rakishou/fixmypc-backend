@@ -6,7 +6,6 @@ import com.kirakishou.backend.fixmypc.core.ServerErrorCode
 import com.kirakishou.backend.fixmypc.model.net.request.SignupRequest
 import com.kirakishou.backend.fixmypc.model.net.response.SignupResponse
 import com.kirakishou.backend.fixmypc.service.user.SignupService
-import io.reactivex.Single
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -20,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestMethod
  * Created by kirakishou on 7/15/2017.
  */
 
-@Controller
+/*@Controller
 @RequestMapping
 class SignupController {
 
@@ -82,3 +81,4 @@ class SignupController {
                 }
     }
 }
+*/
