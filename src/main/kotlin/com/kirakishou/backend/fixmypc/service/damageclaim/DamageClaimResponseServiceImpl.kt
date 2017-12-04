@@ -2,10 +2,11 @@ package com.kirakishou.backend.fixmypc.service.damageclaim
 
 import com.kirakishou.backend.fixmypc.core.AccountType
 import com.kirakishou.backend.fixmypc.log.FileLog
+import com.kirakishou.backend.fixmypc.model.cache.SessionCache
 import com.kirakishou.backend.fixmypc.model.entity.RespondedSpecialist
-import com.kirakishou.backend.fixmypc.model.repository.DamageClaimRepository
-import com.kirakishou.backend.fixmypc.model.repository.RespondedSpecialistsRepository
-import com.kirakishou.backend.fixmypc.model.repository.ignite.UserCache
+import com.kirakishou.backend.fixmypc.model.store.DamageClaimStore
+import com.kirakishou.backend.fixmypc.model.store.RespondedSpecialistsStore
+import com.kirakishou.backend.fixmypc.model.store.SpecialistProfileStore
 import io.reactivex.Single
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -14,21 +15,24 @@ import org.springframework.stereotype.Component
 class DamageClaimResponseServiceImpl : DamageClaimResponseService {
 
     @Autowired
-    private lateinit var repository: RespondedSpecialistsRepository
+    private lateinit var respondedSpecialistsStore: RespondedSpecialistsStore
 
     @Autowired
-    private lateinit var damageClaimRepository: DamageClaimRepository
+    private lateinit var damageClaimStore: DamageClaimStore
 
     @Autowired
-    private lateinit var userCache: UserCache
+    private lateinit var sessionCache: SessionCache
+
+    @Autowired
+    private lateinit var specialistProfileStore: SpecialistProfileStore
 
     @Autowired
     private lateinit var log: FileLog
 
     override fun respondToDamageClaim(sessionId: String, damageClaimId: Long): Single<DamageClaimResponseService.Post.Result> {
-        val userFickle = userCache.findOne(sessionId)
+        val userFickle = sessionCache.findOne(sessionId)
         if (!userFickle.isPresent()) {
-            log.d("SessionId $sessionId was not found in the cache")
+            log.d("SessionId $sessionId was not found in the sessionCache")
             return Single.just(DamageClaimResponseService.Post.Result.SessionIdExpired())
         }
 
@@ -38,7 +42,19 @@ class DamageClaimResponseServiceImpl : DamageClaimResponseService {
             return Single.just(DamageClaimResponseService.Post.Result.BadAccountType())
         }
 
-        val damageClaimFickle = damageClaimRepository.findOne(damageClaimId)
+        val specialistProfileFickle = specialistProfileStore.findOne(user.id)
+        if (!specialistProfileFickle.isPresent()) {
+            log.d("Could not find specialist profile with id ${user.id}")
+            return Single.just(DamageClaimResponseService.Post.Result.CouldNotFindSpecialistProfile())
+        }
+
+        val specialistProfile = specialistProfileFickle.get()
+        if (!specialistProfile.isProfileInfoFilledIn()) {
+            log.d("User with id ${user.id} tried to respond to damage claim with not filled in profile")
+            return Single.just(DamageClaimResponseService.Post.Result.ProfileIsNotFilledIn())
+        }
+
+        val damageClaimFickle = damageClaimStore.findOne(damageClaimId)
         if (!damageClaimFickle.isPresent()) {
             log.d("DamageClaim with id $damageClaimId does not exist")
             return Single.just(DamageClaimResponseService.Post.Result.DamageClaimDoesNotExist())
@@ -50,8 +66,10 @@ class DamageClaimResponseServiceImpl : DamageClaimResponseService {
             return Single.just(DamageClaimResponseService.Post.Result.DamageClaimIsNotActive())
         }
 
-        val repoResult = repository.saveOne(RespondedSpecialist(damageClaimId = damageClaimId, userId = user.id))
-        if (!repoResult) {
+        check(user.id != -1L) { "userId should not be -1" }
+
+        val storeResult = respondedSpecialistsStore.saveOne(RespondedSpecialist(damageClaimId = damageClaimId, userId = user.id))
+        if (!storeResult) {
             log.d("Couldn't respond to damage claim")
             return Single.just(DamageClaimResponseService.Post.Result.CouldNotRespondToDamageClaim())
         }
@@ -60,9 +78,9 @@ class DamageClaimResponseServiceImpl : DamageClaimResponseService {
     }
 
     override fun hasAlreadyResponded(sessionId: String, damageClaimId: Long): Single<DamageClaimResponseService.Get.Result> {
-        val userFickle = userCache.findOne(sessionId)
+        val userFickle = sessionCache.findOne(sessionId)
         if (!userFickle.isPresent()) {
-            log.d("SessionId $sessionId was not found in the cache")
+            log.d("SessionId $sessionId was not found in the sessionCache")
             return Single.just(DamageClaimResponseService.Get.Result.SessionIdExpired())
         }
 
@@ -72,12 +90,8 @@ class DamageClaimResponseServiceImpl : DamageClaimResponseService {
             return Single.just(DamageClaimResponseService.Get.Result.BadAccountType())
         }
 
-        val hasAlreadyResponded = repository.containsOne(user.id, damageClaimId)
-        if (!hasAlreadyResponded) {
-            return Single.just(DamageClaimResponseService.Get.Result.Ok(false))
-        }
-
-        return Single.just(DamageClaimResponseService.Get.Result.Ok(true))
+        val hasAlreadyResponded = respondedSpecialistsStore.containsOne(damageClaimId, user.id)
+        return Single.just(DamageClaimResponseService.Get.Result.Ok(hasAlreadyResponded))
     }
 }
 

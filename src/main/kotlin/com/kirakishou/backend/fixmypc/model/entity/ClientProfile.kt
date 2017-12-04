@@ -5,19 +5,18 @@ import java.io.Serializable
 
 
 data class ClientProfile(@SerializedName("user_id")
-                         val userId: Long = 0L,
+                         val userId: Long = -1L,
 
                          @SerializedName("name")
-                         val name: String = "",
+                         var name: String = "",
 
                          @SerializedName("phone")
-                         val phone: String = "",
-
-                         @SerializedName("photo_folder")
-                         var photoFolder: String = "",
-
-                         @SerializedName("photo_name")
-                         var photoName: String = "",
+                         var phone: String = "",
 
                          @Transient
-                         val isFilledOut: Boolean = false) : Serializable
+                         var registeredOn: Long = 0L) : Serializable {
+
+    fun isProfileInfoFilledIn(): Boolean {
+        return (this.name.isNotEmpty() && this.phone.isNotEmpty())
+    }
+}

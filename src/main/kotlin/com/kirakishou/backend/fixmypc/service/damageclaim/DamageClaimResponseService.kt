@@ -12,6 +12,8 @@ interface DamageClaimResponseService {
             class DamageClaimDoesNotExist : Result
             class BadAccountType : Result
             class DamageClaimIsNotActive : Result
+            class CouldNotFindSpecialistProfile : Result
+            class ProfileIsNotFilledIn : Result
         }
     }
 

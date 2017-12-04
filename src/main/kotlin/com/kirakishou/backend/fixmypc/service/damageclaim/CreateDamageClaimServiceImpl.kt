@@ -3,11 +3,14 @@ package com.kirakishou.backend.fixmypc.service.damageclaim
 import com.kirakishou.backend.fixmypc.core.AccountType
 import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.log.FileLog
+import com.kirakishou.backend.fixmypc.model.cache.SessionCache
 import com.kirakishou.backend.fixmypc.model.entity.DamageClaim
+import com.kirakishou.backend.fixmypc.model.entity.LatLon
 import com.kirakishou.backend.fixmypc.model.exception.*
 import com.kirakishou.backend.fixmypc.model.net.request.CreateDamageClaimRequest
-import com.kirakishou.backend.fixmypc.model.repository.DamageClaimRepository
-import com.kirakishou.backend.fixmypc.model.repository.ignite.UserCache
+import com.kirakishou.backend.fixmypc.model.store.ClientProfileStore
+import com.kirakishou.backend.fixmypc.model.store.DamageClaimStore
+import com.kirakishou.backend.fixmypc.model.store.LocationStore
 import com.kirakishou.backend.fixmypc.service.ImageService
 import com.kirakishou.backend.fixmypc.util.ServerUtils
 import com.kirakishou.backend.fixmypc.util.TextUtils
@@ -15,6 +18,7 @@ import io.reactivex.Flowable
 import io.reactivex.Single
 import io.reactivex.rxkotlin.Singles
 import org.apache.hadoop.fs.FileSystem
+import org.apache.hadoop.fs.Path
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
@@ -36,13 +40,19 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
     private lateinit var fs: FileSystem
 
     @Autowired
-    private lateinit var damageClaimRepository: DamageClaimRepository
+    private lateinit var damageClaimStore: DamageClaimStore
 
     @Autowired
     private lateinit var imageService: ImageService
 
     @Autowired
-    private lateinit var userCache: UserCache
+    private lateinit var locationStore: LocationStore
+
+    @Autowired
+    private lateinit var sessionCache: SessionCache
+
+    @Autowired
+    private lateinit var clientProfileStore: ClientProfileStore
 
     private val allowedExtensions = listOf("png", "jpg", "jpeg", "PNG", "JPG", "JPEG")
 
@@ -51,19 +61,33 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
 
         return Single.just(Params(uploadingFiles, imageType, request, sessionId))
                 .map { params ->
-                    //user must re login if sessionId was removed from the cache
-                    val userFickle = userCache.findOne(params.sessionId)
+                    //user must re login if sessionId was removed from the specialistProfileStore
+                    val userFickle = sessionCache.findOne(params.sessionId)
                     if (!userFickle.isPresent()) {
-                        log.d("sessionId ${params.sessionId} was not found in the cache")
+                        log.d("sessionId ${params.sessionId} was not found in the sessionRepository")
                         throw SessionIdExpiredException()
                     }
 
                     val user = userFickle.get()
-                    val ownerId = user.id
+                    val userId = user.id
+                    check(userId != -1L) { "userId should not be -1" }
 
                     if (user.accountType != AccountType.Client) {
                         log.d("User with accountType ${user.accountType} no supposed to do this operation")
                         throw BadAccountTypeException()
+                    }
+
+                    val clientProfileFickle = clientProfileStore.findOne(userId)
+                    if (!clientProfileFickle.isPresent()) {
+                        //wut?
+                        log.d("Could not find client profile with id ${user.id}")
+                        throw CouldNotFindClientProfileException()
+                    }
+
+                    val clientProfile = clientProfileFickle.get()
+                    if (!clientProfile.isProfileInfoFilledIn()) {
+                        log.d("User with id ${user.id} tried to respond to damage claim with not filled in profile")
+                        throw ProfileIsNotFilledInException()
                     }
 
                     //return error code if user somehow sent a request without any images
@@ -83,7 +107,7 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
                     checkFileNames(params.uploadingFiles.map { it.originalFilename })
 
                     val damageClaim = DamageClaim(
-                            ownerId = ownerId,
+                            userId = userId,
                             category = params.request.category,
                             description = params.request.description,
                             lat = params.request.lat,
@@ -95,7 +119,7 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
                     return@map DamageClaimAndParams(damageClaim, params)
                 }
                 .flatMap { (damageClaim, _) ->
-                    val serverFilePath = "${fs.homeDirectory}/img/damage_claim/${damageClaim.ownerId}/"
+                    val serverFilePath = "${fs.homeDirectory}/img/damage_claim/${damageClaim.userId}/"
                     val responseList = mutableListOf<Flowable<ImageService.Post.Result>>()
 
                     for (uploadingFile in uploadingFiles) {
@@ -124,9 +148,14 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
 
                     damageClaim.imageNamesList = imagesNames
 
-                    if (!damageClaimRepository.saveOne(damageClaim)) {
-                        throw RepositoryErrorException()
+                    if (!damageClaimStore.saveOne(damageClaim)) {
+                        val serverFilePath = "${fs.homeDirectory}/img/damage_claim/${damageClaim.userId}/"
+                        fs.delete(Path(serverFilePath), true)
+                        throw StoreErrorException()
                     }
+
+                    val location = LatLon(damageClaim.lat, damageClaim.lon)
+                    locationStore.saveOne(location, damageClaim.id)
 
                     return@map CreateDamageClaimService.Post.Result.Ok() as CreateDamageClaimService.Post.Result
                 }
@@ -140,8 +169,14 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
                         is FileSizeExceededException -> CreateDamageClaimService.Post.Result.FileSizeExceeded()
                         is RequestSizeExceededException -> CreateDamageClaimService.Post.Result.RequestSizeExceeded()
                         is CouldNotUploadImagesException -> CreateDamageClaimService.Post.Result.CouldNotUploadImages()
-                        is RepositoryErrorException -> CreateDamageClaimService.Post.Result.RepositoryError()
-                        else -> CreateDamageClaimService.Post.Result.UnknownError()
+                        is StoreErrorException -> CreateDamageClaimService.Post.Result.StoreError()
+                        is CouldNotFindClientProfileException -> CreateDamageClaimService.Post.Result.CouldNotFindClientProfile()
+                        is ProfileIsNotFilledInException -> CreateDamageClaimService.Post.Result.ProfileIsNotFilledIn()
+
+                        else -> {
+                            log.e(exception)
+                            CreateDamageClaimService.Post.Result.UnknownError()
+                        }
                     }
                 }
     }

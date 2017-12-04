@@ -5,7 +5,7 @@ import com.kirakishou.backend.fixmypc.core.AccountType
 import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.core.Fickle
 import com.kirakishou.backend.fixmypc.model.entity.User
-import com.kirakishou.backend.fixmypc.model.repository.UserRepository
+import com.kirakishou.backend.fixmypc.model.store.UserStore
 import com.kirakishou.backend.fixmypc.service.user.SignupService
 import org.junit.Before
 import org.junit.Test
@@ -25,8 +25,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.setup.MockMvcBuilders
 import org.springframework.web.context.WebApplicationContext
-import java.sql.Timestamp
-import java.util.*
 
 /**
  * Created by kirakishou on 7/15/2017.
@@ -47,7 +45,7 @@ class SignupControllerTest {
     lateinit var service: SignupService
 
     @Mock
-    lateinit var userRepository: UserRepository
+    lateinit var userStore: UserStore
 
     @Autowired
     @InjectMocks
@@ -58,7 +56,7 @@ class SignupControllerTest {
     private val ALREADY_EXISTING_LOGIN: String = "alreadyexists@gmail.com"
     private val INCORRECT_LOGIN: String = "testgmail.com"
     private val GOOD_ACCOUNT_TYPE: AccountType = AccountType.Client
-    private val TEST_USER = User(0L, GOOD_LOGIN, GOOD_PASSWORD, AccountType.Guest, Timestamp(Date().time))
+    private val TEST_USER = User(0L, GOOD_LOGIN, GOOD_PASSWORD, AccountType.Guest)
 
     private val INCORRECT_PASSWORD_SHORT: String = "123"
     private val INCORRECT_PASSWORD_LONG: String = "123643563463463465687679670-7698-6706783567563486479758075890-78"
@@ -75,7 +73,7 @@ class SignupControllerTest {
         Mockito.`when`(service.doSignup(INCORRECT_LOGIN, GOOD_PASSWORD, GOOD_ACCOUNT_TYPE)).thenReturn(SignupService.Result.LoginIsIncorrect())
         Mockito.`when`(service.doSignup(GOOD_LOGIN, INCORRECT_PASSWORD_SHORT, GOOD_ACCOUNT_TYPE)).thenReturn(SignupService.Result.PasswordIsIncorrect())
         Mockito.`when`(service.doSignup(GOOD_LOGIN, INCORRECT_PASSWORD_LONG, GOOD_ACCOUNT_TYPE)).thenReturn(SignupService.Result.PasswordIsIncorrect())
-        Mockito.`when`(userRepository.findOne(GOOD_LOGIN)).thenReturn(Fickle.of(TEST_USER))
+        Mockito.`when`(userStore.findOne(GOOD_LOGIN)).thenReturn(Fickle.of(TEST_USER))
     }
 
     /*

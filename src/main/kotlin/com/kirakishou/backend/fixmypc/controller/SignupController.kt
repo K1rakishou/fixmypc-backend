@@ -1,5 +1,6 @@
 package com.kirakishou.backend.fixmypc.controller
 
+import com.kirakishou.backend.fixmypc.core.AccountType
 import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.core.ServerErrorCode
 import com.kirakishou.backend.fixmypc.model.net.request.SignupRequest
@@ -33,7 +34,7 @@ class SignupController {
 
         return Single.just(request)
                 .map {
-                    val result = signupService.doSignup(request.login, request.password, request.accountType)
+                    val result = signupService.doSignup(request.login, request.password, AccountType.from(request.accountType))
 
                     when (result) {
                         is SignupService.Result.Ok -> {
@@ -64,6 +65,11 @@ class SignupController {
                         is SignupService.Result.AccountTypeIsIncorrect -> {
                             return@map ResponseEntity(SignupResponse(ServerErrorCode.SEC_ACCOUNT_TYPE_IS_INCORRECT.value),
                                     HttpStatus.UNPROCESSABLE_ENTITY)
+                        }
+
+                        is SignupService.Result.StoreError -> {
+                            return@map ResponseEntity(SignupResponse(ServerErrorCode.SEC_STORE_ERROR.value),
+                                    HttpStatus.INTERNAL_SERVER_ERROR)
                         }
 
                         else -> throw IllegalArgumentException("Unknown result")

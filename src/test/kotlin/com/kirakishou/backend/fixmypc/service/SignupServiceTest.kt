@@ -3,7 +3,7 @@ package com.kirakishou.backend.fixmypc.service
 import com.kirakishou.backend.fixmypc.core.AccountType
 import com.kirakishou.backend.fixmypc.core.Fickle
 import com.kirakishou.backend.fixmypc.model.entity.User
-import com.kirakishou.backend.fixmypc.model.repository.UserRepository
+import com.kirakishou.backend.fixmypc.model.store.UserStore
 import com.kirakishou.backend.fixmypc.service.user.SignupService
 import com.kirakishou.backend.fixmypc.service.user.SignupServiceImpl
 import org.junit.Before
@@ -12,8 +12,6 @@ import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.MockitoAnnotations
-import java.sql.Timestamp
-import java.util.*
 
 /**
  * Created by kirakishou on 7/16/2017.
@@ -26,7 +24,7 @@ class SignupServiceTest {
     val service = SignupServiceImpl()
 
     @Mock
-    lateinit var userRepository: UserRepository
+    lateinit var userStore: UserStore
 
     private val GOOD_LOGIN: String = "test@gmail.com"
     private val GOOD_PASSWORD: String = "1234567890"
@@ -36,14 +34,14 @@ class SignupServiceTest {
     private val GOOD_ACCOUNT_TYPE: AccountType = AccountType.Client
     private val INCORRECT_PASSWORD_SHORT: String = "123"
     private val INCORRECT_PASSWORD_LONG: String = "123643563463463465687679670-7698-6706783567563486479758075890-78"
-    private val TEST_USER = User(0L, GOOD_LOGIN, GOOD_PASSWORD, AccountType.Guest, Timestamp(Date().time))
+    private val TEST_USER = User(0L, GOOD_LOGIN, GOOD_PASSWORD, AccountType.Guest)
 
     @Before
     fun init() {
         MockitoAnnotations.initMocks(this)
 
-        Mockito.`when`(userRepository.findOne(ALREADY_EXISTING_LOGIN)).thenReturn(Fickle.of(TEST_USER))
-        Mockito.`when`(userRepository.findOne(GOOD_LOGIN)).thenReturn(Fickle.empty())
+        Mockito.`when`(userStore.findOne(ALREADY_EXISTING_LOGIN)).thenReturn(Fickle.of(TEST_USER))
+        Mockito.`when`(userStore.findOne(GOOD_LOGIN)).thenReturn(Fickle.empty())
     }
 
     @Test

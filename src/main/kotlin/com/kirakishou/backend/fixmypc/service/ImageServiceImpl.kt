@@ -18,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile
 import java.awt.Dimension
 import java.io.File
 import java.util.concurrent.TimeUnit
+import javax.annotation.PostConstruct
 import javax.imageio.ImageIO
 
 @Component
@@ -33,6 +34,13 @@ class ImageServiceImpl : ImageService {
 
     @Autowired
     private lateinit var fs: FileSystem
+
+    @PostConstruct
+    fun init() {
+        if (!tempDir.exists()) {
+            tempDir.mkdirs()
+        }
+    }
 
     override fun deleteImage(serverHomeDirectory: String, imageName: String): Single<ImageService.Delete.Result> {
         return Single.just(ImageToDeleteParams(serverHomeDirectory, imageName))
@@ -127,6 +135,10 @@ class ImageServiceImpl : ImageService {
                     }
 
                     return@map ImageService.Post.Result.Ok(originalImageName)
+                }
+                .onErrorReturn { exception ->
+                    log.e(exception)
+                    return@onErrorReturn ImageService.Post.Result.CouldNotUploadImage()
                 }
     }
 

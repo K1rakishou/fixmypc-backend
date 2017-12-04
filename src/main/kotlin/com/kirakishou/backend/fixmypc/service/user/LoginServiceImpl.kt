@@ -1,6 +1,7 @@
 package com.kirakishou.backend.fixmypc.service.user
 
-import com.kirakishou.backend.fixmypc.model.repository.UserRepository
+import com.kirakishou.backend.fixmypc.model.cache.SessionCache
+import com.kirakishou.backend.fixmypc.model.store.UserStore
 import com.kirakishou.backend.fixmypc.service.Generator
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -13,13 +14,16 @@ import org.springframework.stereotype.Component
 class LoginServiceImpl: LoginService {
 
     @Autowired
-    lateinit var userRepository: UserRepository
+    lateinit var sessionCache: SessionCache
+
+    @Autowired
+    lateinit var userStore: UserStore
 
     @Autowired
     lateinit var generator: Generator
 
     override fun doLogin(login: String, password: String): LoginService.Result {
-        val userFickle = userRepository.findOne(login)
+        val userFickle = userStore.findOne(login)
         if (!userFickle.isPresent()) {
             return LoginService.Result.WrongLoginOrPassword(login)
         }
@@ -32,7 +36,7 @@ class LoginServiceImpl: LoginService {
         val sessionId = generator.generateSessionId()
 
         user.sessionId = sessionId
-        userRepository.saveOneToStore(sessionId, user)
+        sessionCache.saveOne(sessionId, user)
 
         return LoginService.Result.Ok(sessionId, user.accountType)
     }

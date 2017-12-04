@@ -17,8 +17,9 @@ interface CreateDamageClaimService {
             class FileSizeExceeded : Result
             class RequestSizeExceeded : Result
             class AllFileServersAreNotWorking : Result
-            class AllImagesUploaded(val names: List<String>) : Result
-            class RepositoryError : Result
+            class CouldNotFindClientProfile : Result
+            class ProfileIsNotFilledIn : Result
+            class StoreError : Result
             class UnknownError : Result
             class CouldNotUploadImages : Result
         }

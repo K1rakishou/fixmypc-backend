@@ -3,7 +3,7 @@ package com.kirakishou.backend.fixmypc.service
 import com.kirakishou.backend.fixmypc.core.AccountType
 import com.kirakishou.backend.fixmypc.core.Fickle
 import com.kirakishou.backend.fixmypc.model.entity.User
-import com.kirakishou.backend.fixmypc.model.repository.UserRepository
+import com.kirakishou.backend.fixmypc.model.store.UserStore
 import com.kirakishou.backend.fixmypc.service.user.LoginService
 import com.kirakishou.backend.fixmypc.service.user.LoginServiceImpl
 import org.junit.Assert.assertEquals
@@ -13,8 +13,6 @@ import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.mockito.MockitoAnnotations
-import java.sql.Timestamp
-import java.util.*
 
 /**
  * Created by kirakishou on 7/11/2017.
@@ -26,7 +24,7 @@ class LoginServiceTest {
     val service = LoginServiceImpl()
 
     @Mock
-    lateinit var userRepository: UserRepository
+    lateinit var userStore: UserStore
 
     @Mock
     lateinit var generator: Generator
@@ -34,14 +32,14 @@ class LoginServiceTest {
     private val GOOD_LOGIN: String = "test@gmail.com"
     private val GOOD_PASSWORD: String = "1234567890"
     private val GOOD_SESSION_ID: String = "abcdef1234567890"
-    private val TEST_USER = User(0L, GOOD_LOGIN, GOOD_PASSWORD, AccountType.Guest, Timestamp(Date().time))
+    private val TEST_USER = User(0L, GOOD_LOGIN, GOOD_PASSWORD, AccountType.Guest)
 
     @Before
     fun init() {
         MockitoAnnotations.initMocks(this)
 
-        Mockito.`when`(userRepository.findOne(GOOD_LOGIN)).thenReturn(Fickle.of(TEST_USER))
-        Mockito.`when`(userRepository.findOne(BAD_LOGIN)).thenReturn(Fickle.empty())
+        Mockito.`when`(userStore.findOne(GOOD_LOGIN)).thenReturn(Fickle.of(TEST_USER))
+        Mockito.`when`(userStore.findOne(BAD_LOGIN)).thenReturn(Fickle.empty())
         Mockito.`when`(generator.generateSessionId()).thenReturn(GOOD_SESSION_ID)
     }
 

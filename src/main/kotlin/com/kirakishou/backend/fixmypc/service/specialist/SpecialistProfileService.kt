@@ -8,11 +8,18 @@ import org.springframework.web.multipart.MultipartFile
 interface SpecialistProfileService {
 
     interface Get {
-        interface Result {
-            class Ok(val profile: SpecialistProfile) : Result
-            class SessionIdExpired : Result
-            class BadAccountType : Result
-            class NotFound : Result
+        interface ResultProfile {
+            class Ok(val profile: SpecialistProfile) : ResultProfile
+            class SessionIdExpired : ResultProfile
+            class BadAccountType : ResultProfile
+            class NotFound : ResultProfile
+        }
+
+        interface ResultIsFilledIn {
+            class Ok(val isFilledIn: Boolean) : ResultIsFilledIn
+            class SessionIdExpired : ResultIsFilledIn
+            class BadAccountType : ResultIsFilledIn
+            class CouldNotFindClientProfile : ResultIsFilledIn
         }
     }
 
@@ -33,12 +40,14 @@ interface SpecialistProfileService {
             class CouldNotUploadImage : ResultPhoto
             class CouldNotDeleteOldImage : ResultPhoto
             class NotFound : ResultPhoto
-            class RepositoryError: ResultPhoto
+            class StoreError : ResultPhoto
             class UnknownError : ResultPhoto
         }
     }
 
-    fun getProfile(sessionId: String): Single<Get.Result>
-    fun updateProfileInfo(sessionIdParam: String, requestParam: SpecialistProfileRequest): Single<Post.ResultInfo>
+    fun isSpecialistProfileFilledIn(sessionId: String): Single<Get.ResultIsFilledIn>
+    fun getSpecialistProfile(sessionId: String): Single<Get.ResultProfile>
+    fun getSpecialistProfileById(sessionId: String, specialistUserId: Long): Single<Get.ResultProfile>
+    fun updateSpecialistProfile(sessionIdParam: String, requestParam: SpecialistProfileRequest): Single<Post.ResultInfo>
     fun updateProfilePhoto(sessionIdParam: String, profilePhotoParam: MultipartFile): Single<Post.ResultPhoto>
 }

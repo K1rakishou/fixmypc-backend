@@ -4,10 +4,10 @@ import com.kirakishou.backend.fixmypc.core.AccountType
 import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.extension.limit
 import com.kirakishou.backend.fixmypc.log.FileLog
+import com.kirakishou.backend.fixmypc.model.cache.SessionCache
 import com.kirakishou.backend.fixmypc.model.exception.*
 import com.kirakishou.backend.fixmypc.model.net.request.SpecialistProfileRequest
-import com.kirakishou.backend.fixmypc.model.repository.SpecialistProfileRepository
-import com.kirakishou.backend.fixmypc.model.repository.ignite.UserCache
+import com.kirakishou.backend.fixmypc.model.store.SpecialistProfileStore
 import com.kirakishou.backend.fixmypc.service.ImageService
 import io.reactivex.Single
 import io.reactivex.rxkotlin.Singles
@@ -23,10 +23,10 @@ class SpecialistProfileServiceImpl : SpecialistProfileService {
     private lateinit var mImageService: ImageService
 
     @Autowired
-    private lateinit var mUserCache: UserCache
+    private lateinit var sessionCache: SessionCache
 
     @Autowired
-    private lateinit var mSpecialistProfileRepository: SpecialistProfileRepository
+    private lateinit var mSpecialistProfileStore: SpecialistProfileStore
 
     @Autowired
     private lateinit var fs: FileSystem
@@ -34,39 +34,77 @@ class SpecialistProfileServiceImpl : SpecialistProfileService {
     @Autowired
     private lateinit var log: FileLog
 
-    override fun getProfile(sessionId: String): Single<SpecialistProfileService.Get.Result> {
-        val userFickle = mUserCache.findOne(sessionId)
+    override fun isSpecialistProfileFilledIn(sessionId: String): Single<SpecialistProfileService.Get.ResultIsFilledIn> {
+        val userFickle = sessionCache.findOne(sessionId)
         if (!userFickle.isPresent()) {
-            log.d("SessionId $sessionId was not found in the cache")
-            return Single.just(SpecialistProfileService.Get.Result.SessionIdExpired())
+            log.d("SessionId $sessionId was not found in the sessionCache")
+            return Single.just(SpecialistProfileService.Get.ResultIsFilledIn.SessionIdExpired())
         }
 
         val user = userFickle.get()
         if (user.accountType != AccountType.Specialist) {
             log.d("Bad accountType ${user.accountType}")
-            return Single.just(SpecialistProfileService.Get.Result.BadAccountType())
+            return Single.just(SpecialistProfileService.Get.ResultIsFilledIn.BadAccountType())
         }
 
-        val profileFickle = mSpecialistProfileRepository.findOne(user.id)
+        val specialistProfileFickle = mSpecialistProfileStore.findOne(user.id)
+        if (!specialistProfileFickle.isPresent()) {
+            return Single.just(SpecialistProfileService.Get.ResultIsFilledIn.CouldNotFindClientProfile())
+        }
+
+        val profile = specialistProfileFickle.get()
+        return Single.just(SpecialistProfileService.Get.ResultIsFilledIn.Ok(profile.isProfileInfoFilledIn()))
+    }
+
+    override fun getSpecialistProfile(sessionId: String): Single<SpecialistProfileService.Get.ResultProfile> {
+        val userFickle = sessionCache.findOne(sessionId)
+        if (!userFickle.isPresent()) {
+            log.d("SessionId $sessionId was not found in the sessionCache")
+            return Single.just(SpecialistProfileService.Get.ResultProfile.SessionIdExpired())
+        }
+
+        val user = userFickle.get()
+        if (user.accountType != AccountType.Specialist) {
+            log.d("Bad accountType ${user.accountType}")
+            return Single.just(SpecialistProfileService.Get.ResultProfile.BadAccountType())
+        }
+
+        check(user.id != -1L) { "userId should not be -1" }
+
+        val profileFickle = mSpecialistProfileStore.findOne(user.id)
         if (!profileFickle.isPresent()) {
             log.d("Could not find specialist profile with id ${user.id}")
-            return Single.just(SpecialistProfileService.Get.Result.NotFound())
+            return Single.just(SpecialistProfileService.Get.ResultProfile.NotFound())
         }
 
         val profile = profileFickle.get()
-        profile.isFilledIn = (profile.name.isNotEmpty() && profile.phone.isNotEmpty() && profile.photoName.isNotEmpty())
-
-        return Single.just(SpecialistProfileService.Get.Result.Ok(profile))
+        return Single.just(SpecialistProfileService.Get.ResultProfile.Ok(profile))
     }
 
-    override fun updateProfileInfo(sessionIdParam: String, requestParam: SpecialistProfileRequest):
+    override fun getSpecialistProfileById(sessionId: String, specialistUserId: Long): Single<SpecialistProfileService.Get.ResultProfile> {
+        val userFickle = sessionCache.findOne(sessionId)
+        if (!userFickle.isPresent()) {
+            log.d("SessionId $sessionId was not found in the sessionCache")
+            return Single.just(SpecialistProfileService.Get.ResultProfile.SessionIdExpired())
+        }
+
+        val profileFickle = mSpecialistProfileStore.findOne(specialistUserId)
+        if (!profileFickle.isPresent()) {
+            log.d("Could not find specialist profile with id $specialistUserId")
+            return Single.just(SpecialistProfileService.Get.ResultProfile.NotFound())
+        }
+
+        return Single.just(SpecialistProfileService.Get.ResultProfile.Ok(profileFickle.get()))
+    }
+
+    override fun updateSpecialistProfile(sessionIdParam: String, requestParam: SpecialistProfileRequest):
             Single<SpecialistProfileService.Post.ResultInfo> {
 
         return Single.just(UpdatingProfileParams(sessionIdParam, requestParam))
                 .map { (sessionId, request) ->
-                    val userFickle = mUserCache.findOne(sessionId)
+                    val userFickle = sessionCache.findOne(sessionId)
                     if (!userFickle.isPresent()) {
-                        log.d("SessionId $sessionId was not found in the cache")
+                        log.d("SessionId $sessionId was not found in the sessionCache")
                         throw SessionIdExpiredException()
                     }
 
@@ -78,12 +116,14 @@ class SpecialistProfileServiceImpl : SpecialistProfileService {
 
                     val name = request.profileName.limit(Constant.TextLength.MAX_PROFILE_NAME_LENGTH)
                     val phone = request.profilePhone.limit(Constant.TextLength.MAX_PHONE_LENGTH)
+
+                    check(user.id != -1L) { "userId should not be -1" }
                     val userId = user.id
 
                     //do not update the photo
-                    if (!mSpecialistProfileRepository.updateInfo(userId, name, phone)) {
-                        log.d("Error while trying to update profile info in the repository")
-                        throw RepositoryErrorException()
+                    if (!mSpecialistProfileStore.updateInfo(userId, name, phone)) {
+                        log.d("Error while trying to update profile info in the store")
+                        throw StoreErrorException()
                     }
 
                     return@map SpecialistProfileService.Post.ResultInfo.Ok() as SpecialistProfileService.Post.ResultInfo
@@ -93,7 +133,7 @@ class SpecialistProfileServiceImpl : SpecialistProfileService {
                         is SessionIdExpiredException -> SpecialistProfileService.Post.ResultInfo.SessionIdExpired()
                         is BadAccountTypeException -> SpecialistProfileService.Post.ResultInfo.BadAccountType()
                         is NotFoundException -> SpecialistProfileService.Post.ResultInfo.NotFound()
-                        is RepositoryErrorException -> SpecialistProfileService.Post.ResultInfo.RepositoryError()
+                        is StoreErrorException -> SpecialistProfileService.Post.ResultInfo.RepositoryError()
 
                         else -> {
                             log.e(exception)
@@ -106,9 +146,9 @@ class SpecialistProfileServiceImpl : SpecialistProfileService {
     override fun updateProfilePhoto(sessionIdParam: String, profilePhotoParam: MultipartFile): Single<SpecialistProfileService.Post.ResultPhoto> {
         return Single.just(UpdateProfilePhotoParams(sessionIdParam, profilePhotoParam))
                 .flatMap { (sessionId, newProfilePhoto) ->
-                    val userFickle = mUserCache.findOne(sessionId)
+                    val userFickle = sessionCache.findOne(sessionId)
                     if (!userFickle.isPresent()) {
-                        log.d("SessionId $sessionId was not found in the cache")
+                        log.d("SessionId $sessionId was not found in the sessionCache")
                         throw SessionIdExpiredException()
                     }
 
@@ -118,7 +158,9 @@ class SpecialistProfileServiceImpl : SpecialistProfileService {
                         throw BadAccountTypeException()
                     }
 
-                    val profileFickle = mSpecialistProfileRepository.findOne(user.id)
+                    check(user.id != -1L) { "userId should not be -1" }
+
+                    val profileFickle = mSpecialistProfileStore.findOne(user.id)
                     if (!profileFickle.isPresent()) {
                         log.d("Could not find specialist profile with id ${user.id}")
                         throw NotFoundException()
@@ -155,9 +197,9 @@ class SpecialistProfileServiceImpl : SpecialistProfileService {
 
                     val photoName = response.imageName
 
-                    if (!mSpecialistProfileRepository.updatePhoto(userId, photoName)) {
-                        log.d("Error while trying to update profile photo in the repository")
-                        throw RepositoryErrorException()
+                    if (!mSpecialistProfileStore.updatePhoto(userId, photoName)) {
+                        log.d("Error while trying to update profile photo in the store")
+                        throw StoreErrorException()
                     }
 
                     return@map SpecialistProfileService.Post.ResultPhoto.Ok(photoName) as SpecialistProfileService.Post.ResultPhoto
@@ -168,7 +210,7 @@ class SpecialistProfileServiceImpl : SpecialistProfileService {
                         is BadAccountTypeException -> SpecialistProfileService.Post.ResultPhoto.BadAccountType()
                         is NotFoundException -> SpecialistProfileService.Post.ResultPhoto.NotFound()
                         is CouldNotUploadImagesException -> SpecialistProfileService.Post.ResultPhoto.CouldNotUploadImage()
-                        is RepositoryErrorException -> SpecialistProfileService.Post.ResultPhoto.RepositoryError()
+                        is StoreErrorException -> SpecialistProfileService.Post.ResultPhoto.StoreError()
                         is CouldNotDeleteImageException -> SpecialistProfileService.Post.ResultPhoto.CouldNotDeleteOldImage()
 
                         else -> {
