@@ -111,25 +111,25 @@ class SpecialistController {
 
                         is RespondedSpecialistsService.Put.Result.BadAccountType -> {
                             return@map ResponseEntity(MarkResponseViewedResponse(
-                                    ServerErrorCode.SEC_OK.value),
+                                    ServerErrorCode.SEC_BAD_ACCOUNT_TYPE.value),
                                     HttpStatus.FORBIDDEN)
                         }
 
                         is RespondedSpecialistsService.Put.Result.CouldNotUpdateRespondedSpecialist -> {
                             return@map ResponseEntity(MarkResponseViewedResponse(
-                                    ServerErrorCode.SEC_OK.value),
+                                    ServerErrorCode.SEC_COULD_NOT_UPDATE_RESPONDED_SPECIALIST.value),
                                     HttpStatus.INTERNAL_SERVER_ERROR)
                         }
 
                         is RespondedSpecialistsService.Put.Result.CouldNotFindDamageClaim -> {
                             return@map ResponseEntity(MarkResponseViewedResponse(
-                                    ServerErrorCode.SEC_OK.value),
+                                    ServerErrorCode.SEC_COULD_NOT_FIND_DAMAGE_CLAIM.value),
                                     HttpStatus.NOT_FOUND)
                         }
 
                         is RespondedSpecialistsService.Put.Result.EntityDoesNotBelongToUser -> {
                             return@map ResponseEntity(MarkResponseViewedResponse(
-                                    ServerErrorCode.SEC_OK.value),
+                                    ServerErrorCode.SEC_ENTITY_DOES_NOT_BELONG_TO_USER.value),
                                     HttpStatus.FORBIDDEN)
                         }
 

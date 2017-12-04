@@ -97,9 +97,14 @@ class RespondedSpecialistsServiceImpl : RespondedSpecialistsService {
         }
 
         val result = respondedSpecialistsStore.updateSetViewed(damageClaimId, userId)
-        if (result) {
+        if (!result) {
             log.d("Could not update respondedSpecialist with damageClaimId $damageClaimId and userId $userId")
             return Single.just(RespondedSpecialistsService.Put.Result.CouldNotUpdateRespondedSpecialist())
+        }
+
+        val allEntries = respondedSpecialistsStore.findAll()
+        for (entry in allEntries) {
+            println(entry)
         }
 
         return Single.just(RespondedSpecialistsService.Put.Result.Ok())

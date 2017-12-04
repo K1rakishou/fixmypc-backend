@@ -160,8 +160,6 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
                     return@map CreateDamageClaimService.Post.Result.Ok() as CreateDamageClaimService.Post.Result
                 }
                 .onErrorReturn { exception ->
-                    log.e(exception)
-
                     return@onErrorReturn when (exception) {
                         is SessionIdExpiredException -> CreateDamageClaimService.Post.Result.SessionIdExpired()
                         is NoFilesToUploadException -> CreateDamageClaimService.Post.Result.NoFilesToUpload()
@@ -174,7 +172,11 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
                         is StoreErrorException -> CreateDamageClaimService.Post.Result.StoreError()
                         is CouldNotFindClientProfileException -> CreateDamageClaimService.Post.Result.CouldNotFindClientProfile()
                         is ProfileIsNotFilledInException -> CreateDamageClaimService.Post.Result.ProfileIsNotFilledIn()
-                        else -> CreateDamageClaimService.Post.Result.UnknownError()
+
+                        else -> {
+                            log.e(exception)
+                            CreateDamageClaimService.Post.Result.UnknownError()
+                        }
                     }
                 }
     }

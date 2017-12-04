@@ -7,6 +7,7 @@ data class RespondedSpecialist(@QuerySqlField(index = true, name = "id")
                                @SerializedName("id")
                                var id: Long = -1L,
 
+                               @QuerySqlField(index = true, name = "user_id")
                                @SerializedName("user_id")
                                val userId: Long = -1L,
 

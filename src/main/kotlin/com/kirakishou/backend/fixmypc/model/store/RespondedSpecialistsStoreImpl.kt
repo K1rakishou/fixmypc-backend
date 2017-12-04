@@ -10,6 +10,7 @@ import org.apache.ignite.IgniteAtomicSequence
 import org.apache.ignite.IgniteCache
 import org.apache.ignite.cache.CacheAtomicityMode
 import org.apache.ignite.cache.CacheMode
+import org.apache.ignite.cache.query.SqlFieldsQuery
 import org.apache.ignite.cache.query.SqlQuery
 import org.apache.ignite.configuration.AtomicConfiguration
 import org.apache.ignite.configuration.CacheConfiguration
@@ -89,24 +90,20 @@ class RespondedSpecialistsStoreImpl : RespondedSpecialistsStore {
         val sql = "SELECT * FROM $tableName WHERE damage_claim_id IN ($statement)"
         val sqlQuery = SqlQuery<Long, RespondedSpecialist>(RespondedSpecialist::class.java, sql).setArgs(*damageClaimIdList.toTypedArray())
 
-        return respondedSpecialistsCache.query(sqlQuery).use { query ->
-            query.all.map { it.value }
-        }
+        return respondedSpecialistsCache.query(sqlQuery).use { query -> query.all.map { it.value } }
     }
 
     override fun findManyForDamageClaimPaged(damageClaimId: Long, skip: Long, count: Long): List<RespondedSpecialist> {
         val sql = "SELECT * FROM $tableName WHERE damage_claim_id = ? OFFSET ? LIMIT ?"
         val sqlQuery = SqlQuery<Long, RespondedSpecialist>(RespondedSpecialist::class.java, sql).setArgs(damageClaimId, skip, count)
 
-        return respondedSpecialistsCache.query(sqlQuery).use { entries ->
-            entries.all.map { it.value }
-        }
+        return respondedSpecialistsCache.query(sqlQuery).use { entries -> entries.all.map { it.value } }
     }
 
     override fun updateSetViewed(damageClaimId: Long, userId: Long): Boolean {
         try {
             val sql = "UPDATE $tableName SET was_viewed = true WHERE damage_claim_id = ? AND user_id = ?"
-            val sqlQuery = SqlQuery<Long, RespondedSpecialist>(RespondedSpecialist::class.java, sql).setArgs(damageClaimId, userId)
+            val sqlQuery = SqlFieldsQuery(sql).setArgs(damageClaimId, userId)
 
             respondedSpecialistsCache.query(sqlQuery)
             return true
@@ -116,12 +113,19 @@ class RespondedSpecialistsStoreImpl : RespondedSpecialistsStore {
         }
     }
 
+    override fun findAll(): List<RespondedSpecialist> {
+        val sql = "SELECT * FROM $tableName "
+        val sqlQuery = SqlQuery<Long, RespondedSpecialist>(RespondedSpecialist::class.java, sql)
+
+        return respondedSpecialistsCache.query(sqlQuery).use { entries -> entries.all.map { it.value } }
+    }
+
     override fun deleteAllForDamageClaim(damageClaimId: Long): Boolean {
         try {
             val sql = "DELETE FROM $tableName WHERE damage_claim_id = ?"
             val sqlQuery = SqlQuery<Long, RespondedSpecialist>(RespondedSpecialist::class.java, sql).setArgs(damageClaimId)
 
-            respondedSpecialistsCache.query(sqlQuery).use { it.all }
+            respondedSpecialistsCache.query(sqlQuery)
             return true
         } catch (e: Throwable) {
             log.e(e)
