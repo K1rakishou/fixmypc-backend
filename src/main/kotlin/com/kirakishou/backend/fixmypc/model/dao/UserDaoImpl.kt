@@ -1,10 +1,13 @@
 package com.kirakishou.backend.fixmypc.model.dao
 
 import com.kirakishou.backend.fixmypc.core.AccountType
-import com.kirakishou.backend.fixmypc.core.Either
 import com.kirakishou.backend.fixmypc.core.Fickle
 import com.kirakishou.backend.fixmypc.extension.prepareStatementScrollable
+import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.entity.User
+import com.kirakishou.backend.fixmypc.model.exception.DatabaseException
+import kotlinx.coroutines.experimental.ThreadPoolDispatcher
+import kotlinx.coroutines.experimental.async
 import java.sql.Statement
 import javax.sql.DataSource
 
@@ -13,43 +16,48 @@ import javax.sql.DataSource
  */
 
 class UserDaoImpl(
-        val hikariCP: DataSource
+        val hikariCP: DataSource,
+        val threadPool: ThreadPoolDispatcher,
+        val fileLog: FileLog
 ) : UserDao {
 
     private val TABLE_NAME = " public.users"
 
-    override fun saveOne(user: User): Either<Throwable, Pair<Boolean, Long>> {
-        var userId = Fickle.empty<Long>()
+    override suspend fun saveOne(user: User): Pair<Boolean, Long> {
+        return async(threadPool) {
+            var userId = Fickle.empty<Long>()
 
-        try {
-            hikariCP.connection.use { connection ->
-                connection.prepareStatement("INSERT INTO $TABLE_NAME (login, password, account_type, created_on, deleted_on) " +
-                        "VALUES (?, ?, ?, NOW(), NULL)", Statement.RETURN_GENERATED_KEYS).use { ps ->
+            try {
+                hikariCP.connection.use { connection ->
+                    connection.prepareStatement("INSERT INTO $TABLE_NAME (login, password, account_type, created_on, deleted_on) " +
+                            "VALUES (?, ?, ?, NOW(), NULL)", Statement.RETURN_GENERATED_KEYS).use { ps ->
 
-                    ps.setString(1, user.login)
-                    ps.setString(2, user.password)
-                    ps.setInt(3, user.accountType.value)
-                    ps.executeUpdate()
+                        ps.setString(1, user.login)
+                        ps.setString(2, user.password)
+                        ps.setInt(3, user.accountType.value)
+                        ps.executeUpdate()
 
-                    ps.generatedKeys.use {
-                        if (it.next()) {
-                            userId = Fickle.of(it.getLong(1))
+                        ps.generatedKeys.use {
+                            if (it.next()) {
+                                userId = Fickle.of(it.getLong(1))
+                            }
                         }
                     }
                 }
+            } catch (error: Throwable) {
+                fileLog.e(error)
+                throw DatabaseException()
             }
-        } catch (e: Throwable) {
-            return Either.Error(e)
-        }
 
-        if (!userId.isPresent()) {
-            return Either.Value(false to 0L)
-        }
+            if (!userId.isPresent()) {
+                return@async false to 0L
+            }
 
-        return Either.Value(true to userId.get())
+            return@async true to userId.get()
+        }.await()
     }
 
-    override fun findOne(login: String): Either<Throwable, Fickle<User>> {
+    override suspend fun findOne(login: String): Fickle<User> {
         var user: User? = null
 
         try {
@@ -69,15 +77,16 @@ class UserDaoImpl(
                     }
                 }
             }
-        } catch (e: Throwable) {
-            return Either.Error(e)
+        } catch (error: Throwable) {
+            fileLog.e(error)
+            throw DatabaseException()
         }
 
-        return Either.Value(Fickle.of(user))
+        return Fickle.of(user)
     }
 
     //for tests only!!!
-    override fun deleteOne(login: String): Either<Throwable, Boolean> {
+    override suspend fun deleteOne(login: String): Boolean {
         try {
             hikariCP.connection.use { connection ->
                 connection.prepareStatement("DELETE FROM $TABLE_NAME WHERE login = ?").use { ps ->
@@ -85,10 +94,11 @@ class UserDaoImpl(
                     ps.execute()
                 }
             }
-        } catch (e: Throwable) {
-            return Either.Error(e)
+        } catch (error: Throwable) {
+            fileLog.e(error)
+            throw DatabaseException()
         }
 
-        return Either.Value(true)
+        return true
     }
 }

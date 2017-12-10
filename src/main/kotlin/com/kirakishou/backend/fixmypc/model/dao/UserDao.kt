@@ -1,6 +1,5 @@
 package com.kirakishou.backend.fixmypc.model.dao
 
-import com.kirakishou.backend.fixmypc.core.Either
 import com.kirakishou.backend.fixmypc.core.Fickle
 import com.kirakishou.backend.fixmypc.model.entity.User
 
@@ -9,7 +8,7 @@ import com.kirakishou.backend.fixmypc.model.entity.User
  */
 
 interface UserDao {
-    fun saveOne(user: User): Either<Throwable, Pair<Boolean, Long>>
-    fun findOne(login: String): Either<Throwable, Fickle<User>>
-    fun deleteOne(login: String): Either<Throwable, Boolean>
+    suspend fun saveOne(user: User): Pair<Boolean, Long>
+    suspend fun findOne(login: String): Fickle<User>
+    suspend fun deleteOne(login: String): Boolean
 }
