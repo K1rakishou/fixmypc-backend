@@ -39,9 +39,8 @@ open class FileLogImpl(printLog: Boolean) : FileLog {
         }
     }
 
-    @Synchronized
     private fun now(): Long {
-        return Date().time
+        return ServerUtils.getTimeFast()
     }
 
     fun longToFormatedTime(time: Long, format: String): String {

@@ -32,6 +32,7 @@ object ServerUtils {
         return hexString.toString()
     }
 
+
     fun getTimeFast(): Long {
         return System.currentTimeMillis()
     }

@@ -1,15 +1,14 @@
 package com.kirakishou.backend.fixmypc.model.entity
 
+import com.google.gson.annotations.SerializedName
 
-/*/data class DamageClaim(@QuerySqlField(index = true, name = "id")
-                       @SerializedName("id")
+
+data class DamageClaim(@SerializedName("id")
                        var id: Long = 0L,
 
-                       @QuerySqlField(index = true, name = "user_id")
                        @SerializedName("owner_id")
                        var userId: Long = 0L,
 
-                       @QuerySqlField(name = "is_active")
                        @SerializedName("is_active")
                        var isActive: Boolean = false,
 
@@ -29,4 +28,4 @@ package com.kirakishou.backend.fixmypc.model.entity
                        var createdOn: Long = 0L,
 
                        @SerializedName("photos")
-                       var imageNamesList: MutableList<String> = mutableListOf()) : Serializable*/
+                       var imageNamesList: MutableList<String> = mutableListOf())
