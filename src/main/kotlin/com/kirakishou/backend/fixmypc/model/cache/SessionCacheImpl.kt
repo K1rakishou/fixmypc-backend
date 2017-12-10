@@ -1,18 +1,21 @@
 package com.kirakishou.backend.fixmypc.model.cache
 
-/*@Component
-class SessionCacheImpl : SessionCache {
+import com.kirakishou.backend.fixmypc.core.Constant
+import com.kirakishou.backend.fixmypc.core.Fickle
+import com.kirakishou.backend.fixmypc.core.MyExpiryPolicyFactory
+import com.kirakishou.backend.fixmypc.model.entity.User
+import org.apache.ignite.Ignite
+import org.apache.ignite.IgniteCache
+import org.apache.ignite.cache.CacheMode
+import org.apache.ignite.configuration.CacheConfiguration
+import javax.cache.expiry.Duration
 
-    @Autowired
-    lateinit var ignite: Ignite
+class SessionCacheImpl(
+        val ignite: Ignite
+) : SessionCache {
 
-    @Autowired
-    lateinit var log: FileLog
-
-    //damageClaimId, DamageClaim
     lateinit var sessionCache: IgniteCache<String, User>
 
-    @PostConstruct
     fun init() {
         val sessionCacheConfig = CacheConfiguration<String, User>()
         sessionCacheConfig.backups = 0
@@ -30,4 +33,4 @@ class SessionCacheImpl : SessionCache {
     override fun findOne(sessionId: String): Fickle<User> {
         return Fickle.of(sessionCache[sessionId])
     }
-}*/
+}

@@ -3,11 +3,23 @@ package com.kirakishou.backend.fixmypc.config
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.kirakishou.backend.fixmypc.handlers.*
+import com.kirakishou.backend.fixmypc.model.cache.SessionCache
+import com.kirakishou.backend.fixmypc.model.cache.SessionCacheImpl
+import com.kirakishou.backend.fixmypc.model.dao.UserDao
+import com.kirakishou.backend.fixmypc.model.dao.UserDaoImpl
 import com.kirakishou.backend.fixmypc.routers.Router
+import com.kirakishou.backend.fixmypc.service.GeneratorImpl
 import com.kirakishou.backend.fixmypc.service.JsonConverterService
+import com.zaxxer.hikari.HikariDataSource
+import org.apache.ignite.Ignite
+import org.apache.ignite.Ignition
+import org.apache.ignite.configuration.IgniteConfiguration
+import org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi
+import org.apache.ignite.spi.discovery.tcp.ipfinder.vm.TcpDiscoveryVmIpFinder
 import org.springframework.context.support.beans
 import org.springframework.web.reactive.function.server.HandlerStrategies
 import org.springframework.web.reactive.function.server.RouterFunctions
+import javax.sql.DataSource
 
 
 /**
@@ -35,6 +47,21 @@ fun myBeans() = beans {
     bean<UpdateSpecialistProfileHandler>()
     bean<IsSpecialistProfileFilledInHandler>()
     bean<GetAssignedSpecialistHandler>()
+    bean<UserDao> {
+        UserDaoImpl(ref())
+    }
+    bean {
+        GeneratorImpl()
+    }
+    bean {
+        provideDataSource()
+    }
+    bean {
+        provideIgnite()
+    }
+    bean<SessionCache> {
+        SessionCacheImpl(ref())
+    }
     bean<Gson> {
         GsonBuilder().create()
     }
@@ -44,6 +71,38 @@ fun myBeans() = beans {
     bean("webHandler") {
         RouterFunctions.toWebHandler(ref<Router>().setUpRouter(), HandlerStrategies.builder().viewResolver(ref()).build())
     }
+}
+
+fun provideDataSource(): DataSource {
+    val dataSource = HikariDataSource()
+    dataSource.driverClassName = "org.postgresql.Driver"
+    dataSource.jdbcUrl = "jdbc:postgresql://192.168.99.100:9499/postgres"
+    dataSource.username = "postgres"
+    dataSource.password = "4e7d2dfx"
+    dataSource.maximumPoolSize = 1
+    /*dataSource.leakDetectionThreshold = 2000
+    dataSource.connectionTimeout = 20000*/
+
+    return dataSource
+}
+
+fun provideIgnite(): Ignite {
+    val ipFinder = TcpDiscoveryVmIpFinder()
+    ipFinder.setAddresses(arrayListOf("192.168.99.100:9339"))
+
+    val discoSpi = TcpDiscoverySpi()
+    discoSpi.ipFinder = ipFinder
+
+    val igniteConfiguration = IgniteConfiguration()
+    //igniteConfiguration.discoverySpi = discoSpi
+    //igniteConfiguration.deploymentMode = DeploymentMode.SHARED
+    igniteConfiguration.metricsLogFrequency = 0
+
+
+    val ignite = Ignition.start(igniteConfiguration)
+    ignite.active(true)
+
+    return ignite
 }
 
 /*@Configuration
