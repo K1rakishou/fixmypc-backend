@@ -35,43 +35,47 @@ class SignupHandler(
 
     override fun handle(request: ServerRequest): Mono<ServerResponse> {
         val result = async {
-            val signupRequest = request.bodyToMono(SignupRequest::class.java).awaitSingle()
-            val checkRequestResult = checkRequest(signupRequest)
-            if (checkRequestResult != null) {
-                return@async checkRequestResult
-            }
+            try {
+                val signupRequest = request.bodyToMono(SignupRequest::class.java).awaitSingle()
+                val checkRequestResult = checkRequest(signupRequest)
+                if (checkRequestResult != null) {
+                    return@async checkRequestResult
+                }
 
-            val user = userDao.findOne(signupRequest.login)
-            if (user.isPresent()) {
-                return@async formatResponse(HttpStatus.CONFLICT,
-                        SignupResponse.fail(ServerErrorCode.SEC_LOGIN_ALREADY_EXISTS))
-            }
+                val user = userDao.findOne(signupRequest.login)
+                if (user.isPresent()) {
+                    return@async formatResponse(HttpStatus.CONFLICT,
+                            SignupResponse.fail(ServerErrorCode.SEC_LOGIN_ALREADY_EXISTS))
+                }
 
-            val currentTime =  ServerUtils.getTimeFast()
-            val newUser = User(0L, signupRequest.login, signupRequest.password,
-                    AccountType.from(signupRequest.accountType))
+                val currentTime =  ServerUtils.getTimeFast()
+                val newUser = User(0L, signupRequest.login, signupRequest.password,
+                        AccountType.from(signupRequest.accountType))
 
-            val saveUserResult = userDao.saveOne(newUser)
-            if (!saveUserResult.first) {
-                return@async formatResponse(HttpStatus.INTERNAL_SERVER_ERROR,
-                        SignupResponse.fail(ServerErrorCode.SEC_DATABASE_ERROR))
-            }
-
-            if (signupRequest.accountType == AccountType.Client.value) {
-                if (!clientProfileDao.saveOne(ClientProfile(userId = saveUserResult.second,
-                        registeredOn = currentTime))) {
+                val saveUserResult = userDao.saveOne(newUser)
+                if (!saveUserResult.first) {
                     return@async formatResponse(HttpStatus.INTERNAL_SERVER_ERROR,
                             SignupResponse.fail(ServerErrorCode.SEC_DATABASE_ERROR))
                 }
-            } else if (signupRequest.accountType == AccountType.Specialist.value) {
-                if (!specialistProfileDao.saveOne(SpecialistProfile(userId = saveUserResult.second,
-                        registeredOn =currentTime))) {
-                    return@async formatResponse(HttpStatus.INTERNAL_SERVER_ERROR,
-                            SignupResponse.fail(ServerErrorCode.SEC_DATABASE_ERROR))
-                }
-            }
 
-            return@async formatResponse(HttpStatus.OK, SignupResponse.success())
+                if (signupRequest.accountType == AccountType.Client.value) {
+                    if (!clientProfileDao.saveOne(ClientProfile(userId = saveUserResult.second,
+                            registeredOn = currentTime))) {
+                        return@async formatResponse(HttpStatus.INTERNAL_SERVER_ERROR,
+                                SignupResponse.fail(ServerErrorCode.SEC_DATABASE_ERROR))
+                    }
+                } else if (signupRequest.accountType == AccountType.Specialist.value) {
+                    if (!specialistProfileDao.saveOne(SpecialistProfile(userId = saveUserResult.second,
+                            registeredOn =currentTime))) {
+                        return@async formatResponse(HttpStatus.INTERNAL_SERVER_ERROR,
+                                SignupResponse.fail(ServerErrorCode.SEC_DATABASE_ERROR))
+                    }
+                }
+
+                return@async formatResponse(HttpStatus.OK, SignupResponse.success())
+            } catch (error: Throwable) {
+                return@async handleErrors(error)
+            }
         }
 
         return result
