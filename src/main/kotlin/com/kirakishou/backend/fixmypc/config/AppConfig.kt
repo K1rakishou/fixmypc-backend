@@ -7,8 +7,7 @@ import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.log.FileLogImpl
 import com.kirakishou.backend.fixmypc.model.cache.SessionCache
 import com.kirakishou.backend.fixmypc.model.cache.SessionCacheImpl
-import com.kirakishou.backend.fixmypc.model.dao.UserDao
-import com.kirakishou.backend.fixmypc.model.dao.UserDaoImpl
+import com.kirakishou.backend.fixmypc.model.dao.*
 import com.kirakishou.backend.fixmypc.routers.Router
 import com.kirakishou.backend.fixmypc.service.GeneratorImpl
 import com.kirakishou.backend.fixmypc.service.JsonConverterService
@@ -61,6 +60,12 @@ fun myBeans() = beans {
     }
     bean<UserDao> {
         UserDaoImpl(ref(), ref(PGSQL_THREAD_POOL_DISPATCHED_BEAN_NAME), ref())
+    }
+    bean<ClientProfileDao> {
+        ClientProfileDaoImpl(ref(), ref(PGSQL_THREAD_POOL_DISPATCHED_BEAN_NAME), ref())
+    }
+    bean<SpecialistProfileDao> {
+        SpecialistProfileDaoImpl(ref(), ref(PGSQL_THREAD_POOL_DISPATCHED_BEAN_NAME), ref())
     }
     bean {
         GeneratorImpl()

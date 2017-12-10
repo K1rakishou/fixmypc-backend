@@ -19,4 +19,6 @@ data class ClientProfile(@SerializedName("user_id")
     fun isProfileInfoFilledIn(): Boolean {
         return (this.name.isNotEmpty() && this.phone.isNotEmpty())
     }
+
+
 }

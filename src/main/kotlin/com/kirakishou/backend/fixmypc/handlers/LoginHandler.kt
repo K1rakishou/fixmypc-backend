@@ -20,11 +20,11 @@ import org.springframework.web.reactive.function.server.body
 import reactor.core.publisher.Mono
 
 class LoginHandler(
-        val sessionCache: SessionCache,
-        val userDao: UserDao,
-        val jsonConverter: JsonConverterService,
-        val generator: Generator,
-        val fileLog: FileLog
+        private val sessionCache: SessionCache,
+        private val userDao: UserDao,
+        private val jsonConverter: JsonConverterService,
+        private val generator: Generator,
+        private val fileLog: FileLog
 ) : WebHandler {
 
     override fun handle(request: ServerRequest): Mono<ServerResponse> {

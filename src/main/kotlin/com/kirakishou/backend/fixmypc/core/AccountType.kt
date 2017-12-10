@@ -15,5 +15,9 @@ enum class AccountType(val value: Int) {
 
             throw RuntimeException("unknown accountType: $id")
         }
+
+        fun contains(id: Int): Boolean {
+            return AccountType.values().any { it.value == id }
+        }
     }
 }

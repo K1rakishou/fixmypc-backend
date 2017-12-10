@@ -17,14 +17,14 @@ import javax.sql.DataSource
 
 class UserDaoImpl(
         val hikariCP: DataSource,
-        val threadPool: ThreadPoolDispatcher,
+        val databaseThreadPool: ThreadPoolDispatcher,
         val fileLog: FileLog
 ) : UserDao {
 
     private val TABLE_NAME = " public.users"
 
     override suspend fun saveOne(user: User): Pair<Boolean, Long> {
-        return async(threadPool) {
+        return async(databaseThreadPool) {
             var userId = Fickle.empty<Long>()
 
             try {
