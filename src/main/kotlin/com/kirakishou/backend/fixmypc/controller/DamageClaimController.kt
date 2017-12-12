@@ -1,6 +1,7 @@
 package com.kirakishou.backend.fixmypc.controller
 
-/*@Controller
+/*
+@Controller
 @RequestMapping
 class DamageClaimController {
 
@@ -271,13 +272,12 @@ class DamageClaimController {
                             HttpStatus.INTERNAL_SERVER_ERROR)
                 }
     }
-}*/
+}
 
 
 
 
-
-
+*/
 
 
 

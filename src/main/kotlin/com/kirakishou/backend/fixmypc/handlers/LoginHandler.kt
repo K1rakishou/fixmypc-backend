@@ -4,7 +4,7 @@ import com.kirakishou.backend.fixmypc.core.ServerErrorCode
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.cache.SessionCache
 import com.kirakishou.backend.fixmypc.model.dao.UserDao
-import com.kirakishou.backend.fixmypc.model.exception.DatabaseException
+import com.kirakishou.backend.fixmypc.model.exception.DatabaseUnknownException
 import com.kirakishou.backend.fixmypc.model.net.request.LoginRequest
 import com.kirakishou.backend.fixmypc.model.net.response.LoginResponse
 import com.kirakishou.backend.fixmypc.service.Generator
@@ -27,10 +27,10 @@ class LoginHandler(
         private val fileLog: FileLog
 ) : WebHandler {
 
-    override fun handle(request: ServerRequest): Mono<ServerResponse> {
+    override fun handle(serverRequest: ServerRequest): Mono<ServerResponse> {
         val result = async {
             try {
-                val loginRequest = request.bodyToMono(LoginRequest::class.java).awaitSingle()
+                val loginRequest = serverRequest.bodyToMono(LoginRequest::class.java).awaitSingle()
                 val userFickle = userDao.findOne(loginRequest.login)
                 if (!userFickle.isPresent()) {
                     fileLog.d("LoginHandler: Couldn't find anything with login: ${loginRequest.login}")
@@ -59,7 +59,7 @@ class LoginHandler(
     }
 
     private fun handleErrors(error: Throwable): Mono<ServerResponse> {
-        return if (error is DatabaseException) {
+        return if (error is DatabaseUnknownException) {
             formatResponse(HttpStatus.INTERNAL_SERVER_ERROR, LoginResponse.fail(ServerErrorCode.SEC_DATABASE_ERROR))
         } else {
             fileLog.e(error)

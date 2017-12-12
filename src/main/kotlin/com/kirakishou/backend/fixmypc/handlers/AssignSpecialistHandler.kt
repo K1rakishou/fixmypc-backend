@@ -7,7 +7,7 @@ import reactor.core.publisher.Mono
 
 class AssignSpecialistHandler : WebHandler {
 
-    override fun handle(request: ServerRequest): Mono<ServerResponse> {
+    override fun handle(serverRequest: ServerRequest): Mono<ServerResponse> {
         return ServerResponse.ok().body(Mono.just("not implemented yet"))
     }
 }

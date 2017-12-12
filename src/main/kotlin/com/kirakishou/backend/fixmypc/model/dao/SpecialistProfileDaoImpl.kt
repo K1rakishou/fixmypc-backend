@@ -4,7 +4,7 @@ import com.kirakishou.backend.fixmypc.core.Fickle
 import com.kirakishou.backend.fixmypc.extension.prepareStatementScrollable
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.entity.SpecialistProfile
-import com.kirakishou.backend.fixmypc.model.exception.DatabaseException
+import com.kirakishou.backend.fixmypc.model.exception.DatabaseUnknownException
 import com.kirakishou.backend.fixmypc.util.TextUtils
 import kotlinx.coroutines.experimental.ThreadPoolDispatcher
 import kotlinx.coroutines.experimental.async
@@ -43,7 +43,7 @@ class SpecialistProfileDaoImpl(
 
             } catch (error: Throwable) {
                 fileLog.e(error)
-                throw DatabaseException()
+                throw DatabaseUnknownException()
             }
 
             return@async true
@@ -77,7 +77,7 @@ class SpecialistProfileDaoImpl(
                 }
             } catch (error: Throwable) {
                 fileLog.e(error)
-                throw DatabaseException()
+                throw DatabaseUnknownException()
             }
 
             return@async specialistProfile
@@ -119,7 +119,7 @@ class SpecialistProfileDaoImpl(
                 }
             } catch (error: Throwable) {
                 fileLog.e(error)
-                throw DatabaseException()
+                throw DatabaseUnknownException()
             }
 
             return@async profileList
@@ -140,7 +140,7 @@ class SpecialistProfileDaoImpl(
                 }
             } catch (error: Throwable) {
                 fileLog.e(error)
-                throw DatabaseException()
+                throw DatabaseUnknownException()
             }
 
             return@async true
@@ -160,7 +160,7 @@ class SpecialistProfileDaoImpl(
                 }
             } catch (error: Throwable) {
                 fileLog.e(error)
-                throw DatabaseException()
+                throw DatabaseUnknownException()
             }
 
             return@async true

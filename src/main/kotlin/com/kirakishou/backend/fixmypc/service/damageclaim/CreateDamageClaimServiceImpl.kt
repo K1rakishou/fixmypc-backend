@@ -10,25 +10,12 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
     @Value("\${spring.http.multipart.max-request-size}")
     private var maxRequestSize: Long = 0
 
-    @Autowired
     private lateinit var log: FileLog
-
-    @Autowired
     private lateinit var fs: FileSystem
-
-    @Autowired
     private lateinit var damageClaimStore: DamageClaimStore
-
-    @Autowired
     private lateinit var imageService: ImageService
-
-    @Autowired
     private lateinit var locationStore: LocationStore
-
-    @Autowired
     private lateinit var sessionCache: SessionCache
-
-    @Autowired
     private lateinit var clientProfileStore: ClientProfileStore
 
     private val allowedExtensions = listOf("png", "jpg", "jpeg", "PNG", "JPG", "JPEG")
@@ -202,23 +189,23 @@ class CreateDamageClaimServiceImpl : CreateDamageClaimService {
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

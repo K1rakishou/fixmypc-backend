@@ -1,36 +1,28 @@
 package com.kirakishou.backend.fixmypc.service
 
-import com.kirakishou.backend.fixmypc.core.Constant
-import com.kirakishou.backend.fixmypc.extension.deleteOnExitScope
 import com.kirakishou.backend.fixmypc.extension.getFileExtension
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.util.TextUtils
+import kotlinx.coroutines.experimental.Deferred
+import kotlinx.coroutines.experimental.ThreadPoolDispatcher
+import kotlinx.coroutines.experimental.async
 import net.coobird.thumbnailator.Thumbnails
 import org.apache.commons.io.IOUtils
 import org.apache.hadoop.fs.FileSystem
 import org.apache.hadoop.fs.Path
-import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.stereotype.Component
-import org.springframework.web.multipart.MultipartFile
 import java.awt.Dimension
 import java.io.File
-import java.util.concurrent.TimeUnit
+import java.io.InputStream
 import javax.annotation.PostConstruct
 import javax.imageio.ImageIO
-/*
-@Component
-class ImageServiceImpl : ImageService {
+
+class ImageServiceImpl(
+        private val fileLog: FileLog,
+        private val fs: FileSystem,
+        private val hadoopThreadPool: ThreadPoolDispatcher
+) : ImageService {
 
     private val tempDir = File("D:\\img\\tmp")
-
-    @Autowired
-    private lateinit var generator: Generator
-
-    @Autowired
-    private lateinit var log: FileLog
-
-    @Autowired
-    private lateinit var fs: FileSystem
 
     @PostConstruct
     fun init() {
@@ -39,169 +31,140 @@ class ImageServiceImpl : ImageService {
         }
     }
 
-    override fun deleteImage(serverHomeDirectory: String, imageName: String): Single<ImageService.Delete.Result> {
-        return Single.just(ImageToDeleteParams(serverHomeDirectory, imageName))
-                .map { (serverHomeDir, imgName) ->
-                    val extension = imgName.getFileExtension()
-                    if (extension.isEmpty()) {
-                        log.e("Bad file extension")
-                        return@map ImageService.Delete.Result.BadFileName()
-                    }
+    override suspend fun uploadImage(serverHomeDirectory: String, imageFile: File, originalImageName: String, newImageName: String): Deferred<Boolean> {
+        return async(hadoopThreadPool) {
+            try {
+                val rii = resize(serverHomeDirectory, imageFile, originalImageName, newImageName)
+                val largeFileUploadResponse = upload(serverHomeDirectory, rii.fileExtension, rii.resizedImageLarge, rii.resizedImageLargeName)
+                val mediumFileUploadResponse = upload(serverHomeDirectory, rii.fileExtension, rii.resizedImageMedium, rii.resizedImageMediumName)
+                val smallFileUploadResponse = upload(serverHomeDirectory, rii.fileExtension, rii.resizedImageSmall, rii.resizedImageSmallName)
 
-                    val imageNameWithoutExtension = imgName.substring(0, imgName.length - extension.length - 1)
+                val uploadedImagesDeferredList = listOf(largeFileUploadResponse, mediumFileUploadResponse, smallFileUploadResponse)
+                val uploadedImagesList = uploadedImagesDeferredList.map { it.await() }
 
-                    val smallImage = "$serverHomeDir/${imageNameWithoutExtension}_s.$extension"
-                    val mediumImage = "$serverHomeDir/${imageNameWithoutExtension}_m.$extension"
-                    val largeImage = "$serverHomeDir/${imageNameWithoutExtension}_l.$extension"
+                val hasBadResponses = uploadedImagesList.none { !it.success }
+                uploadedImagesList.forEach { it.tempFile.delete() }
 
-                    fs.delete(Path(smallImage), false)
-                    fs.delete(Path(mediumImage), false)
-                    fs.delete(Path(largeImage), false)
-
-                    return@map ImageService.Delete.Result.Ok() as ImageService.Delete.Result
+                if (hasBadResponses) {
+                    return@async false
                 }
-                .onErrorReturn {
-                    log.e(it)
-                    ImageService.Delete.Result.CouldNotDeleteImage()
-                }
+            } catch (error: Throwable) {
+                fileLog.e(error)
+                return@async false
+            }
+
+            return@async true
+        }
     }
 
-    override fun serveImage(userId: Long, imageType: Int, imageNameParam: String, imageSizeParam: String): Single<ImageService.Get.Result> {
-        return Single.just(ImageToServeParams(imageNameParam, imageSizeParam))
-                .map { (imageName, imageSize) ->
-                    val size = when (imageSize) {
-                        "large" -> "l"
-                        "medium" -> "m"
-                        "small" -> "s"
-                        else -> "m"
-                    }
+    override suspend fun serveImage(userId: Long, imageType: Int, imageName: String, imageSize: String): InputStream {
+        return async(hadoopThreadPool) {
+            val size = when (imageSize) {
+                "large" -> "l"
+                "medium" -> "m"
+                "small" -> "s"
+                else -> "m"
+            }
 
-                    val folderName = when (imageType) {
-                        0 -> "damage_claim"
-                        1 -> "profile"
-                        else -> {
-                            log.e("Bad image type: $imageType")
-                            return@map ImageService.Get.Result.BadImageType()
-                        }
-                    }
-
-                    val extension = imageName.getFileExtension()
-                    if (extension.isEmpty()) {
-                        log.e("Bad file extension")
-                        return@map ImageService.Get.Result.BadFileName()
-                    }
-
-                    val imageNameWithoutExtension = imageName.substring(0, imageName.length - extension.length - 1)
-                    val fullPathToImage = Path("${fs.homeDirectory}/img/$folderName/$userId/${imageNameWithoutExtension}_$size.$extension")
-
-                    if (!fs.exists(fullPathToImage)) {
-                        log.e("File does not exist")
-                        return@map ImageService.Get.Result.NotFound()
-                    }
-
-                    return@map ImageService.Get.Result.Ok(fs.open(fullPathToImage).wrappedStream)
+            val folderName = when (imageType) {
+                0 -> "damage_claim"
+                1 -> "profile"
+                else -> {
+                    fileLog.e("Bad image type: $imageType")
+                    throw BadImageTypeException()
                 }
+            }
+
+            val extension = imageName.getFileExtension()
+            if (extension.isEmpty()) {
+                fileLog.e("Bad file extension")
+                throw BadFileNameException()
+            }
+
+            val imageNameWithoutExtension = imageName.substring(0, imageName.length - extension.length - 1)
+            val fullPathToImage = Path("${fs.homeDirectory}/img/$folderName/$userId/${imageNameWithoutExtension}_$size.$extension")
+
+            if (!fs.exists(fullPathToImage)) {
+                fileLog.e("File does not exist")
+                throw FileNotFoundException()
+            }
+
+            return@async fs.open(fullPathToImage).wrappedStream
+        }.await()
     }
 
-    override fun uploadImage(serverHomeDirectory: String, multipartFile: MultipartFile): Flowable<ImageService.Post.Result> {
-        return resize(serverHomeDirectory, multipartFile)
-                .flatMap {
-                    val largeFileUploadObservable = upload(it.serverHomeDirectory, it.fileExtension, it.resizedImageLarge, it.resizedImageLargeName)
-                    val mediumFileUploadObservable = upload(it.serverHomeDirectory, it.fileExtension, it.resizedImageMedium, it.resizedImageMediumName)
-                    val smallFileUploadObservable = upload(it.serverHomeDirectory, it.fileExtension, it.resizedImageSmall, it.resizedImageSmallName)
-                    val mergedStream = Flowable.merge(largeFileUploadObservable, mediumFileUploadObservable, smallFileUploadObservable)
-                            .toList()
-                            .toFlowable()
-
-                    return@flatMap Flowables.zip(mergedStream, Flowable.just(it.originalImageName))
+    override suspend fun deleteImage(serverHomeDirectory: String, imageName: String): Deferred<Boolean> {
+        return async(hadoopThreadPool) {
+            try {
+                val extension = imageName.getFileExtension()
+                if (extension.isEmpty()) {
+                    fileLog.e("Bad file extension")
+                    throw BadFileNameException()
                 }
-                .map { (uploadedImagesList, originalImageName) ->
-                    var isSuccess = true
 
-                    for (response in uploadedImagesList) {
-                        if (response.success) {
-                            response.tempFile.delete()
-                        } else {
-                            isSuccess = false
-                        }
-                    }
+                val imageNameWithoutExtension = imageName.substring(0, imageName.length - extension.length - 1)
+                val smallImage = "$serverHomeDirectory/${imageNameWithoutExtension}_s.$extension"
+                val mediumImage = "$serverHomeDirectory/${imageNameWithoutExtension}_m.$extension"
+                val largeImage = "$serverHomeDirectory/${imageNameWithoutExtension}_l.$extension"
 
-                    if (!isSuccess) {
-                        log.e("Could not upload image")
-                        return@map ImageService.Post.Result.CouldNotUploadImage()
-                    }
+                fs.delete(Path(smallImage), false)
+                fs.delete(Path(mediumImage), false)
+                fs.delete(Path(largeImage), false)
 
-                    return@map ImageService.Post.Result.Ok(originalImageName)
-                }
-                .onErrorReturn { exception ->
-                    log.e(exception)
-                    return@onErrorReturn ImageService.Post.Result.CouldNotUploadImage()
-                }
+                return@async true
+            } catch (error: Throwable) {
+                fileLog.e(error)
+                return@async false
+            }
+        }
     }
 
-    private fun resize(serverHomeDirectory: String, multipartFile: MultipartFile): Flowable<ResizedImageInfo> {
-        return Flowable.just(ImageToUploadParams(serverHomeDirectory, multipartFile))
-                .map { (serverHomeDir, originalFile) ->
-                    val tempFile = File.createTempFile("o_temp", ".tmp", tempDir)
-                    val extension = TextUtils.extractExtension(multipartFile.originalFilename)
-                    val imageName = generator.generateTempFileName()
+    private suspend fun resize(serverHomeDirectory: String, imageFile: File, originalImageName: String, newImageName: String): ResizedImageInfo {
+        val extension = TextUtils.extractExtension(originalImageName)
 
-                    val resizedImage = ResizedImageInfo(
-                            serverHomeDir,
-                            extension,
-                            "$imageName.$extension",
-                            File.createTempFile("l_temp", ".tmp", tempDir),
-                            "${imageName}_l",
-                            File.createTempFile("m_temp", ".tmp", tempDir),
-                            "${imageName}_m",
-                            File.createTempFile("s_temp", ".tmp", tempDir),
-                            "${imageName}_s")
+        val resizedImage = ResizedImageInfo(
+                serverHomeDirectory,
+                extension,
+                "$newImageName.$extension",
+                File.createTempFile("l_temp", ".tmp", tempDir),
+                "${newImageName}_l",
+                File.createTempFile("m_temp", ".tmp", tempDir),
+                "${newImageName}_m",
+                File.createTempFile("s_temp", ".tmp", tempDir),
+                "${newImageName}_s")
 
-                    tempFile.deleteOnExitScope { tempFileContainer ->
-                        //copy original image
-                        originalFile.transferTo(tempFileContainer)
+        //save large version of the image
+        resizeAndSaveImageOnDisk(imageFile, Dimension(2560, 2560), resizedImage.resizedImageLarge, extension)
 
-                        //save large version of the image
-                        resizeAndSaveImageOnDisk(tempFileContainer, Dimension(2560, 2560), resizedImage.resizedImageLarge, extension)
+        //save medium version of the image
+        resizeAndSaveImageOnDisk(imageFile, Dimension(1536, 1536), resizedImage.resizedImageMedium, extension)
 
-                        //save medium version of the image
-                        resizeAndSaveImageOnDisk(tempFileContainer, Dimension(1536, 1536), resizedImage.resizedImageMedium, extension)
+        //save small version of the image
+        resizeAndSaveImageOnDisk(imageFile, Dimension(512, 512), resizedImage.resizedImageSmall, extension)
 
-                        //save small version of the image
-                        resizeAndSaveImageOnDisk(tempFileContainer, Dimension(512, 512), resizedImage.resizedImageSmall, extension)
-                    }
-
-                    return@map resizedImage
-                }
+        return resizedImage
     }
 
-    private fun upload(serverHomeDirectoryParam: String, fileExtensionParam: String, imageFileParam: File, imageNameParam: String): Flowable<UploadResponse> {
-        return Flowable.just(FileToUpload(serverHomeDirectoryParam, fileExtensionParam, imageFileParam, imageNameParam))
-                .map { (serverHomeDirectory, fileExtension, imageFile, imageName) ->
-                    val fileNameWithExtension = "$imageName.$fileExtension"
-                    fs.mkdirs(Path(serverHomeDirectory))
+    private suspend fun upload(serverHomeDirectory: String, fileExtension: String, imageFile: File, imageName: String): Deferred<UploadResponse> {
+        return async(hadoopThreadPool) {
+            val fileNameWithExtension = "$imageName.$fileExtension"
+            fs.mkdirs(Path(serverHomeDirectory))
 
-                    val fullPath = "$serverHomeDirectory$fileNameWithExtension"
-                    val inputStream = imageFile.inputStream()
-                    val outputStream = fs.create(Path(fullPath))
+            val fullPath = "$serverHomeDirectory$fileNameWithExtension"
+            val inputStream = imageFile.inputStream()
+            val outputStream = fs.create(Path(fullPath))
 
-                    try {
-                        IOUtils.copyLarge(inputStream, outputStream)
-                    } finally {
-                        inputStream.close()
-                        outputStream.close()
-                    }
+            try {
+                IOUtils.copyLarge(inputStream, outputStream)
+            } finally {
+                inputStream.close()
+                outputStream.close()
+            }
 
-                    return@map UploadResponse(true, fileNameWithExtension, imageFile)
-                }
-                .timeout(Constant.HADOOP_TIMEOUT, TimeUnit.SECONDS)
-                .onErrorReturn {
-                    log.e(it)
-                    UploadResponse(false, "", imageFileParam)
-                }
+            return@async UploadResponse(true, fileNameWithExtension, imageFile)
+        }
     }
 
-    @Throws(Exception::class)
     private fun resizeAndSaveImageOnDisk(originalImageFile: File, newMaxSize: Dimension, resizedImageFile: File, extension: String) {
         val imageToResize = ImageIO.read(originalImageFile)
 
@@ -219,20 +182,6 @@ class ImageServiceImpl : ImageService {
         }
     }
 
-    private data class ImageToDeleteParams(val serverHomeDirectory: String,
-                                           val imageName: String)
-
-    private data class ImageToServeParams(val imageName: String,
-                                          val imageSize: String)
-
-    private data class ImageToUploadParams(val serverFilePath: String,
-                                           val multipartFile: MultipartFile)
-
-    private data class FileToUpload(val serverHomeDirectory: String,
-                                    val fileExtension: String,
-                                    val imageFile: File,
-                                    val imageName: String)
-
     private data class ResizedImageInfo(val serverHomeDirectory: String,
                                         val fileExtension: String,
                                         val originalImageName: String,
@@ -246,4 +195,9 @@ class ImageServiceImpl : ImageService {
     private data class UploadResponse(val success: Boolean,
                                       val uploadedImageName: String,
                                       val tempFile: File)
-}*/
+
+    class BadFileNameException : Exception()
+    class BadImageTypeException : Exception()
+    class FileNotFoundException : Exception()
+
+}
