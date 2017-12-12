@@ -2,33 +2,27 @@ package com.kirakishou.backend.fixmypc.model.store
 
 import com.kirakishou.backend.fixmypc.core.Constant
 import com.kirakishou.backend.fixmypc.log.FileLog
+import com.kirakishou.backend.fixmypc.model.dao.DamageClaimDao
 import com.kirakishou.backend.fixmypc.model.entity.LatLon
-import org.springframework.beans.factory.annotation.Autowired
+import kotlinx.coroutines.experimental.runBlocking
 import org.springframework.data.geo.Circle
 import org.springframework.data.geo.Distance
 import org.springframework.data.geo.Point
 import org.springframework.data.redis.connection.RedisGeoCommands
 import org.springframework.data.redis.core.RedisTemplate
-import org.springframework.stereotype.Component
 import java.util.stream.Collectors
 import javax.annotation.PostConstruct
 import kotlin.system.measureTimeMillis
-/*
-@Component
-class LocationStoreImpl : LocationStore {
 
-    @Autowired
-    lateinit var template: RedisTemplate<String, Long>
-
-    @Autowired
-    lateinit var damageClaimStore: DamageClaimStore
-
-    @Autowired
-    lateinit var log: FileLog
+class LocationStoreImpl(
+        private val template: RedisTemplate<String, Long>,
+        private val damageClaimDao: DamageClaimDao,
+        private val fileLog: FileLog
+) : LocationStore {
 
     @PostConstruct
     fun init() {
-        warmUpCache()
+        fillWithData()
     }
 
     override fun saveOne(location: LatLon, malfunctionId: Long) {
@@ -36,11 +30,11 @@ class LocationStoreImpl : LocationStore {
     }
 
     override fun findWithin(skip: Long, centroid: LatLon, radius: Double, count: Long): List<Long> {
-        val result =  template.opsForGeo().geoRadius(
+        val result = template.opsForGeo().geoRadius(
                 Constant.RedisNames.LOCATION_CACHE_NAME,
                 Circle(Point(centroid.lon, centroid.lat), Distance(radius, RedisGeoCommands.DistanceUnit.KILOMETERS)),
                 RedisGeoCommands.GeoRadiusCommandArgs.newGeoRadiusArgs().sortAscending()
-        ).content
+        )!!.content
 
         return result
                 .stream()
@@ -54,27 +48,29 @@ class LocationStoreImpl : LocationStore {
         template.opsForGeo().geoRemove(Constant.RedisNames.LOCATION_CACHE_NAME, malfunctionId)
     }
 
-    private fun warmUpCache() {
-        log.d("=== Loading damage claims' ids and locations in the specialistProfileStore ===")
-        var totalLoaded = 0L
+    private fun fillWithData() {
+        runBlocking {
+            fileLog.d("=== Loading damage claims' ids and locations in the specialistProfileStore ===")
+            var totalLoaded = 0L
 
-        val time = measureTimeMillis {
-            val mapOfItems = mutableMapOf<Long, Point>()
+            val time = measureTimeMillis {
+                val mapOfItems = mutableMapOf<Long, Point>()
 
-            val damageClaimsList = damageClaimStore.findAll(true)
-            if (damageClaimsList.isNotEmpty()) {
-                totalLoaded += damageClaimsList.size
+                val damageClaimsList = damageClaimDao.findAll(true)
+                if (damageClaimsList.isNotEmpty()) {
+                    totalLoaded += damageClaimsList.size
 
-                for (damageClaim in damageClaimsList) {
-                    mapOfItems.put(damageClaim.id, Point(damageClaim.lon, damageClaim.lat))
-                }
+                    for (damageClaim in damageClaimsList) {
+                        mapOfItems.put(damageClaim.id, Point(damageClaim.lon, damageClaim.lat))
+                    }
 
-                if (mapOfItems.isNotEmpty()) {
-                    template.opsForGeo().geoAdd(Constant.RedisNames.LOCATION_CACHE_NAME, mapOfItems)
+                    if (mapOfItems.isNotEmpty()) {
+                        template.opsForGeo().geoAdd(Constant.RedisNames.LOCATION_CACHE_NAME, mapOfItems)
+                    }
                 }
             }
-        }
 
-        log.d("=== Done in $time ms, totalLoaded = $totalLoaded ===")
+            fileLog.d("=== Done in $time ms, totalLoaded = $totalLoaded ===")
+        }
     }
-}*/
+}

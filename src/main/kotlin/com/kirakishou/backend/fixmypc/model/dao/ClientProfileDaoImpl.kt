@@ -4,7 +4,7 @@ import com.kirakishou.backend.fixmypc.core.Fickle
 import com.kirakishou.backend.fixmypc.extension.prepareStatementScrollable
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.entity.ClientProfile
-import com.kirakishou.backend.fixmypc.model.exception.DatabaseException
+import com.kirakishou.backend.fixmypc.model.exception.DatabaseUnknownException
 import kotlinx.coroutines.experimental.ThreadPoolDispatcher
 import kotlinx.coroutines.experimental.async
 import javax.sql.DataSource
@@ -33,7 +33,7 @@ class ClientProfileDaoImpl(
                 }
             } catch (error: Throwable) {
                 fileLog.e(error)
-                throw DatabaseException()
+                throw DatabaseUnknownException()
             }
 
             return@async true
@@ -61,7 +61,7 @@ class ClientProfileDaoImpl(
                 }
             } catch (error: Throwable) {
                 fileLog.e(error)
-                throw DatabaseException()
+                throw DatabaseUnknownException()
             }
 
             return@async Fickle.of(clientProfile)

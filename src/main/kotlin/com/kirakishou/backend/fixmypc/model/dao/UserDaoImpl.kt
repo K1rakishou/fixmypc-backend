@@ -5,7 +5,7 @@ import com.kirakishou.backend.fixmypc.core.Fickle
 import com.kirakishou.backend.fixmypc.extension.prepareStatementScrollable
 import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.entity.User
-import com.kirakishou.backend.fixmypc.model.exception.DatabaseException
+import com.kirakishou.backend.fixmypc.model.exception.DatabaseUnknownException
 import kotlinx.coroutines.experimental.ThreadPoolDispatcher
 import kotlinx.coroutines.experimental.async
 import java.sql.Statement
@@ -46,7 +46,7 @@ class UserDaoImpl(
                 }
             } catch (error: Throwable) {
                 fileLog.e(error)
-                throw DatabaseException()
+                throw DatabaseUnknownException()
             }
 
             if (!userId.isPresent()) {
@@ -79,7 +79,7 @@ class UserDaoImpl(
             }
         } catch (error: Throwable) {
             fileLog.e(error)
-            throw DatabaseException()
+            throw DatabaseUnknownException()
         }
 
         return Fickle.of(user)
@@ -96,7 +96,7 @@ class UserDaoImpl(
             }
         } catch (error: Throwable) {
             fileLog.e(error)
-            throw DatabaseException()
+            throw DatabaseUnknownException()
         }
 
         return true
