@@ -14,6 +14,7 @@ import com.kirakishou.backend.fixmypc.service.GeneratorImpl
 import com.kirakishou.backend.fixmypc.service.ImageService
 import com.kirakishou.backend.fixmypc.service.ImageServiceImpl
 import com.kirakishou.backend.fixmypc.service.JsonConverterService
+import com.samskivert.mustache.Mustache
 import com.zaxxer.hikari.HikariDataSource
 import kotlinx.coroutines.experimental.ThreadPoolDispatcher
 import kotlinx.coroutines.experimental.newFixedThreadPoolContext
@@ -23,6 +24,8 @@ import org.apache.ignite.Ignition
 import org.apache.ignite.configuration.IgniteConfiguration
 import org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi
 import org.apache.ignite.spi.discovery.tcp.ipfinder.vm.TcpDiscoveryVmIpFinder
+import org.springframework.boot.autoconfigure.mustache.MustacheResourceTemplateLoader
+import org.springframework.boot.web.reactive.result.view.MustacheViewResolver
 import org.springframework.context.support.beans
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory
 import org.springframework.data.redis.core.RedisTemplate
@@ -71,7 +74,7 @@ fun myBeans() = beans {
         provideHadoopThreadPoolDispatcher()
     }
     bean<UserDao> {
-        UserDaoImpl(ref(), ref(PGSQL_THREAD_POOL_DISPATCHED_BEAN_NAME), ref())
+        UserDaoImpl(ref(PGSQL_THREAD_POOL_DISPATCHED_BEAN_NAME), ref())
     }
     bean<ClientProfileDao> {
         ClientProfileDaoImpl(ref(), ref(PGSQL_THREAD_POOL_DISPATCHED_BEAN_NAME), ref())
@@ -80,13 +83,13 @@ fun myBeans() = beans {
         SpecialistProfileDaoImpl(ref(), ref(PGSQL_THREAD_POOL_DISPATCHED_BEAN_NAME), ref())
     }
     bean<DamageClaimDao> {
-        DamageClaimDaoImpl(ref(), ref(PGSQL_THREAD_POOL_DISPATCHED_BEAN_NAME), ref())
+        DamageClaimDaoImpl(ref(PGSQL_THREAD_POOL_DISPATCHED_BEAN_NAME), ref())
     }
     bean<ImageService> {
         ImageServiceImpl(ref(), ref(), ref(HADOOP_THREAD_POOL_DISPATCHER_BEAN_NAME))
     }
     bean {
-        LocationStoreImpl(ref(), ref(), ref())
+        LocationStoreImpl(ref(), ref(), ref(), ref())
     }
     bean {
         GeneratorImpl()
@@ -114,6 +117,15 @@ fun myBeans() = beans {
     }
     bean("webHandler") {
         RouterFunctions.toWebHandler(ref<Router>().setUpRouter(), HandlerStrategies.builder().viewResolver(ref()).build())
+    }
+    bean {
+        val prefix = "classpath:/templates/"
+        val suffix = ".mustache"
+        val loader = MustacheResourceTemplateLoader(prefix, suffix)
+        MustacheViewResolver(Mustache.compiler().withLoader(loader)).apply {
+            setPrefix(prefix)
+            setSuffix(suffix)
+        }
     }
 }
 
@@ -149,7 +161,6 @@ fun provideIgnite(): Ignite {
     //igniteConfiguration.discoverySpi = discoSpi
     //igniteConfiguration.deploymentMode = DeploymentMode.SHARED
     igniteConfiguration.metricsLogFrequency = 0
-
 
     val ignite = Ignition.start(igniteConfiguration)
     ignite.active(true)

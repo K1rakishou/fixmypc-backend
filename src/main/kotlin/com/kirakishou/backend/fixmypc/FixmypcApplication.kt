@@ -1,8 +1,6 @@
 package com.kirakishou.backend.fixmypc
 
 import com.kirakishou.backend.fixmypc.config.myBeans
-import org.slf4j.LoggerFactory
-import org.springframework.boot.SpringApplication
 import org.springframework.context.support.GenericApplicationContext
 import org.springframework.http.server.reactive.HttpHandler
 import org.springframework.http.server.reactive.ReactorHttpHandlerAdapter
@@ -12,7 +10,6 @@ import reactor.ipc.netty.tcp.BlockingNettyContext
 
 
 class FixmypcApplication(port: Int = 8080) {
-    private val logger = LoggerFactory.getLogger(FixmypcApplication::class.java)
     private val httpHandler: HttpHandler
     private val server: HttpServer
     private lateinit var nettyContext: BlockingNettyContext
@@ -42,5 +39,5 @@ class FixmypcApplication(port: Int = 8080) {
 
 
 fun main(args: Array<String>) {
-    SpringApplication.run(FixmypcApplication::class.java, *args)
+    FixmypcApplication().startAndAwait()
 }

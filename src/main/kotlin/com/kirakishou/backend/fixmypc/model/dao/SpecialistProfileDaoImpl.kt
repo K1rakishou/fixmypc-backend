@@ -26,7 +26,7 @@ class SpecialistProfileDaoImpl(
             try {
                 hikariCP.connection.use { connection ->
                     connection.prepareStatement("INSERT INTO $TABLE_NAME (user_id, name, rating, photo_name, phone," +
-                            "registered_on, success_repairs, fail_repairs) VALUES (?, ?, ?, ?, ?, ?, ?)").use { ps ->
+                            "registered_on, success_repairs, fail_repairs) VALUES (?, ?, ?, ?, ?, ?, ?, ?)").use { ps ->
 
                         ps.setLong(1, specialistProfile.userId)
                         ps.setString(2, specialistProfile.name)

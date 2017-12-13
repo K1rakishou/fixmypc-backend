@@ -8,7 +8,7 @@ import java.security.SecureRandom
 
 class GeneratorImpl : Generator {
 
-    private val numericAlphabeticSpecialSymbols = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_!@#$%^&*()"
+    private val numericAlphabeticSpecialSymbols = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-_!@#$%^*()"
     private val numericAlphabetic = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
     private val random = SecureRandom()
 
@@ -20,9 +20,10 @@ class GeneratorImpl : Generator {
         val alphabetLen = alphabet.length
 
         for (i in 0 until len) {
-            sb.append(alphabet[Math.abs(bytes[i] % alphabetLen)])
+            sb.append(alphabet[Math.abs(bytes[i].toInt()) % alphabetLen])
         }
 
+        System.out.println(sb.toString())
         return sb.toString()
     }
 

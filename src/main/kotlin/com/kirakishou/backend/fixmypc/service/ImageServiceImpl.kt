@@ -22,7 +22,7 @@ class ImageServiceImpl(
         private val hadoopThreadPool: ThreadPoolDispatcher
 ) : ImageService {
 
-    private val tempDir = File("D:\\img\\tmp")
+    private val tempDir = File("D:\\projects\\data\\fixmypc\\tmp")
 
     @PostConstruct
     fun init() {
@@ -33,6 +33,8 @@ class ImageServiceImpl(
 
     override suspend fun uploadImage(serverHomeDirectory: String, imageFile: File, originalImageName: String, newImageName: String): Deferred<Boolean> {
         return async(hadoopThreadPool) {
+            var uploadedImagesList: List<UploadResponse>? = null
+
             try {
                 val rii = resize(serverHomeDirectory, imageFile, originalImageName, newImageName)
                 val largeFileUploadResponse = upload(serverHomeDirectory, rii.fileExtension, rii.resizedImageLarge, rii.resizedImageLargeName)
@@ -40,17 +42,19 @@ class ImageServiceImpl(
                 val smallFileUploadResponse = upload(serverHomeDirectory, rii.fileExtension, rii.resizedImageSmall, rii.resizedImageSmallName)
 
                 val uploadedImagesDeferredList = listOf(largeFileUploadResponse, mediumFileUploadResponse, smallFileUploadResponse)
-                val uploadedImagesList = uploadedImagesDeferredList.map { it.await() }
+                uploadedImagesList = uploadedImagesDeferredList.map { it.await() }
 
-                val hasBadResponses = uploadedImagesList.none { !it.success }
-                uploadedImagesList.forEach { it.tempFile.delete() }
-
+                val hasBadResponses = uploadedImagesList.any { !it.success }
                 if (hasBadResponses) {
                     return@async false
                 }
             } catch (error: Throwable) {
                 fileLog.e(error)
                 return@async false
+            } finally {
+                if (uploadedImagesList != null) {
+                    uploadedImagesList.forEach { it.tempFile.delete() }
+                }
             }
 
             return@async true

@@ -46,7 +46,7 @@ class ClientProfileDaoImpl(
 
             try {
                 hikariCP.connection.use { connection ->
-                    connection.prepareStatementScrollable("SELECT name, phone, is_profile_filled_out FROM $TABLE_NAME WHERE user_id = ?").use { ps ->
+                    connection.prepareStatementScrollable("SELECT name, phone FROM $TABLE_NAME WHERE user_id = ?").use { ps ->
                         ps.setLong(1, userId)
 
                         ps.executeQuery().use { rs ->

@@ -10,11 +10,13 @@ object Utils {
         var offset = 0
 
         for (dataBuffer in dataBufferList) {
-            val dataBufferArray = dataBuffer.asByteBuffer().array()
-            val arrayLength = dataBuffer.readableByteCount()
+            val bufferSize = dataBuffer.readableByteCount()
+            val dataBufferArray = ByteArray(bufferSize)
 
-            System.arraycopy(dataBufferArray, 0, array, offset, arrayLength)
-            offset += arrayLength
+            dataBuffer.read(dataBufferArray)
+            System.arraycopy(dataBufferArray, 0, array, offset, bufferSize)
+
+            offset += bufferSize
         }
 
         return String(array)

@@ -11,17 +11,17 @@ import org.springframework.data.geo.Point
 import org.springframework.data.redis.connection.RedisGeoCommands
 import org.springframework.data.redis.core.RedisTemplate
 import java.util.stream.Collectors
-import javax.annotation.PostConstruct
+import javax.sql.DataSource
 import kotlin.system.measureTimeMillis
 
 class LocationStoreImpl(
+        private val hikariCP: DataSource,
         private val template: RedisTemplate<String, Long>,
         private val damageClaimDao: DamageClaimDao,
         private val fileLog: FileLog
 ) : LocationStore {
 
-    @PostConstruct
-    fun init() {
+    init {
         fillWithData()
     }
 
@@ -56,7 +56,10 @@ class LocationStoreImpl(
             val time = measureTimeMillis {
                 val mapOfItems = mutableMapOf<Long, Point>()
 
-                val damageClaimsList = damageClaimDao.findAll(true)
+                val damageClaimsList = damageClaimDao.databaseRequest(hikariCP.connection) { connection ->
+                    damageClaimDao.findAll(true, connection)
+                }!!
+
                 if (damageClaimsList.isNotEmpty()) {
                     totalLoaded += damageClaimsList.size
 

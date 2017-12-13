@@ -7,8 +7,8 @@ import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.cache.SessionCache
 import com.kirakishou.backend.fixmypc.model.dao.ClientProfileDao
 import com.kirakishou.backend.fixmypc.model.dao.DamageClaimDao
-import com.kirakishou.backend.fixmypc.model.dao.UserDao
 import com.kirakishou.backend.fixmypc.model.entity.DamageClaim
+import com.kirakishou.backend.fixmypc.model.entity.LatLon
 import com.kirakishou.backend.fixmypc.model.entity.User
 import com.kirakishou.backend.fixmypc.model.exception.DatabaseUnknownException
 import com.kirakishou.backend.fixmypc.model.exception.EmptyPacketException
@@ -36,10 +36,10 @@ import org.springframework.web.reactive.function.server.body
 import reactor.core.publisher.Mono
 import reactor.util.function.Tuple2
 import java.io.File
+import javax.sql.DataSource
 
 class CreateDamageClaimHandler(
         private val sessionCache: SessionCache,
-        private val userDao: UserDao,
         private val damageClaimDao: DamageClaimDao,
         private val clientProfileDao: ClientProfileDao,
         private val locationStore: LocationStore,
@@ -47,8 +47,9 @@ class CreateDamageClaimHandler(
         private val fileLog: FileLog,
         private val fs: FileSystem,
         private val imageService: ImageService,
-        private val generator: Generator
-        ) : WebHandler {
+        private val generator: Generator,
+        private val hikariCP: DataSource
+) : WebHandler {
 
     private val SESSION_ID_HEADER_NAME = "session_id"
     private val PACKET_PART_KEY = "packet"
@@ -88,16 +89,8 @@ class CreateDamageClaimHandler(
                     val packet = (requestInfo as Either.Value).value.packet
                     val fileNames = uploadingFilesMap.map { it.value.newFileName }
                     val damageClaim = DamageClaim.create(user.id, packet.category, packet.description, packet.lat, packet.lon, fileNames)
+                    saveDamageClaim(damageClaim, user, uploadingFilesMap)
 
-                    if (!damageClaimDao.saveOne(damageClaim)) {
-                        return@async formatResponse(HttpStatus.INTERNAL_SERVER_ERROR, CreateDamageClaimResponse.fail(ServerErrorCode.SEC_DATABASE_ERROR))
-                    }
-
-                    if (!uploadImages(user.id, uploadingFilesMap)) {
-                        damageClaimDao.deleteOne(damageClaim.id)
-                    }
-
-                    //TODO: save coordinates to locationStore
                     return@async formatResponse(HttpStatus.OK, CreateDamageClaimResponse.success())
 
                 } finally {
@@ -114,28 +107,54 @@ class CreateDamageClaimHandler(
                 .flatMap { it }
     }
 
+    private suspend fun saveDamageClaim(damageClaim: DamageClaim, user: User, uploadingFilesMap: Map<String, UploadingFile>) {
+        damageClaimDao.transactionalDatabaseRequest(hikariCP.connection) { connection ->
+            if (!damageClaimDao.saveOne(damageClaim, connection)) {
+                throw DatabaseUnknownException()
+            }
+
+            try {
+                locationStore.saveOne(LatLon(damageClaim.lat, damageClaim.lon), damageClaim.id)
+
+                if (!uploadImages(user.id, uploadingFilesMap)) {
+                    throw CouldNotUploadImageException()
+                }
+            } catch (error: Throwable) {
+                try {
+                    connection.rollback()
+                    locationStore.deleteOne(damageClaim.id)
+                } catch (error: Throwable) {
+                    fileLog.e(error)
+                }
+
+                throw error
+            }
+
+            connection.commit()
+        }
+    }
+
     private suspend fun uploadImages(userId: Long, uploadingFilesMap: Map<String, UploadingFile>): Boolean {
         val deferredUploadResponses = mutableListOf<Deferred<Boolean>>()
         val newImageNames = mutableListOf<String>()
-        var isAllResponsesOk = false
         val serverImageDirPath = "${fs.homeDirectory}/img/damage_claim/$userId/"
 
-        try {
-            for ((originalImageName, uploadingFile) in uploadingFilesMap) {
-                deferredUploadResponses += imageService.uploadImage(serverImageDirPath, uploadingFile.file, originalImageName, uploadingFile.newFileName)
-            }
-
-            val responses = deferredUploadResponses.map { it.await() }
-            isAllResponsesOk = responses.any { !it }
-
-            return isAllResponsesOk
-        } finally {
-            if (isAllResponsesOk) {
-                return false
-            }
-
-            removeUploaded(newImageNames, serverImageDirPath)
+        for ((originalImageName, uploadingFile) in uploadingFilesMap) {
+            deferredUploadResponses += imageService.uploadImage(serverImageDirPath, uploadingFile.file, originalImageName, uploadingFile.newFileName)
         }
+
+        var allUploaded = false
+
+        try {
+            val responses = deferredUploadResponses.map { it.await() }
+            allUploaded = responses.none { uploaded -> !uploaded }
+        } finally {
+            if (!allUploaded) {
+                removeUploaded(newImageNames, serverImageDirPath)
+            }
+        }
+
+        return allUploaded
     }
 
     private suspend fun removeUploaded(newImageNames: MutableList<String>, serverImageDirPath: String) {
@@ -145,7 +164,13 @@ class CreateDamageClaimHandler(
             deferredDeleteResponses += imageService.deleteImage(serverImageDirPath, imageName)
         }
 
-        deferredDeleteResponses.forEach { it.await() }
+        val allDeleted = deferredDeleteResponses
+                .map { it.await() }
+                .none { deleted -> !deleted }
+
+        if (!allDeleted) {
+            fileLog.d("Could not delete one or more photos")
+        }
     }
 
     private suspend fun getRequestInfo(sessionId: String, packetParts: List<DataBuffer>): Either<Mono<ServerResponse>, RequestInfo> {
