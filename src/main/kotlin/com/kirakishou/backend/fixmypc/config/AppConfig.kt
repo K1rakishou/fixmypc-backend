@@ -71,7 +71,7 @@ fun myBeans() = beans {
         provideHadoopThreadPoolDispatcher()
     }
     bean<UserDao> {
-        UserDaoImpl(ref(), ref(PGSQL_THREAD_POOL_DISPATCHED_BEAN_NAME), ref())
+        UserDaoImpl(ref(), ref(PGSQL_THREAD_POOL_DISPATCHED_BEAN_NAME))
     }
     bean<ClientProfileDao> {
         ClientProfileDaoImpl(ref(), ref(PGSQL_THREAD_POOL_DISPATCHED_BEAN_NAME), ref())
@@ -80,13 +80,13 @@ fun myBeans() = beans {
         SpecialistProfileDaoImpl(ref(), ref(PGSQL_THREAD_POOL_DISPATCHED_BEAN_NAME), ref())
     }
     bean<DamageClaimDao> {
-        DamageClaimDaoImpl(ref(), ref(PGSQL_THREAD_POOL_DISPATCHED_BEAN_NAME), ref())
+        DamageClaimDaoImpl(ref(), ref(PGSQL_THREAD_POOL_DISPATCHED_BEAN_NAME))
     }
     bean<ImageService> {
         ImageServiceImpl(ref(), ref(), ref(HADOOP_THREAD_POOL_DISPATCHER_BEAN_NAME))
     }
     bean {
-        LocationStoreImpl(ref(), ref(), ref())
+        LocationStoreImpl(ref(), ref(), ref(), ref())
     }
     bean {
         GeneratorImpl()

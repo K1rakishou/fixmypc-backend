@@ -18,8 +18,10 @@ import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.reactive.function.server.body
 import reactor.core.publisher.Mono
+import javax.sql.DataSource
 
 class LoginHandler(
+        private val hikariCP: DataSource,
         private val sessionCache: SessionCache,
         private val userDao: UserDao,
         private val jsonConverter: JsonConverterService,
@@ -31,7 +33,10 @@ class LoginHandler(
         val result = async {
             try {
                 val loginRequest = serverRequest.bodyToMono(LoginRequest::class.java).awaitSingle()
-                val userFickle = userDao.findOne(loginRequest.login)
+                val userFickle = userDao.databaseRequest(hikariCP.connection) { connection ->
+                   userDao.findOne(loginRequest.login, connection)
+                }!!
+
                 if (!userFickle.isPresent()) {
                     fileLog.d("LoginHandler: Couldn't find anything with login: ${loginRequest.login}")
                     return@async formatResponse(HttpStatus.UNPROCESSABLE_ENTITY, LoginResponse.fail(ServerErrorCode.SEC_WRONG_LOGIN_OR_PASSWORD))

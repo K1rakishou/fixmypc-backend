@@ -24,8 +24,10 @@ import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.reactive.function.server.body
 import reactor.core.publisher.Mono
+import javax.sql.DataSource
 
 class SignupHandler(
+        private val hikariCP: DataSource,
         private val userDao: UserDao,
         private val clientProfileDao: ClientProfileDao,
         private val specialistProfileDao: SpecialistProfileDao,
@@ -42,30 +44,40 @@ class SignupHandler(
                     return@async checkRequestResult
                 }
 
-                val user = userDao.findOne(signupRequest.login)
-                if (user.isPresent()) {
-                    return@async formatResponse(HttpStatus.CONFLICT,
-                            SignupResponse.fail(ServerErrorCode.SEC_LOGIN_ALREADY_EXISTS))
+                val currentTime = ServerUtils.getTimeFast()
+                var saveUserResult: Pair<Boolean, Long>? = null
+
+                val errorResponse = userDao.databaseRequest<Mono<ServerResponse>>(hikariCP.connection) { connection ->
+                    val user = userDao.findOne(signupRequest.login, connection)
+                    if (user.isPresent()) {
+                        return@databaseRequest formatResponse(HttpStatus.CONFLICT,
+                                SignupResponse.fail(ServerErrorCode.SEC_LOGIN_ALREADY_EXISTS))
+                    }
+
+                    val newUser = User(0L, signupRequest.login, signupRequest.password,
+                            AccountType.from(signupRequest.accountType))
+
+                    saveUserResult = userDao.saveOne(newUser, connection)
+                    if (!saveUserResult!!.first) {
+                        return@databaseRequest formatResponse(HttpStatus.INTERNAL_SERVER_ERROR,
+                                SignupResponse.fail(ServerErrorCode.SEC_DATABASE_ERROR))
+                    }
+
+                    return@databaseRequest null
                 }
 
-                val currentTime =  ServerUtils.getTimeFast()
-                val newUser = User(0L, signupRequest.login, signupRequest.password,
-                        AccountType.from(signupRequest.accountType))
-
-                val saveUserResult = userDao.saveOne(newUser)
-                if (!saveUserResult.first) {
-                    return@async formatResponse(HttpStatus.INTERNAL_SERVER_ERROR,
-                            SignupResponse.fail(ServerErrorCode.SEC_DATABASE_ERROR))
+                if (errorResponse != null) {
+                    return@async errorResponse
                 }
 
                 if (signupRequest.accountType == AccountType.Client.value) {
-                    if (!clientProfileDao.saveOne(ClientProfile(userId = saveUserResult.second,
+                    if (!clientProfileDao.saveOne(ClientProfile(userId = saveUserResult!!.second,
                             registeredOn = currentTime))) {
                         return@async formatResponse(HttpStatus.INTERNAL_SERVER_ERROR,
                                 SignupResponse.fail(ServerErrorCode.SEC_DATABASE_ERROR))
                     }
                 } else if (signupRequest.accountType == AccountType.Specialist.value) {
-                    if (!specialistProfileDao.saveOne(SpecialistProfile(userId = saveUserResult.second,
+                    if (!specialistProfileDao.saveOne(SpecialistProfile(userId = saveUserResult!!.second,
                             registeredOn =currentTime))) {
                         return@async formatResponse(HttpStatus.INTERNAL_SERVER_ERROR,
                                 SignupResponse.fail(ServerErrorCode.SEC_DATABASE_ERROR))
