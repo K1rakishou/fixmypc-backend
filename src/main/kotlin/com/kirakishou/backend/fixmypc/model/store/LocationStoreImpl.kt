@@ -11,7 +11,6 @@ import org.springframework.data.geo.Point
 import org.springframework.data.redis.connection.RedisGeoCommands
 import org.springframework.data.redis.core.RedisTemplate
 import java.util.stream.Collectors
-import javax.annotation.PostConstruct
 import javax.sql.DataSource
 import kotlin.system.measureTimeMillis
 
@@ -22,8 +21,7 @@ class LocationStoreImpl(
         private val fileLog: FileLog
 ) : LocationStore {
 
-    @PostConstruct
-    fun init() {
+    init {
         fillWithData()
     }
 

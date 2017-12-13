@@ -5,25 +5,25 @@ import org.springframework.http.MediaType
 import org.springframework.web.reactive.function.server.router
 
 class Router(
-        val getClientProfileHandler: GetClientProfileHandler,
-        val updateClientProfileHandler: UpdateClientProfileHandler,
-        val isClientProfileFilledInHandler: IsClientProfileFilledInHandler,
-        val createDamageClaimHandler: CreateDamageClaimHandler,
-        val getDamageClaimsWithinRadiusPagedHandler: GetDamageClaimsWithinRadiusPagedHandler,
-        val hasAlreadyRespondedHandler: HasAlreadyRespondedHandler,
-        val respondToDamageClaimHandler: RespondToDamageClaimHandler,
-        val getClientDamageClaimsPagedHandler: GetClientDamageClaimsPagedHandler,
-        val serveImageHandler: ServeImageHandler,
-        val loginHandler: LoginHandler,
-        val signupHandler: SignupHandler,
-        val getAllRespondedSpecialistsPagedHandler: GetAllRespondedSpecialistsPagedHandler,
-        val markResponseViewedHandler: MarkResponseViewedHandler,
-        val assignSpecialistHandler: AssignSpecialistHandler,
-        val getSpecialistProfileHandler: GetSpecialistProfileHandler,
-        val getSpecialistProfileByIdHandler: GetSpecialistProfileByIdHandler,
-        val updateSpecialistProfileHandler: UpdateSpecialistProfileHandler,
-        val isSpecialistProfileFilledInHandler: IsSpecialistProfileFilledInHandler,
-        val getAssignedSpecialistHandler: GetAssignedSpecialistHandler
+        private val getClientProfileHandler: GetClientProfileHandler,
+        private val updateClientProfileHandler: UpdateClientProfileHandler,
+        private val isClientProfileFilledInHandler: IsClientProfileFilledInHandler,
+        private val createDamageClaimHandler: CreateDamageClaimHandler,
+        private val getDamageClaimsWithinRadiusPagedHandler: GetDamageClaimsWithinRadiusPagedHandler,
+        private val hasAlreadyRespondedHandler: HasAlreadyRespondedHandler,
+        private val respondToDamageClaimHandler: RespondToDamageClaimHandler,
+        private val getClientDamageClaimsPagedHandler: GetClientDamageClaimsPagedHandler,
+        private val serveImageHandler: ServeImageHandler,
+        private val loginHandler: LoginHandler,
+        private val signupHandler: SignupHandler,
+        private val getAllRespondedSpecialistsPagedHandler: GetAllRespondedSpecialistsPagedHandler,
+        private val markResponseViewedHandler: MarkResponseViewedHandler,
+        private val assignSpecialistHandler: AssignSpecialistHandler,
+        private val getSpecialistProfileHandler: GetSpecialistProfileHandler,
+        private val getSpecialistProfileByIdHandler: GetSpecialistProfileByIdHandler,
+        private val updateSpecialistProfileHandler: UpdateSpecialistProfileHandler,
+        private val isSpecialistProfileFilledInHandler: IsSpecialistProfileFilledInHandler,
+        private val getAssignedSpecialistHandler: GetAssignedSpecialistHandler
 ) {
 
     fun setUpRouter() = router {

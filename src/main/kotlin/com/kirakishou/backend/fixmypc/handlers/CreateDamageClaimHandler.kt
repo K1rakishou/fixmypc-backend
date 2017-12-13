@@ -7,7 +7,6 @@ import com.kirakishou.backend.fixmypc.log.FileLog
 import com.kirakishou.backend.fixmypc.model.cache.SessionCache
 import com.kirakishou.backend.fixmypc.model.dao.ClientProfileDao
 import com.kirakishou.backend.fixmypc.model.dao.DamageClaimDao
-import com.kirakishou.backend.fixmypc.model.dao.UserDao
 import com.kirakishou.backend.fixmypc.model.entity.DamageClaim
 import com.kirakishou.backend.fixmypc.model.entity.LatLon
 import com.kirakishou.backend.fixmypc.model.entity.User
@@ -41,7 +40,6 @@ import javax.sql.DataSource
 
 class CreateDamageClaimHandler(
         private val sessionCache: SessionCache,
-        private val userDao: UserDao,
         private val damageClaimDao: DamageClaimDao,
         private val clientProfileDao: ClientProfileDao,
         private val locationStore: LocationStore,
@@ -122,8 +120,12 @@ class CreateDamageClaimHandler(
                     throw CouldNotUploadImageException()
                 }
             } catch (error: Throwable) {
-                connection.rollback()
-                locationStore.deleteOne(damageClaim.id)
+                try {
+                    connection.rollback()
+                    locationStore.deleteOne(damageClaim.id)
+                } catch (error: Throwable) {
+                    fileLog.e(error)
+                }
 
                 throw error
             }
@@ -135,25 +137,24 @@ class CreateDamageClaimHandler(
     private suspend fun uploadImages(userId: Long, uploadingFilesMap: Map<String, UploadingFile>): Boolean {
         val deferredUploadResponses = mutableListOf<Deferred<Boolean>>()
         val newImageNames = mutableListOf<String>()
-        var isAllResponsesOk = false
         val serverImageDirPath = "${fs.homeDirectory}/img/damage_claim/$userId/"
 
-        try {
-            for ((originalImageName, uploadingFile) in uploadingFilesMap) {
-                deferredUploadResponses += imageService.uploadImage(serverImageDirPath, uploadingFile.file, originalImageName, uploadingFile.newFileName)
-            }
-
-            val responses = deferredUploadResponses.map { it.await() }
-            isAllResponsesOk = responses.any { !it }
-
-            return isAllResponsesOk
-        } finally {
-            if (isAllResponsesOk) {
-                return false
-            }
-
-            removeUploaded(newImageNames, serverImageDirPath)
+        for ((originalImageName, uploadingFile) in uploadingFilesMap) {
+            deferredUploadResponses += imageService.uploadImage(serverImageDirPath, uploadingFile.file, originalImageName, uploadingFile.newFileName)
         }
+
+        var allUploaded = false
+
+        try {
+            val responses = deferredUploadResponses.map { it.await() }
+            allUploaded = responses.none { uploaded -> !uploaded }
+        } finally {
+            if (!allUploaded) {
+                removeUploaded(newImageNames, serverImageDirPath)
+            }
+        }
+
+        return allUploaded
     }
 
     private suspend fun removeUploaded(newImageNames: MutableList<String>, serverImageDirPath: String) {
@@ -163,7 +164,13 @@ class CreateDamageClaimHandler(
             deferredDeleteResponses += imageService.deleteImage(serverImageDirPath, imageName)
         }
 
-        deferredDeleteResponses.forEach { it.await() }
+        val allDeleted = deferredDeleteResponses
+                .map { it.await() }
+                .none { deleted -> !deleted }
+
+        if (!allDeleted) {
+            fileLog.d("Could not delete one or more photos")
+        }
     }
 
     private suspend fun getRequestInfo(sessionId: String, packetParts: List<DataBuffer>): Either<Mono<ServerResponse>, RequestInfo> {
