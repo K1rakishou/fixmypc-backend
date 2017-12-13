@@ -11,9 +11,10 @@ import com.kirakishou.backend.fixmypc.service.Generator
 import com.kirakishou.backend.fixmypc.service.JsonConverterService
 import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.async
-import kotlinx.coroutines.experimental.reactive.awaitSingle
+import kotlinx.coroutines.experimental.reactive.awaitFirst
 import kotlinx.coroutines.experimental.reactor.asMono
 import org.springframework.http.HttpStatus
+import org.springframework.web.reactive.function.BodyExtractors
 import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.reactive.function.server.body
@@ -32,7 +33,12 @@ class LoginHandler(
     override fun handle(serverRequest: ServerRequest): Mono<ServerResponse> {
         val result = async {
             try {
-                val loginRequest = serverRequest.bodyToMono(LoginRequest::class.java).awaitSingle()
+                val requestBuffers = serverRequest.body(BodyExtractors.toDataBuffers())
+                        .buffer()
+                        .single()
+                        .awaitFirst()
+
+                val loginRequest = jsonConverter.fromJson<LoginRequest>(requestBuffers)
                 val userFickle = userDao.databaseRequest(hikariCP.connection) { connection ->
                    userDao.findOne(loginRequest.login, connection)
                 }!!

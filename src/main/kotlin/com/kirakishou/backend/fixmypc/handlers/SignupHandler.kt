@@ -17,9 +17,10 @@ import com.kirakishou.backend.fixmypc.util.ServerUtils
 import com.kirakishou.backend.fixmypc.util.TextUtils
 import kotlinx.coroutines.experimental.CommonPool
 import kotlinx.coroutines.experimental.async
-import kotlinx.coroutines.experimental.reactive.awaitSingle
+import kotlinx.coroutines.experimental.reactive.awaitFirst
 import kotlinx.coroutines.experimental.reactor.asMono
 import org.springframework.http.HttpStatus
+import org.springframework.web.reactive.function.BodyExtractors
 import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse
 import org.springframework.web.reactive.function.server.body
@@ -38,7 +39,12 @@ class SignupHandler(
     override fun handle(serverRequest: ServerRequest): Mono<ServerResponse> {
         val result = async {
             try {
-                val signupRequest = serverRequest.bodyToMono(SignupRequest::class.java).awaitSingle()
+                val requestBuffers = serverRequest.body(BodyExtractors.toDataBuffers())
+                        .buffer()
+                        .single()
+                        .awaitFirst()
+
+                val signupRequest = jsonConverter.fromJson<SignupRequest>(requestBuffers)
                 val checkRequestResult = checkRequest(signupRequest)
                 if (checkRequestResult != null) {
                     return@async checkRequestResult

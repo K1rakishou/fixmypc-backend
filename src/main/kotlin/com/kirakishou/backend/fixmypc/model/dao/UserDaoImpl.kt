@@ -10,7 +10,6 @@ import kotlinx.coroutines.experimental.ThreadPoolDispatcher
 import kotlinx.coroutines.experimental.async
 import java.sql.Connection
 import java.sql.Statement
-import javax.sql.DataSource
 
 /**
  * Created by kirakishou on 7/17/2017.
@@ -36,9 +35,9 @@ class UserDaoImpl(
                     ps.setInt(3, user.accountType.value)
                     ps.executeUpdate()
 
-                    ps.generatedKeys.use {
-                        if (it.next()) {
-                            userId = Fickle.of(it.getLong(1))
+                    ps.generatedKeys.use { rs ->
+                        if (rs.next()) {
+                            userId = Fickle.of(rs.getLong("id"))
                         }
                     }
                 }
