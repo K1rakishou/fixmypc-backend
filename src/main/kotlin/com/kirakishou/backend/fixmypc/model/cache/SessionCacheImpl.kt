@@ -14,9 +14,9 @@ class SessionCacheImpl(
         val ignite: Ignite
 ) : SessionCache {
 
-    lateinit var sessionCache: IgniteCache<String, User>
+    val sessionCache: IgniteCache<String, User>
 
-    fun init() {
+    init {
         val sessionCacheConfig = CacheConfiguration<String, User>()
         sessionCacheConfig.backups = 0
         sessionCacheConfig.name = Constant.IgniteNames.SESSION_CACHE
